@@ -826,16 +826,6 @@ def l2_sample_size_calculator(params):
     }
 
 def third_party_sampling_strategy(params):
-    """
-    Implement a third-party sampling strategy and generate visualization.
-    
-    Args:
-    params (dict): A dictionary of input parameters.
-    
-    Returns:
-    dict: A dictionary containing status, message, and results including true discrepancies, 
-          measured discrepancies for different sample sizes, and a JSON representation of a plot.
-    """
     error_status, error_message = error_handling(params)
     if error_status == 0:
         return {"status": 0, "message": error_message}
@@ -843,6 +833,7 @@ def third_party_sampling_strategy(params):
     n_sub = number_of_subs(params['level_test'], params['n_subs_per_block'], params['n_blocks_per_district'], params['n_district'])
     n_blocks = n_sub // params['n_subs_per_block']
 
+    # Generate true discrepancy scores
     true_disc = generate_true_disc(n_blocks, 0, 1, params['average_truth_score'], params['variance_across_blocks'], 'normal')
 
     results = []
@@ -855,31 +846,35 @@ def third_party_sampling_strategy(params):
             "meas_disc": meas_disc.tolist()
         })
 
-    # Create plot
+    # Create box-and-whisker plot
     fig = go.Figure()
-    for i, result in enumerate(results):
-        # Round the measured discrepancy values to 2 decimal places
-        rounded_meas_disc = np.round(result['meas_disc'], 2)
-        fig.add_trace(go.Box(y=rounded_meas_disc, name=f"n_sub={result['n_sub_tested']}"))
-    
-    # Round the true discrepancy values to 2 decimal places
-    rounded_true_disc = np.round(true_disc, 2)
-    fig.add_trace(go.Scatter(x=list(range(len(rounded_true_disc))), y=rounded_true_disc, mode='lines', name='True Discrepancy'))
-    
+    for result in results:
+        fig.add_trace(go.Box(
+            y=np.array(result['meas_disc']).flatten(),
+            name=f"{result['n_sub_tested']} subs<br>{result['n_samples']} samples",
+            boxpoints='outliers'
+        ))
+
+    fig.add_trace(go.Scatter(
+        y=true_disc,
+        mode='markers',
+        marker=dict(color='red', size=10, symbol='star'),
+        name='True Discrepancy'
+    ))
+
     fig.update_layout(
         title="Measured vs True Discrepancy",
-        xaxis_title="Block",
+        xaxis_title="Number of Subordinates Tested per Block",
         yaxis_title="Discrepancy Score",
-        yaxis=dict(tickformat='.2f')  # Format y-axis ticks to 2 decimal places
+        boxmode='group'
     )
 
     return {
         "status": 1,
         "message": "3P Sampling Strategy calculated successfully.",
         "value": {
-            "true_disc": rounded_true_disc.tolist(),
-            "results": [{**r, "meas_disc": np.round(r["meas_disc"], 2).tolist()} for r in results],
-            "n_blocks_plot": int(n_blocks * params['percent_blocks_plot'] / 100),
+            "true_disc": true_disc.tolist(),
+            "results": results,
             "figure": json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         }
     }

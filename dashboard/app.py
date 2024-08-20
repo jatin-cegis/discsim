@@ -1108,7 +1108,7 @@ def pre_survey_analysis():
                 # Display the figure
                 fig = go.Figure(json.loads(result['value']['figure']))
                 fig.update_layout(
-                    xaxis_title=f"Number of Subordinates Tested per {level_test}",
+                    xaxis_title="Number of Subordinates Tested per Block",
                     yaxis_title="Discrepancy Score"
                 )
                 st.plotly_chart(fig)
