@@ -9,6 +9,7 @@ import numpy as np
 import traceback
 import plotly.express as px
 import plotly.graph_objects as go
+from io import BytesIO
 
 # Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -55,6 +56,8 @@ def admin_data_quality_check():
             return "Unique ID Verifier"
 
     # Define the API endpoints
+    UPLOAD_FILE_ENDPOINT = f"{API_BASE_URL}/upload_file"
+    GET_FILE_ENDPOINT = f"{API_BASE_URL}/get_file"
     PRELIMINARY_TESTS_ENDPOINT = f"{API_BASE_URL}/preliminary_tests"
     FIND_UNIQUE_IDS_ENDPOINT = f"{API_BASE_URL}/find_unique_ids"
     UNIQUE_ID_CHECK_ENDPOINT = f"{API_BASE_URL}/unique_id_check"
@@ -71,9 +74,92 @@ def admin_data_quality_check():
 
     st.markdown("<h1 style='text-align: center;'>DiscSim Module 4: Administrative Data Quality Checks</h1>", unsafe_allow_html=True)
 
-    # File uploader
-    uploaded_file = st.file_uploader("Choose a CSV file to begin analysis**", type="csv")
-    st.write("**Please ensure the CSV is ready for analysis: such as data starting from the first row. If you have data in any other format, please convert to CSV to begin analysis")
+    # File selection
+    file_option = st.radio("Choose an option:", ("Upload a new file", "Select a previously uploaded file"))
+
+    uploaded_file = None
+
+    if file_option == "Upload a new file":
+        uploaded_file = st.file_uploader("Choose a CSV file to begin analysis", type="csv")
+
+        # Check if a file is already successfully uploaded and stored in session state
+        if uploaded_file is not None and "uploaded_file_id" not in st.session_state:
+            # Store the file in session state
+            st.session_state.uploaded_file = uploaded_file
+
+            # Upload the file to the API
+            uploaded_file.seek(0)  # Reset file pointer
+            files = {"file": uploaded_file}
+            response = requests.post(f"{API_BASE_URL}/upload_file", files=files)
+
+            if response.status_code == 200:
+                st.success("File uploaded successfully!")
+                file_id = response.json()["id"]
+
+                # Store the file ID in session state to avoid re-uploading
+                st.session_state.uploaded_file_id = file_id
+
+                # Immediately fetch the file back from the database
+                file_response = requests.get(f"{API_BASE_URL}/get_file/{file_id}")
+                if file_response.status_code == 200:
+                    file_data = file_response.json()
+
+                    # Extract file content and filename
+                    file_content = file_data["content"].encode('latin1')  # Convert back to bytes
+
+                    # Treat it as a file-like object and save it to session state
+                    uploaded_file = BytesIO(file_content)
+                    uploaded_file.name = file_data["filename"]  # Set the filename attribute
+                    st.session_state.uploaded_file = uploaded_file  # Save in session state
+
+                else:
+                    st.error(f"Failed to fetch file with ID {file_id}.")
+            elif response.status_code == 409:  # Handle duplicate file
+                st.warning("A file with this name already exists. Please upload a different file.")
+                return  # Stop further processing
+            else:
+                st.error("Failed to upload file.")
+    elif file_option == "Select a previously uploaded file":
+        # Get list of previously uploaded files
+        response = requests.get(f"{API_BASE_URL}/list_files")
+        if response.status_code == 200:
+            files = response.json()
+            if not files:  # Check if the list is empty
+                st.warning("No files have been uploaded yet.")
+                return
+
+            file_names = [file["filename"] for file in files]
+            selected_file = st.selectbox("Select a previously uploaded file", file_names)
+
+            if selected_file:
+                try:
+                    file_id = next(file["id"] for file in files if file["filename"] == selected_file)
+
+                    # Store the file ID in session state
+                    st.session_state.uploaded_file_id = file_id
+
+                    # Fetch the selected file from the API
+                    file_response = requests.get(f"{API_BASE_URL}/get_file/{file_id}")
+                    if file_response.status_code == 200:
+                        file_data = file_response.json()
+
+                        # Extract file content and filename
+                        file_content = bytes(file_data["content"], 'latin1')  # Convert back to bytes
+
+                        # Treat it as a file-like object and save it to session state
+                        uploaded_file = BytesIO(file_content)
+                        uploaded_file.name = file_data["filename"]  # Set the filename attribute
+                        st.session_state.uploaded_file = uploaded_file  # Save in session state
+
+                    else:
+                        st.error(f"Failed to fetch file with ID {file_id}.")
+                except StopIteration:
+                    st.error(f"No file found with the name '{selected_file}'. Please try again.")
+        else:
+            st.error("Failed to retrieve file list.")
+
+    # Retrieve the uploaded file from session state if available
+    uploaded_file = st.session_state.get("uploaded_file", None)
 
     if "analysis_complete" not in st.session_state:
         st.session_state.analysis_complete = False
@@ -125,6 +211,7 @@ def admin_data_quality_check():
                         try:
                             uploaded_file.seek(0)  # Reset file pointer
                             df = pd.read_csv(uploaded_file)
+                            df.columns = df.columns.str.strip().str.lower()  # Convert to lowercase and strip whitespace
                             st.write("Data Preview:")
                             st.dataframe(df.head())
                         except Exception as e:
