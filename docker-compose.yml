@@ -1,0 +1,19 @@
+x-shared_environment: &shared_environment
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discsim-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    restart: always
+    environment:
+      <<: *shared_environment
+
+volumes:
+  data:
