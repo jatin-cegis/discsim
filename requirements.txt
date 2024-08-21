@@ -6,3 +6,5 @@ requests
 plotly
 scipy
 python-multipart
+psycopg2-binary
+sqlalchemy
