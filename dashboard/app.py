@@ -81,6 +81,7 @@ def admin_data_quality_check():
 
     if file_option == "Upload a new file":
         uploaded_file = st.file_uploader("Choose a CSV file to begin analysis", type="csv")
+        st.write("**Please ensure the CSV is ready for analysis: such as data starting from the first row. If you have data in any other format, please convert to CSV to begin analysis")
 
         # Check if a file is already successfully uploaded and stored in session state
         if uploaded_file is not None and "uploaded_file_id" not in st.session_state:
@@ -105,7 +106,7 @@ def admin_data_quality_check():
                     file_data = file_response.json()
 
                     # Extract file content and filename
-                    file_content = file_data["content"].encode('latin1')  # Convert back to bytes
+                    file_content = file_data["content"].encode('utf-8')  # Convert back to bytes
 
                     # Treat it as a file-like object and save it to session state
                     uploaded_file = BytesIO(file_content)
@@ -144,7 +145,7 @@ def admin_data_quality_check():
                         file_data = file_response.json()
 
                         # Extract file content and filename
-                        file_content = bytes(file_data["content"], 'latin1')  # Convert back to bytes
+                        file_content = bytes(file_data["content"], 'utf-8')  # Convert back to bytes
 
                         # Treat it as a file-like object and save it to session state
                         uploaded_file = BytesIO(file_content)
@@ -189,6 +190,7 @@ def admin_data_quality_check():
         # Run preliminary tests
         with st.spinner("Running preliminary tests on the uploaded file..."):
             try:
+                uploaded_file.seek(0)  # Reset file pointer before reading again
                 files = {"file": ("uploaded_file.csv", uploaded_file, "text/csv")}
                 response = requests.post(PRELIMINARY_TESTS_ENDPOINT, files=files)
                 

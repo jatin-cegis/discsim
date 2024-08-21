@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import numpy as np
 import io
-from typing import List, Optional
+from typing import List
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query, Depends
 from fastapi.responses import Response, JSONResponse
 from sqlalchemy.orm import Session
@@ -56,7 +56,8 @@ async def upload_file(file: UploadFile = File(...), db: Session = Depends(get_db
 
     # Proceed with saving the file if it doesn't exist
     contents = await file.read()
-    db_file = UploadedFile(filename=file.filename, content=contents)
+    file_content = io.StringIO(contents.decode('utf-8')).read().encode('utf-8')
+    db_file = UploadedFile(filename=file.filename, content=file_content)
     db.add(db_file)
     db.commit()
     db.refresh(db_file)
@@ -78,11 +79,11 @@ async def get_file(file_id: int, db: Session = Depends(get_db)):
     # Return file content and filename as JSON
     return {
         "filename": file.filename,
-        "content": file.content.decode('latin1')  # Decode binary content for JSON compatibility
+        "content": file.content.decode('utf-8')  # Decode binary content for JSON compatibility
     }
 
 @app.post("/preliminary_tests", response_model=PreliminaryTestResponse)
-async def preliminary_tests(file: UploadFile = File(None), file_id: int = None, db: Session = Depends(get_db)):
+async def preliminary_tests(file: UploadFile = File(...), file_id: int = None, db: Session = Depends(get_db)):
     try:
         if file:
             contents = await file.read()
@@ -94,7 +95,7 @@ async def preliminary_tests(file: UploadFile = File(None), file_id: int = None, 
         else:
             raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
         
-        df = pd.read_csv(io.BytesIO(contents))
+        df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
         result = run_preliminary_tests(df)
         return PreliminaryTestResponse(**result)
     except Exception as e:
@@ -102,7 +103,7 @@ async def preliminary_tests(file: UploadFile = File(None), file_id: int = None, 
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/find_unique_ids", response_model=List[UniqueIDResponse])
-async def find_unique_ids(file: UploadFile = File(None), file_id: int = None, db: Session = Depends(get_db)):
+async def find_unique_ids(file: UploadFile = File(...), file_id: int = None, db: Session = Depends(get_db)):
     try:
         if file:
             contents = await file.read()
@@ -114,7 +115,7 @@ async def find_unique_ids(file: UploadFile = File(None), file_id: int = None, db
         else:
             raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
 
-        df = pd.read_csv(io.BytesIO(contents))
+        df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
         result = findUniqueIDs(df.to_dict('records'))
         return [UniqueIDResponse(UniqueID=item['UniqueID'], Numeric_DataTypes=item['Numeric_DataTypes']) for item in result]
     except Exception as e:
@@ -131,7 +132,7 @@ async def unique_id_check(input_data: UniqueIDCheckInput):
 
 @app.post("/drop_export_duplicates", response_model=DropExportDuplicatesResponse)
 async def drop_export_duplicates(
-    file: UploadFile = File(None),
+    file: UploadFile = File(...),
     file_id: int = None,
     input_data: str = Form(...),
     db: Session = Depends(get_db)
@@ -151,7 +152,7 @@ async def drop_export_duplicates(
         else:
             raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
 
-        df = pd.read_csv(io.BytesIO(contents), keep_default_na=False, na_values=[''])
+        df = pd.read_csv(io.StringIO(contents.decode('utf-8')), keep_default_na=False, na_values=[''])
         
         unique_rows, duplicate_rows = dropExportDuplicates(
             df,
@@ -210,7 +211,7 @@ async def get_dataframe(data_type: str = Query(...)):
         raise HTTPException(status_code=404, detail=f"No {data_type} data available")
     
 @app.post("/duplicate_analysis", response_model=DuplicateAnalysisResponse)
-async def duplicate_analysis(file: UploadFile = File(None), file_id: int = None, db: Session = Depends(get_db)):
+async def duplicate_analysis(file: UploadFile = File(...), file_id: int = None, db: Session = Depends(get_db)):
     try:
         if file:
             contents = await file.read()
@@ -222,7 +223,7 @@ async def duplicate_analysis(file: UploadFile = File(None), file_id: int = None,
         else:
             raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
 
-        df = pd.read_csv(io.BytesIO(contents))
+        df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
         num_duplicates, percent_duplicates = percentDuplicated(df)
         return DuplicateAnalysisResponse(num_duplicates=num_duplicates, percent_duplicates=percent_duplicates)
     except Exception as e:
@@ -230,7 +231,7 @@ async def duplicate_analysis(file: UploadFile = File(None), file_id: int = None,
 
 @app.post("/remove_duplicates", response_model=DropDuplicatesResponse)
 async def remove_duplicates(
-    file: UploadFile = File(None),
+    file: UploadFile = File(...),
     file_id: int = None,
     remove_option: str = Form(...),
     db: Session = Depends(get_db)
@@ -247,7 +248,7 @@ async def remove_duplicates(
         else:
             raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
 
-        df = pd.read_csv(io.BytesIO(contents))
+        df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
         original_count = len(df)
         
         if remove_option == "Keep first occurrence":
@@ -287,7 +288,7 @@ async def get_deduplicated_data(filename: str = Query("deduplicated_data.csv")):
     
 @app.post("/missing_entries")
 async def missing_entries(
-    file: UploadFile = File(None),
+    file: UploadFile = File(...),
     file_id: int = None,
     input_data: str = Form(...),
     db: Session = Depends(get_db)
@@ -303,7 +304,7 @@ async def missing_entries(
         else:
             raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
 
-        df = pd.read_csv(io.BytesIO(contents), index_col=False)
+        df = pd.read_csv(io.StringIO(contents.decode('utf-8')), index_col=False)
 
         # Parse the input data
         input_data = json.loads(input_data)
@@ -368,7 +369,7 @@ async def missing_entries(
     
 @app.post("/zero_entries")
 async def zero_entries(
-    file: UploadFile = File(None),
+    file: UploadFile = File(...),
     file_id: int = None,
     input_data: str = Form(...),
     db: Session = Depends(get_db)
@@ -385,15 +386,11 @@ async def zero_entries(
             raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
 
         # Load the CSV file into a DataFrame
-        df = pd.read_csv(io.BytesIO(contents))
-
-        # Clean and normalize column names
-        df.columns = df.columns.str.strip().str.lower()  # Strips whitespace and converts to lowercase
-        print(f"Column names: {df.columns.tolist()}")  # Print out the column names for debugging
+        df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
 
         # Parse the input data
         input_data = json.loads(input_data)
-        column_to_analyze = input_data["column_to_analyze"].strip().lower()  # Normalize user input as well
+        column_to_analyze = input_data["column_to_analyze"]
         group_by = input_data.get("group_by")
         filter_by = input_data.get("filter_by")
 
@@ -440,7 +437,7 @@ async def zero_entries(
 
 @app.post("/indicator_fill_rate")
 async def indicator_fill_rate(
-    file: UploadFile = File(None),
+    file: UploadFile = File(...),
     file_id: int = None,
     input_data: str = Form(...),
     db: Session = Depends(get_db)
@@ -456,7 +453,7 @@ async def indicator_fill_rate(
         else:
             raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
 
-        df = pd.read_csv(io.BytesIO(contents))
+        df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
 
         # Parse the input data
         input_data = json.loads(input_data)
@@ -524,7 +521,7 @@ async def indicator_fill_rate(
 
 @app.post("/frequency_table")
 async def frequency_table(
-    file: UploadFile = File(None),
+    file: UploadFile = File(...),
     file_id: int = None,
     input_data: str = Form(...),
     db: Session = Depends(get_db)
@@ -540,7 +537,7 @@ async def frequency_table(
         else:
             raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
 
-        df = pd.read_csv(io.BytesIO(contents))
+        df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
 
         # Parse the input data
         input_data = json.loads(input_data)
