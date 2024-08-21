@@ -90,7 +90,7 @@ def admin_data_quality_check():
             # Upload the file to the API
             uploaded_file.seek(0)  # Reset file pointer
             files = {"file": uploaded_file}
-            response = requests.post(f"{API_BASE_URL}/upload_file", files=files)
+            response = requests.post(UPLOAD_FILE_ENDPOINT, files=files)
 
             if response.status_code == 200:
                 st.success("File uploaded successfully!")
@@ -100,7 +100,7 @@ def admin_data_quality_check():
                 st.session_state.uploaded_file_id = file_id
 
                 # Immediately fetch the file back from the database
-                file_response = requests.get(f"{API_BASE_URL}/get_file/{file_id}")
+                file_response = requests.get(f"{GET_FILE_ENDPOINT}/{file_id}")
                 if file_response.status_code == 200:
                     file_data = file_response.json()
 
