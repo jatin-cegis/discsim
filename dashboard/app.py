@@ -211,7 +211,6 @@ def admin_data_quality_check():
                         try:
                             uploaded_file.seek(0)  # Reset file pointer
                             df = pd.read_csv(uploaded_file)
-                            df.columns = df.columns.str.strip().str.lower()  # Convert to lowercase and strip whitespace
                             st.write("Data Preview:")
                             st.dataframe(df.head())
                         except Exception as e:
