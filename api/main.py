@@ -5,31 +5,116 @@ import pandas as pd
 import numpy as np
 import io
 from typing import List
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query, Depends
 from fastapi.responses import Response, JSONResponse
+from sqlalchemy.orm import Session
 
 # Add the directory containing the 'api' module to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from api.models import DropDuplicatesResponse, DropExportDuplicatesInput, DropExportDuplicatesResponse, ErrorHandlingInput, PreliminaryTestResponse, UniqueIDResponse, UniqueIDCheckInput, UniqueIDCheckResponse, DuplicateAnalysisResponse, L1SampleSizeInput, L2SampleSizeInput, ThirdPartySamplingInput
-from api.utils import analyze_frequency_table, analyze_indicator_fill_rate, analyze_missing_entries, analyze_zero_entries, dropFullDuplicates, error_handling, findUniqueIDs, uniqueIDcheck, dropExportDuplicates, percentDuplicated, run_preliminary_tests, l1_sample_size_calculator, l2_sample_size_calculator, third_party_sampling_strategy
+from api.models import (DropDuplicatesResponse, DropExportDuplicatesInput, 
+                        DropExportDuplicatesResponse, ErrorHandlingInput, 
+                        PreliminaryTestResponse, UniqueIDResponse, 
+                        UniqueIDCheckInput, UniqueIDCheckResponse, 
+                        DuplicateAnalysisResponse, L1SampleSizeInput, 
+                        L2SampleSizeInput, ThirdPartySamplingInput)
+from api.utils import (analyze_frequency_table, analyze_indicator_fill_rate, 
+                       analyze_missing_entries, analyze_zero_entries, 
+                       dropFullDuplicates, error_handling, findUniqueIDs, 
+                       uniqueIDcheck, dropExportDuplicates, percentDuplicated, 
+                       run_preliminary_tests, l1_sample_size_calculator, 
+                       l2_sample_size_calculator, third_party_sampling_strategy)
+from api.database import get_db, UploadedFile
+from api.database import engine, Base
+
 
 app = FastAPI()
 
+# Global variable to store the last processed data
+last_processed_data = {
+    'unique_rows': None,
+    'duplicate_rows': None
+}
+
+# Global variable to store the last deduplicated data
+last_deduplicated_data = None
+
+@app.on_event("startup")
+async def startup_event():
+    Base.metadata.create_all(bind=engine)
+
+@app.post("/upload_file")
+async def upload_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    # Check if a file with the same name already exists
+    existing_file = db.query(UploadedFile).filter(UploadedFile.filename == file.filename).first()
+    
+    if existing_file:
+        return JSONResponse(
+            status_code=409,  # Conflict
+            content={"message": f"A file with the name '{file.filename}' already exists.", "id": existing_file.id}
+        )
+
+    # Proceed with saving the file if it doesn't exist
+    contents = await file.read()
+    file_content = io.StringIO(contents.decode('utf-8')).read().encode('utf-8')
+    db_file = UploadedFile(filename=file.filename, content=file_content)
+    db.add(db_file)
+    db.commit()
+    db.refresh(db_file)
+    
+    return {"message": "File uploaded successfully", "id": db_file.id}
+
+
+@app.get("/list_files")
+async def list_files(db: Session = Depends(get_db)):
+    files = db.query(UploadedFile.id, UploadedFile.filename).all()
+    return [{"id": file.id, "filename": file.filename} for file in files]
+
+@app.get("/get_file/{file_id}")
+async def get_file(file_id: int, db: Session = Depends(get_db)):
+    file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+    if not file:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Return file content and filename as JSON
+    return {
+        "filename": file.filename,
+        "content": file.content.decode('utf-8')  # Decode binary content for JSON compatibility
+    }
+
 @app.post("/preliminary_tests", response_model=PreliminaryTestResponse)
-async def preliminary_tests(file: UploadFile = File(...)):
+async def preliminary_tests(file: UploadFile = File(...), file_id: int = None, db: Session = Depends(get_db)):
     try:
-        contents = await file.read()
+        if file:
+            contents = await file.read()
+        elif file_id:
+            stored_file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+            if not stored_file:
+                raise HTTPException(status_code=404, detail="File not found")
+            contents = stored_file.content
+        else:
+            raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
+        
         df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
         result = run_preliminary_tests(df)
         return PreliminaryTestResponse(**result)
     except Exception as e:
+        print(f"Error in preliminary_tests: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/find_unique_ids", response_model=List[UniqueIDResponse])
-async def find_unique_ids(file: UploadFile = File(...)):
+async def find_unique_ids(file: UploadFile = File(...), file_id: int = None, db: Session = Depends(get_db)):
     try:
-        contents = await file.read()
+        if file:
+            contents = await file.read()
+        elif file_id:
+            stored_file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+            if not stored_file:
+                raise HTTPException(status_code=404, detail="File not found")
+            contents = stored_file.content
+        else:
+            raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
+
         df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
         result = findUniqueIDs(df.to_dict('records'))
         return [UniqueIDResponse(UniqueID=item['UniqueID'], Numeric_DataTypes=item['Numeric_DataTypes']) for item in result]
@@ -45,23 +130,28 @@ async def unique_id_check(input_data: UniqueIDCheckInput):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-# Global variable to store the last processed data
-last_processed_data = {
-    'unique_rows': None,
-    'duplicate_rows': None
-}
-
 @app.post("/drop_export_duplicates", response_model=DropExportDuplicatesResponse)
 async def drop_export_duplicates(
     file: UploadFile = File(...),
-    input_data: str = Form(...)
+    file_id: int = None,
+    input_data: str = Form(...),
+    db: Session = Depends(get_db)
 ):
     global last_processed_data
     try:
         input_params = json.loads(input_data)
         input_model = DropExportDuplicatesInput(**input_params)
         
-        contents = await file.read()
+        if file:
+            contents = await file.read()
+        elif file_id:
+            stored_file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+            if not stored_file:
+                raise HTTPException(status_code=404, detail="File not found")
+            contents = stored_file.content
+        else:
+            raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
+
         df = pd.read_csv(io.StringIO(contents.decode('utf-8')), keep_default_na=False, na_values=[''])
         
         unique_rows, duplicate_rows = dropExportDuplicates(
@@ -121,27 +211,43 @@ async def get_dataframe(data_type: str = Query(...)):
         raise HTTPException(status_code=404, detail=f"No {data_type} data available")
     
 @app.post("/duplicate_analysis", response_model=DuplicateAnalysisResponse)
-async def duplicate_analysis(file: UploadFile = File(...)):
+async def duplicate_analysis(file: UploadFile = File(...), file_id: int = None, db: Session = Depends(get_db)):
     try:
-        contents = await file.read()
+        if file:
+            contents = await file.read()
+        elif file_id:
+            stored_file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+            if not stored_file:
+                raise HTTPException(status_code=404, detail="File not found")
+            contents = stored_file.content
+        else:
+            raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
+
         df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
         num_duplicates, percent_duplicates = percentDuplicated(df)
         return DuplicateAnalysisResponse(num_duplicates=num_duplicates, percent_duplicates=percent_duplicates)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-# Use a global variable to store the last deduplicated data
-# Note: This is not ideal for production use, but works for demonstration purposes
-last_deduplicated_data = None
 
 @app.post("/remove_duplicates", response_model=DropDuplicatesResponse)
 async def remove_duplicates(
     file: UploadFile = File(...),
-    remove_option: str = Form(...)
+    file_id: int = None,
+    remove_option: str = Form(...),
+    db: Session = Depends(get_db)
 ):
     global last_deduplicated_data
     try:
-        contents = await file.read()
+        if file:
+            contents = await file.read()
+        elif file_id:
+            stored_file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+            if not stored_file:
+                raise HTTPException(status_code=404, detail="File not found")
+            contents = stored_file.content
+        else:
+            raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
+
         df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
         original_count = len(df)
         
@@ -181,10 +287,23 @@ async def get_deduplicated_data(filename: str = Query("deduplicated_data.csv")):
         raise HTTPException(status_code=404, detail="No deduplicated data available")
     
 @app.post("/missing_entries")
-async def missing_entries(file: UploadFile = File(...), input_data: str = Form(...)):
+async def missing_entries(
+    file: UploadFile = File(...),
+    file_id: int = None,
+    input_data: str = Form(...),
+    db: Session = Depends(get_db)
+):
     try:
-        # Read the uploaded file
-        contents = await file.read()
+        if file:
+            contents = await file.read()
+        elif file_id:
+            stored_file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+            if not stored_file:
+                raise HTTPException(status_code=404, detail="File not found")
+            contents = stored_file.content
+        else:
+            raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
+
         df = pd.read_csv(io.StringIO(contents.decode('utf-8')), index_col=False)
 
         # Parse the input data
@@ -249,10 +368,24 @@ async def missing_entries(file: UploadFile = File(...), input_data: str = Form(.
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
     
 @app.post("/zero_entries")
-async def zero_entries(file: UploadFile = File(...), input_data: str = Form(...)):
+async def zero_entries(
+    file: UploadFile = File(...),
+    file_id: int = None,
+    input_data: str = Form(...),
+    db: Session = Depends(get_db)
+):
     try:
-        # Read the uploaded file
-        contents = await file.read()
+        if file:
+            contents = await file.read()
+        elif file_id:
+            stored_file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+            if not stored_file:
+                raise HTTPException(status_code=404, detail="File not found")
+            contents = stored_file.content
+        else:
+            raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
+
+        # Load the CSV file into a DataFrame
         df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
 
         # Parse the input data
@@ -263,11 +396,11 @@ async def zero_entries(file: UploadFile = File(...), input_data: str = Form(...)
 
         # Validate input
         if column_to_analyze not in df.columns:
-            raise ValueError(f"Column '{column_to_analyze}' not found in the dataset")
-        
+            raise ValueError(f"Column '{column_to_analyze}' not found in the dataset: {df.columns.tolist()}")
+
         if group_by and group_by not in df.columns:
             raise ValueError(f"Group by column '{group_by}' not found in the dataset")
-        
+
         if filter_by:
             for col in filter_by.keys():
                 if col not in df.columns:
@@ -301,12 +434,25 @@ async def zero_entries(file: UploadFile = File(...), input_data: str = Form(...)
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
-    
+
 @app.post("/indicator_fill_rate")
-async def indicator_fill_rate(file: UploadFile = File(...), input_data: str = Form(...)):
+async def indicator_fill_rate(
+    file: UploadFile = File(...),
+    file_id: int = None,
+    input_data: str = Form(...),
+    db: Session = Depends(get_db)
+):
     try:
-        # Read the uploaded file
-        contents = await file.read()
+        if file:
+            contents = await file.read()
+        elif file_id:
+            stored_file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+            if not stored_file:
+                raise HTTPException(status_code=404, detail="File not found")
+            contents = stored_file.content
+        else:
+            raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
+
         df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
 
         # Parse the input data
@@ -372,12 +518,25 @@ async def indicator_fill_rate(file: UploadFile = File(...), input_data: str = Fo
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
-    
+
 @app.post("/frequency_table")
-async def frequency_table(file: UploadFile = File(...), input_data: str = Form(...)):
+async def frequency_table(
+    file: UploadFile = File(...),
+    file_id: int = None,
+    input_data: str = Form(...),
+    db: Session = Depends(get_db)
+):
     try:
-        # Read the uploaded file
-        contents = await file.read()
+        if file:
+            contents = await file.read()
+        elif file_id:
+            stored_file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+            if not stored_file:
+                raise HTTPException(status_code=404, detail="File not found")
+            contents = stored_file.content
+        else:
+            raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
+
         df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
 
         # Parse the input data
