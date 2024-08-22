@@ -210,81 +210,44 @@ async def get_dataframe(data_type: str = Query(...)):
     else:
         raise HTTPException(status_code=404, detail=f"No {data_type} data available")
     
-@app.post("/duplicate_analysis", response_model=DuplicateAnalysisResponse)
-async def duplicate_analysis(file: UploadFile = File(...), file_id: int = None, db: Session = Depends(get_db)):
+@app.post("/drop_export_duplicate_rows", response_model=DropExportDuplicatesResponse)
+async def drop_export_duplicate_rows(
+    file: UploadFile = File(...),
+    input_data: str = Form(...)
+):
+    global last_processed_data
     try:
-        if file:
-            contents = await file.read()
-        elif file_id:
-            stored_file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
-            if not stored_file:
-                raise HTTPException(status_code=404, detail="File not found")
-            contents = stored_file.content
+        input_params = json.loads(input_data)
+        kept_row = input_params.get("keptRow", "first")
+        export = input_params.get("export", True)
+        
+        contents = await file.read()
+        df = pd.read_csv(io.StringIO(contents.decode('utf-8')), keep_default_na=False, na_values=[''])
+        
+        # Process duplicates
+        if kept_row == "none":
+            unique_rows = df.drop_duplicates(keep=False)
+            duplicate_rows = df[df.duplicated(keep=False)]
         else:
-            raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
+            unique_rows = df.drop_duplicates(keep=kept_row)
+            duplicate_rows = df[df.duplicated(keep=False)] if export else None
+        
+        unique_count = len(unique_rows)
+        duplicate_count = len(duplicate_rows) if duplicate_rows is not None else 0
+        total_count = unique_count + duplicate_count
+        percent_duplicates = (duplicate_count / total_count) * 100 if total_count > 0 else 0
 
-        df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
-        num_duplicates, percent_duplicates = percentDuplicated(df)
-        return DuplicateAnalysisResponse(num_duplicates=num_duplicates, percent_duplicates=percent_duplicates)
+        # Store the processed data
+        last_processed_data['unique_rows'] = unique_rows
+        last_processed_data['duplicate_rows'] = duplicate_rows
+        
+        return DropExportDuplicatesResponse(
+            unique_count=unique_count,
+            duplicate_count=duplicate_count,
+            percent_duplicates=percent_duplicates
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/remove_duplicates", response_model=DropDuplicatesResponse)
-async def remove_duplicates(
-    file: UploadFile = File(...),
-    file_id: int = None,
-    remove_option: str = Form(...),
-    db: Session = Depends(get_db)
-):
-    global last_deduplicated_data
-    try:
-        if file:
-            contents = await file.read()
-        elif file_id:
-            stored_file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
-            if not stored_file:
-                raise HTTPException(status_code=404, detail="File not found")
-            contents = stored_file.content
-        else:
-            raise HTTPException(status_code=400, detail="Either file or file_id must be provided")
-
-        df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
-        original_count = len(df)
-        
-        if remove_option == "Keep first occurrence":
-            deduped_data = dropFullDuplicates(df.to_dict('records'), keep="first")
-        elif remove_option == "Drop all occurrences":
-            deduped_data = dropFullDuplicates(df.to_dict('records'), keep=False)
-        else:
-            raise HTTPException(status_code=400, detail="Invalid remove option")
-
-        deduplicated_count = len(deduped_data)
-        dropped_count = original_count - deduplicated_count
-
-        # Store the deduplicated data for later retrieval
-        last_deduplicated_data = deduped_data
-
-        return DropDuplicatesResponse(
-            original_count=original_count,
-            deduplicated_count=deduplicated_count,
-            dropped_count=dropped_count
-        )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.get("/get_deduplicated_data")
-async def get_deduplicated_data(filename: str = Query("deduplicated_data.csv")):
-    global last_deduplicated_data
-    if last_deduplicated_data is not None:
-        df = pd.DataFrame(last_deduplicated_data)
-        csv_data = df.to_csv(index=False)
-        return Response(
-            content=csv_data,
-            media_type="text/csv",
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
-        )
-    else:
-        raise HTTPException(status_code=404, detail="No deduplicated data available")
     
 @app.post("/missing_entries")
 async def missing_entries(
