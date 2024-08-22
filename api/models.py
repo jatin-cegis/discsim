@@ -34,15 +34,6 @@ class DropExportDuplicatesResponse(BaseModel):
     duplicate_count: int
     percent_duplicates: float
 
-class DuplicateAnalysisResponse(BaseModel):
-    num_duplicates: int
-    percent_duplicates: float
-
-class DropDuplicatesResponse(BaseModel):
-    original_count: int
-    deduplicated_count: int
-    dropped_count: int
-
 class MissingEntriesInput(BaseModel):
     column_to_analyze: str
     group_by: Optional[str] = None
