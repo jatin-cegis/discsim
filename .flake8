@@ -1,0 +1,10 @@
+[flake8]
+exclude =
+    __pycache__
+    __init__.py
+    venv
+    docker-compose.yml
+    Dockerfile
+    LICENSE
+    README.md
+    requirements.txt
