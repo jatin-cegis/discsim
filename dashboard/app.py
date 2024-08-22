@@ -77,6 +77,19 @@ def admin_data_quality_check():
     # File selection
     file_option = st.radio("Choose an option:", ("Upload a new file", "Select a previously uploaded file"))
 
+    def reset_session_states():
+        st.session_state.analysis_complete = False
+        st.session_state.num_duplicates = 0
+        st.session_state.duplicates_removed = False
+        st.session_state.deduplicated_data_ready = False
+
+    # Clear relevant session state when switching options
+    if "previous_file_option" not in st.session_state or st.session_state.previous_file_option != file_option:
+        st.session_state.uploaded_file = None
+        st.session_state.uploaded_file_id = None
+        reset_session_states()
+        st.session_state.previous_file_option = file_option
+
     uploaded_file = None
 
     if file_option == "Upload a new file":
@@ -84,7 +97,7 @@ def admin_data_quality_check():
         st.write("**Please ensure the CSV is ready for analysis: such as data starting from the first row. If you have data in any other format, please convert to CSV to begin analysis")
 
         # Check if a file is already successfully uploaded and stored in session state
-        if uploaded_file is not None and "uploaded_file_id" not in st.session_state:
+        if uploaded_file is not None:
             # Store the file in session state
             st.session_state.uploaded_file = uploaded_file
 
@@ -159,6 +172,10 @@ def admin_data_quality_check():
         else:
             st.error("Failed to retrieve file list.")
 
+    # Update the uploaded_file in session state
+    if uploaded_file is not None:
+        st.session_state.uploaded_file = uploaded_file
+
     # Retrieve the uploaded file from session state if available
     uploaded_file = st.session_state.get("uploaded_file", None)
 
@@ -176,12 +193,6 @@ def admin_data_quality_check():
         st.session_state.navbar_selection = "Unique ID Verifier"
     if "drop_export_complete" not in st.session_state:
         st.session_state.drop_export_complete = False
-
-    def reset_session_states():
-        st.session_state.analysis_complete = False
-        st.session_state.num_duplicates = 0
-        st.session_state.duplicates_removed = False
-        st.session_state.deduplicated_data_ready = False
 
     if uploaded_file is not None:
         if uploaded_file != st.session_state.previous_uploaded_file:
