@@ -98,41 +98,47 @@ def admin_data_quality_check():
 
         # Check if a file is already successfully uploaded and stored in session state
         if uploaded_file is not None:
-            # Store the file in session state
-            st.session_state.uploaded_file = uploaded_file
+            # Check if this file has already been uploaded in this session
+            if "current_file_name" not in st.session_state or st.session_state.current_file_name != uploaded_file.name:
+                # Store the file in session state
+                st.session_state.uploaded_file = uploaded_file
 
-            # Upload the file to the API
-            uploaded_file.seek(0)  # Reset file pointer
-            files = {"file": uploaded_file}
-            response = requests.post(UPLOAD_FILE_ENDPOINT, files=files)
+                # Upload the file to the API
+                uploaded_file.seek(0)  # Reset file pointer
+                files = {"file": uploaded_file}
+                response = requests.post(UPLOAD_FILE_ENDPOINT, files=files)
 
-            if response.status_code == 200:
-                st.success("File uploaded successfully!")
-                file_id = response.json()["id"]
+                if response.status_code == 200:
+                    st.success("File uploaded successfully!")
+                    file_id = response.json()["id"]
 
-                # Store the file ID in session state to avoid re-uploading
-                st.session_state.uploaded_file_id = file_id
+                    # Store the file ID and name in session state to avoid re-uploading
+                    st.session_state.uploaded_file_id = file_id
+                    st.session_state.current_file_name = uploaded_file.name
 
-                # Immediately fetch the file back from the database
-                file_response = requests.get(f"{GET_FILE_ENDPOINT}/{file_id}")
-                if file_response.status_code == 200:
-                    file_data = file_response.json()
+                    # Immediately fetch the file back from the database
+                    file_response = requests.get(f"{GET_FILE_ENDPOINT}/{file_id}")
+                    if file_response.status_code == 200:
+                        file_data = file_response.json()
 
-                    # Extract file content and filename
-                    file_content = file_data["content"].encode('utf-8')  # Convert back to bytes
+                        # Extract file content and filename
+                        file_content = file_data["content"].encode('utf-8')  # Convert back to bytes
 
-                    # Treat it as a file-like object and save it to session state
-                    uploaded_file = BytesIO(file_content)
-                    uploaded_file.name = file_data["filename"]  # Set the filename attribute
-                    st.session_state.uploaded_file = uploaded_file  # Save in session state
+                        # Treat it as a file-like object and save it to session state
+                        uploaded_file = BytesIO(file_content)
+                        uploaded_file.name = file_data["filename"]  # Set the filename attribute
+                        st.session_state.uploaded_file = uploaded_file  # Save in session state
 
+                    else:
+                        st.error(f"Failed to fetch file with ID {file_id}.")
+                elif response.status_code == 409:  # Handle duplicate file
+                    st.warning("A file with this name already exists. Please upload a different file.")
+                    return  # Stop further processing
                 else:
-                    st.error(f"Failed to fetch file with ID {file_id}.")
-            elif response.status_code == 409:  # Handle duplicate file
-                st.warning("A file with this name already exists. Please upload a different file.")
-                return  # Stop further processing
+                    st.error("Failed to upload file.")
             else:
-                st.error("Failed to upload file.")
+                st.info(f"File '{uploaded_file.name}' has already been uploaded in this session.")
+
     elif file_option == "Select a previously uploaded file":
         # Get list of previously uploaded files
         response = requests.get(f"{API_BASE_URL}/list_files")
