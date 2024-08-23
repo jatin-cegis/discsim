@@ -242,7 +242,8 @@ async def drop_export_duplicates(
         )
 
         unique_count = len(unique_rows)
-        duplicate_count = len(duplicate_rows) if duplicate_rows is not None else 0
+        duplicate_count = len(
+            duplicate_rows) if duplicate_rows is not None else 0
         total_count = unique_count + duplicate_count
         percent_duplicates = (
             (duplicate_count / total_count) * 100 if total_count > 0 else 0
@@ -251,7 +252,8 @@ async def drop_export_duplicates(
         # Store the processed data
         last_processed_data["unique_rows"] = pd.DataFrame(unique_rows)
         last_processed_data["duplicate_rows"] = (
-            pd.DataFrame(duplicate_rows) if duplicate_rows is not None else None
+            pd.DataFrame(
+                duplicate_rows) if duplicate_rows is not None else None
         )
 
         return DropExportDuplicatesResponse(
@@ -283,7 +285,8 @@ async def get_processed_data(data_type: str = Query(...), filename: str = Query(
             headers={"Content-Disposition": f"attachment; filename={filename}"},
         )
     else:
-        raise HTTPException(status_code=404, detail=f"No {data_type} data available")
+        raise HTTPException(status_code=404, detail=f"No {
+                            data_type} data available")
 
 
 @app.get("/get_dataframe")
@@ -303,7 +306,8 @@ async def get_dataframe(data_type: str = Query(...)):
             orient="records"
         )
     else:
-        raise HTTPException(status_code=404, detail=f"No {data_type} data available")
+        raise HTTPException(status_code=404, detail=f"No {
+                            data_type} data available")
 
 
 @app.post("/drop_export_duplicate_rows", response_model=DropExportDuplicatesResponse)
@@ -330,7 +334,8 @@ async def drop_export_duplicate_rows(
             duplicate_rows = df[df.duplicated(keep=False)] if export else None
 
         unique_count = len(unique_rows)
-        duplicate_count = len(duplicate_rows) if duplicate_rows is not None else 0
+        duplicate_count = len(
+            duplicate_rows) if duplicate_rows is not None else 0
         total_count = unique_count + duplicate_count
         percent_duplicates = (
             (duplicate_count / total_count) * 100 if total_count > 0 else 0
@@ -361,7 +366,8 @@ async def missing_entries(
             contents = await file.read()
         elif file_id:
             stored_file = (
-                db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+                db.query(UploadedFile).filter(
+                    UploadedFile.id == file_id).first()
             )
             if not stored_file:
                 raise HTTPException(status_code=404, detail="File not found")
@@ -371,7 +377,8 @@ async def missing_entries(
                 status_code=400, detail="Either file or file_id must be provided"
             )
 
-        df = pd.read_csv(io.StringIO(contents.decode("utf-8")), index_col=False)
+        df = pd.read_csv(io.StringIO(
+            contents.decode("utf-8")), index_col=False)
 
         # Parse the input data
         input_data = json.loads(input_data)
@@ -381,27 +388,33 @@ async def missing_entries(
 
         # Validate input
         if column_to_analyze not in df.columns:
-            raise ValueError(f"Column '{column_to_analyze}' not found in the dataset")
+            raise ValueError(
+                f"Column '{column_to_analyze}' not found in the dataset")
 
         if group_by and group_by not in df.columns:
-            raise ValueError(f"Group by column '{group_by}' not found in the dataset")
+            raise ValueError(f"Group by column '{
+                             group_by}' not found in the dataset")
 
         if filter_by:
             for col, value in filter_by.items():
                 if col not in df.columns:
-                    raise ValueError(f"Filter column '{col}' not found in the dataset")
+                    raise ValueError(f"Filter column '{
+                                     col}' not found in the dataset")
                 if df[df[col] == value].empty:
-                    raise ValueError(f"No data found for filter: {col} = {value}")
+                    raise ValueError(
+                        f"No data found for filter: {col} = {value}")
 
         # Perform the analysis
-        result = analyze_missing_entries(df, column_to_analyze, group_by, filter_by)
+        result = analyze_missing_entries(
+            df, column_to_analyze, group_by, filter_by)
 
         # Convert numpy types to Python native types for JSON serialization
         if isinstance(result["analysis"], dict):
             result["analysis"] = {
                 k: (
                     int(v[0]),
-                    float(v[1]) if not np.isnan(v[1]) and not np.isinf(v[1]) else None,
+                    float(v[1]) if not np.isnan(
+                        v[1]) and not np.isinf(v[1]) else None,
                 )
                 for k, v in result["analysis"].items()
             }
@@ -435,7 +448,8 @@ async def missing_entries(
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"An error occurred: {str(e)}")
 
 
 @app.post("/zero_entries")
@@ -450,7 +464,8 @@ async def zero_entries(
             contents = await file.read()
         elif file_id:
             stored_file = (
-                db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+                db.query(UploadedFile).filter(
+                    UploadedFile.id == file_id).first()
             )
             if not stored_file:
                 raise HTTPException(status_code=404, detail="File not found")
@@ -472,19 +487,23 @@ async def zero_entries(
         # Validate input
         if column_to_analyze not in df.columns:
             raise ValueError(
-                f"Column '{column_to_analyze}' not found in the dataset: {df.columns.tolist()}"
+                f"Column '{column_to_analyze}' not found in the dataset: {
+                    df.columns.tolist()}"
             )
 
         if group_by and group_by not in df.columns:
-            raise ValueError(f"Group by column '{group_by}' not found in the dataset")
+            raise ValueError(f"Group by column '{
+                             group_by}' not found in the dataset")
 
         if filter_by:
             for col in filter_by.keys():
                 if col not in df.columns:
-                    raise ValueError(f"Filter column '{col}' not found in the dataset")
+                    raise ValueError(f"Filter column '{
+                                     col}' not found in the dataset")
 
         # Perform the analysis
-        result = analyze_zero_entries(df, column_to_analyze, group_by, filter_by)
+        result = analyze_zero_entries(
+            df, column_to_analyze, group_by, filter_by)
 
         # Convert numpy types to Python native types for JSON serialization
         if isinstance(result["analysis"], dict):
@@ -510,7 +529,8 @@ async def zero_entries(
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"An error occurred: {str(e)}")
 
 
 @app.post("/indicator_fill_rate")
@@ -525,7 +545,8 @@ async def indicator_fill_rate(
             contents = await file.read()
         elif file_id:
             stored_file = (
-                db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+                db.query(UploadedFile).filter(
+                    UploadedFile.id == file_id).first()
             )
             if not stored_file:
                 raise HTTPException(status_code=404, detail="File not found")
@@ -549,15 +570,18 @@ async def indicator_fill_rate(
 
         # Validate input
         if column_to_analyze not in df.columns:
-            raise ValueError(f"Column '{column_to_analyze}' not found in the dataset")
+            raise ValueError(
+                f"Column '{column_to_analyze}' not found in the dataset")
 
         if group_by and group_by not in df.columns:
-            raise ValueError(f"Group by column '{group_by}' not found in the dataset")
+            raise ValueError(f"Group by column '{
+                             group_by}' not found in the dataset")
 
         if filter_by:
             for col in filter_by.keys():
                 if col not in df.columns:
-                    raise ValueError(f"Filter column '{col}' not found in the dataset")
+                    raise ValueError(f"Filter column '{
+                                     col}' not found in the dataset")
 
         # Perform the analysis
         result = analyze_indicator_fill_rate(
@@ -571,7 +595,8 @@ async def indicator_fill_rate(
 
         # Convert DataFrame to dict for JSON serialization
         if isinstance(result["analysis"], dict):
-            result["analysis"] = {k: v.to_dict() for k, v in result["analysis"].items()}
+            result["analysis"] = {k: v.to_dict()
+                                  for k, v in result["analysis"].items()}
         elif isinstance(result["analysis"], pd.DataFrame):
             if include_zero_as_separate_category:
                 result["analysis"] = result["analysis"].to_dict()
@@ -581,7 +606,8 @@ async def indicator_fill_rate(
                 ].to_dict()
         else:
             # If it's neither a dict nor a DataFrame, convert to a serializable format
-            result["analysis"] = json.loads(json.dumps(result["analysis"], default=str))
+            result["analysis"] = json.loads(
+                json.dumps(result["analysis"], default=str))
 
         # Convert any non-serializable values to None in detailed_data
         def clean_data(data):
@@ -603,7 +629,8 @@ async def indicator_fill_rate(
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"An error occurred: {str(e)}")
 
 
 @app.post("/frequency_table")
@@ -618,7 +645,8 @@ async def frequency_table(
             contents = await file.read()
         elif file_id:
             stored_file = (
-                db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+                db.query(UploadedFile).filter(
+                    UploadedFile.id == file_id).first()
             )
             if not stored_file:
                 raise HTTPException(status_code=404, detail="File not found")
@@ -639,15 +667,18 @@ async def frequency_table(
 
         # Validate input
         if column_to_analyze not in df.columns:
-            raise ValueError(f"Column '{column_to_analyze}' not found in the dataset")
+            raise ValueError(
+                f"Column '{column_to_analyze}' not found in the dataset")
 
         if group_by and group_by not in df.columns:
-            raise ValueError(f"Group by column '{group_by}' not found in the dataset")
+            raise ValueError(f"Group by column '{
+                             group_by}' not found in the dataset")
 
         if filter_by:
             for col in filter_by.keys():
                 if col not in df.columns:
-                    raise ValueError(f"Filter column '{col}' not found in the dataset")
+                    raise ValueError(f"Filter column '{
+                                     col}' not found in the dataset")
 
         # Perform the analysis
         result = analyze_frequency_table(
@@ -657,7 +688,8 @@ async def frequency_table(
         # Convert DataFrame to dict for JSON serialization
         if isinstance(result["analysis"], dict):
             result["analysis"] = {
-                k: (v[0].to_dict(orient="records"), v[1].to_dict(orient="records"))
+                k: (v[0].to_dict(orient="records"),
+                    v[1].to_dict(orient="records"))
                 for k, v in result["analysis"].items()
             }
         else:
@@ -671,7 +703,8 @@ async def frequency_table(
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"An error occurred: {str(e)}")
 
 
 @app.post("/error-handling")

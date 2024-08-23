@@ -4,6 +4,7 @@ from itertools import combinations
 from typing import Union, List, Tuple, Optional, Dict
 from scipy.stats import binom
 
+
 def run_preliminary_tests(df: pd.DataFrame) -> Dict[str, Union[int, str, List[str]]]:
     """
     Run preliminary tests on the uploaded dataset.
@@ -14,7 +15,8 @@ def run_preliminary_tests(df: pd.DataFrame) -> Dict[str, Union[int, str, List[st
     Returns:
     Dict[str, Union[int, str, List[str]]]: A dictionary containing test results
     """
-    results = {"status": 0, "error_code": None, "message": "Success", "warnings": []}
+    results = {"status": 0, "error_code": None,
+               "message": "Success", "warnings": []}
 
     # Check if the dataset has more than one column
     if df.shape[1] == 1:
@@ -34,7 +36,8 @@ def run_preliminary_tests(df: pd.DataFrame) -> Dict[str, Union[int, str, List[st
     missing_columns = df.columns[df.isnull().any()].tolist()
     if missing_columns:
         results["warnings"].append(
-            f"The following columns have missing values: {', '.join(missing_columns)}"
+            f"The following columns have missing values: {
+                ', '.join(missing_columns)}"
         )
 
     # Check for duplicate rows
@@ -75,7 +78,8 @@ def findUniqueIDs(data: List[Dict]) -> List[Dict[str, Union[List[str], int]]]:
     for col in df.columns:
         if df[col].nunique() == len(df):
             uniqueIDcols.append(
-                {"UniqueID": [col], "Numeric_DataTypes": count_numeric_datatypes([col])}
+                {"UniqueID": [col], "Numeric_DataTypes": count_numeric_datatypes([
+                                                                                 col])}
             )
             single_unique_cols.add(col)
 
@@ -94,7 +98,8 @@ def findUniqueIDs(data: List[Dict]) -> List[Dict[str, Union[List[str], int]]]:
 
     # Sort the results by length of UniqueID and number of numeric datatypes
     return sorted(
-        uniqueIDcols, key=lambda x: (len(x["UniqueID"]), -x["Numeric_DataTypes"])
+        uniqueIDcols, key=lambda x: (
+            len(x["UniqueID"]), -x["Numeric_DataTypes"])
     )
 
 
@@ -195,7 +200,8 @@ def process_in_chunks(
         chunk = chunk.replace([np.inf, -np.inf], np.nan)
         is_duplicate = chunk.duplicated(subset=uidCol, keep=False)
         unique_rows.extend(
-            safe_convert(chunk[~chunk.duplicated(subset=uidCol, keep=keep_param)])
+            safe_convert(chunk[~chunk.duplicated(
+                subset=uidCol, keep=keep_param)])
         )
         if export:
             duplicate_rows.extend(safe_convert(chunk[is_duplicate]))
@@ -389,7 +395,8 @@ def analyze_zero_entries(
 
     # Include rows with zero entries
     zero_rows = df[df[colName] == 0]
-    result["zero_entries_table"] = zero_rows.reset_index().to_dict(orient="records")
+    result["zero_entries_table"] = zero_rows.reset_index().to_dict(
+        orient="records")
 
     return result
 
@@ -405,7 +412,8 @@ def apply_invalid_condition(series, condition):
         elif pd.api.types.is_datetime64_any_dtype(series):
             return apply_datetime_condition(series, condition)
         else:
-            raise ValueError(f"Unsupported data type for condition: {series.dtype}")
+            raise ValueError(
+                f"Unsupported data type for condition: {series.dtype}")
 
     operation, threshold = condition.split()
     threshold = float(threshold)
@@ -514,13 +522,15 @@ def indicatorFillRate(
         else:
             invalid = pd.Series(False, index=series.index)
     elif is_string_column(series):
-        zero = pd.Series(False, index=series.index)  # No concept of zero for strings
+        # No concept of zero for strings
+        zero = pd.Series(False, index=series.index)
         if invalid_condition:
             invalid = apply_string_condition(series, invalid_condition)
         else:
             invalid = pd.Series(False, index=series.index)
     elif is_datetime_column(series):
-        zero = pd.Series(False, index=series.index)  # No concept of zero for datetimes
+        # No concept of zero for datetimes
+        zero = pd.Series(False, index=series.index)
         if invalid_condition:
             invalid = apply_datetime_condition(series, invalid_condition)
         else:
@@ -703,10 +713,12 @@ def frequencyTable(
     freqTable["share"] = (freqTable["count"] / total * 100).round(2)
 
     # Sort by count descending (should already be sorted, but this ensures it)
-    freqTable = freqTable.sort_values("count", ascending=False).reset_index(drop=True)
+    freqTable = freqTable.sort_values(
+        "count", ascending=False).reset_index(drop=True)
 
     # Get top n frequent values
-    topNFreq = freqTable if top_n is None or top_n == 0 else freqTable.head(top_n)
+    topNFreq = freqTable if top_n is None or top_n == 0 else freqTable.head(
+        top_n)
 
     return freqTable, topNFreq
 
@@ -747,7 +759,8 @@ def analyze_frequency_table(
             df.groupby([groupBy, colName]).size().reset_index(name="count")
         )
         grouped_freq_table["share %"] = (
-            grouped_freq_table["count"] / grouped_freq_table["count"].sum() * 100
+            grouped_freq_table["count"] /
+            grouped_freq_table["count"].sum() * 100
         ).round(2)
 
         grouped_freq_table = grouped_freq_table.sort_values(
