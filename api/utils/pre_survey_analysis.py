@@ -99,100 +99,100 @@ def generate_meas_disc(true_disc, n_samples):
     return np.array([binom.rvs(n_samples, td) / n_samples for td in true_disc])
 
 
-# def l1_sample_size_calculator(params):
-#     """
-#     Calculate the L1 sample size based on given parameters.
+def l1_sample_size_calculator(params):
+    """
+    Calculate the L1 sample size based on given parameters.
 
-#     Args:
-#     params (dict): A dictionary of input parameters.
+    Args:
+    params (dict): A dictionary of input parameters.
 
-#     Returns:
-#     dict: A dictionary containing status, message, and calculated sample size.
-#     """
-#     error_status, error_message = error_handling(params)
-#     if error_status == 0:
-#         return {"status": 0, "message": error_message}
+    Returns:
+    dict: A dictionary containing status, message, and calculated sample size.
+    """
+    error_status, error_message = error_handling(params)
+    if error_status == 0:
+        return {"status": 0, "message": error_message}
 
-#     n_sub = number_of_subs(
-#         params["level_test"],
-#         params["n_subs_per_block"],
-#         params["n_blocks_per_district"],
-#         params["n_district"],
-#     )
-#     n_punish = int(np.ceil((params["percent_punish"] / 100) * n_sub))
-#     n_guarantee = int(np.ceil((params["percent_guarantee"] / 100) * n_sub))
+    n_sub = number_of_subs(
+        params["level_test"],
+        params["n_subs_per_block"],
+        params["n_blocks_per_district"],
+        params["n_district"],
+    )
+    n_punish = int(np.ceil((params["percent_punish"] / 100) * n_sub))
+    n_guarantee = int(np.ceil((params["percent_guarantee"] / 100) * n_sub))
 
-#     def simulate(n_samples):
-#         true_disc = generate_true_disc(
-#             n_sub,
-#             params["min_disc"],
-#             params["max_disc"],
-#             params["mean_disc"],
-#             params["std_disc"],
-#             params["distribution"],
-#         )
-#         meas_disc = generate_meas_disc(true_disc, n_samples)
-#         worst_offenders = np.argsort(true_disc)[-n_punish:]
-#         punished = np.argsort(meas_disc)[-n_punish:]
-#         return len(set(worst_offenders) & set(punished)) >= n_guarantee
+    def simulate(n_samples):
+        true_disc = generate_true_disc(
+            n_sub,
+            params["min_disc"],
+            params["max_disc"],
+            params["mean_disc"],
+            params["std_disc"],
+            params["distribution"],
+        )
+        meas_disc = generate_meas_disc(true_disc, n_samples)
+        worst_offenders = np.argsort(true_disc)[-n_punish:]
+        punished = np.argsort(meas_disc)[-n_punish:]
+        return len(set(worst_offenders) & set(punished)) >= n_guarantee
 
-#     left, right = params["min_n_samples"], params["max_n_samples"]
-#     while left < right:
-#         mid = (left + right) // 2
-#         success_count = sum(simulate(mid) for _ in range(params["n_simulations"]))
-#         if success_count / params["n_simulations"] >= params["confidence"]:
-#             right = mid
-#         else:
-#             left = mid + 1
+    left, right = params["min_n_samples"], params["max_n_samples"]
+    while left < right:
+        mid = (left + right) // 2
+        success_count = sum(simulate(mid) for _ in range(params["n_simulations"]))
+        if success_count / params["n_simulations"] >= params["confidence"]:
+            right = mid
+        else:
+            left = mid + 1
 
-#     return {
-#         "status": 1,
-#         "message": f"L1 sample size calculated successfully.",
-#         "value": left,
-#     }
+    return {
+        "status": 1,
+        "message": f"L1 sample size calculated successfully.",
+        "value": left,
+    }
 
 
-# def l2_sample_size_calculator(params):
-#     """
-#     Calculate the L2 sample size based on given parameters.
+def l2_sample_size_calculator(params):
+    """
+    Calculate the L2 sample size based on given parameters.
 
-#     Args:
-#     params (dict): A dictionary of input parameters.
+    Args:
+    params (dict): A dictionary of input parameters.
 
-#     Returns:
-#     dict: A dictionary containing status, message, and calculated results including true and measured discrepancies.
-#     """
-#     error_status, error_message = error_handling(params)
-#     if error_status == 0:
-#         return {"status": 0, "message": error_message}
+    Returns:
+    dict: A dictionary containing status, message, and calculated results including true and measured discrepancies.
+    """
+    error_status, error_message = error_handling(params)
+    if error_status == 0:
+        return {"status": 0, "message": error_message}
 
-#     n_sub = number_of_subs(
-#         params["level_test"],
-#         params["n_subs_per_block"],
-#         params["n_blocks_per_district"],
-#         params["n_district"],
-#     )
-#     n_blocks = n_sub // params["n_subs_per_block"]
+    n_sub = number_of_subs(
+        params["level_test"],
+        params["n_subs_per_block"],
+        params["n_blocks_per_district"],
+        params["n_district"],
+    )
+    n_blocks = n_sub // params["n_subs_per_block"]
 
-#     true_disc = generate_true_disc(
-#         n_blocks,
-#         0,
-#         1,
-#         params["average_truth_score"],
-#         params["variance_across_blocks"],
-#         "normal",
-#     )
-#     meas_disc = generate_meas_disc(true_disc, params["total_samples"] // n_blocks)
+    true_disc = generate_true_disc(
+        n_blocks,
+        0,
+        1,
+        params["average_truth_score"],
+        params["variance_across_blocks"],
+        "normal",
+    )
+    meas_disc = generate_meas_disc(true_disc, params["total_samples"] // n_blocks)
 
-#     return {
-#         "status": 1,
-#         "message": "L2 sample size calculated successfully.",
-#         "value": {
-#             "true_disc": true_disc.tolist(),
-#             "meas_disc": meas_disc.tolist(),
-#             "n_samples": params["total_samples"] // n_blocks,
-#         },
-#     }
+    return {
+        "status": 1,
+        "message": "L2 sample size calculated successfully.",
+        "value": {
+            "true_disc": true_disc.tolist(),
+            "meas_disc": meas_disc.tolist(),
+            "n_samples": params["total_samples"] // n_blocks,
+        },
+    }
 
 
 def third_party_sampling_strategy(params):

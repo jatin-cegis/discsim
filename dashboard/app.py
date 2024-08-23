@@ -1031,114 +1031,114 @@ def pre_survey_analysis():
         else:
             return 0, f"Error in error handling: {response.json()['detail']}"
 
-    # def l1_sample_size_calculator():
-    #     st.subheader("L1 Sample Size Calculator")
+    def l1_sample_size_calculator():
+        st.subheader("L1 Sample Size Calculator")
         
-    #     # Input fields
-    #     min_n_samples = st.number_input("Minimum number of samples: The minimum number of data points that a supervisor will sample (typically 1). Range > 0", min_value=1, value=1)
-    #     max_n_samples = st.number_input("Maximum number of samples: The maximum number of data points that a supervisor can sample (if this is not high enough, the guarantee may not be possible and the algorithm will ask you to increase this). Range > min_n_samples", min_value=min_n_samples + 1, value=100)
-    #     n_subs_per_block = st.number_input("Number of subordinates per block: The number of subordinates that one supervisor will test. Range > 0", min_value=1, value=10)
-    #     n_blocks_per_district = st.number_input("Number of blocks per district", min_value=1, value=5)
-    #     n_district = st.number_input("Number of districts", min_value=1, value=1)
-    #     level_test = st.selectbox("Level of test", ["Block", "District", "State"])
-    #     percent_punish = st.slider("Percentage of subordinates to be punished: The percentage of subordinates that will be punished. This should be less than 100% (the total number of subordinates). The higher this number, the easier it is to guarantee that worst offenders will be caught, so increase this if the number of samples being returned is too high. 0 < Range <= 100", min_value=0.0, max_value=100.0, value=10.0)
-    #     percent_guarantee = st.slider("Percentage of worst offenders guaranteed: The percentage of worst offenders that we can guarantee will be present in the set of subordinates that are punished. The closer this number is to n_punish, the more difficult it is to guarantee, so decrease this if the number of samples being returned is too high.  0 < Range <= 100", min_value=0.0, max_value=percent_punish, value=5.0)
-    #     confidence = st.slider("Confidence: The probability that n_guarantee worst offenders will be present in the set of n_punish subordinates with highest discrepancy scores. The higher this probability, the more difficult it is to guarantee, so decrease this if the number of samples being returned is too high. 0 < Range < 1", min_value=0.0, max_value=1.0, value=0.9)
-    #     n_simulations = st.number_input("Number of simulations: By default, this should be set to 100. The number of times the algorithm will be run to estimate the number of samples required. Higher n_simulations will give a more accurate answer, but will take longer to run. Range > 1", min_value=1, value=100)
-    #     min_disc = st.slider("Minimum discrepancy score: Minimum discrepancy score to be used for simulation. By default, set to 0 (no discrepancy between subordinate and supervisor). If you are working with a sector in which you have reason to believe the lowest observed discrepancy scores are higher than 0, set it to that number. 0 < Range < 1", min_value=0.0, max_value=1.0, value=0.0)
-    #     max_disc = st.slider("Maximum discrepancy score: Maximum discrepancy score to be used for simulation. By default, set to 1 (100% discrepancy between subordinate and supervisor). If you are working with a sector in which you have reason to believe the highest observed discrepancy scores are lower than 1, set it to that number. min_disc < Range < 1", min_value=min_disc, max_value=1.0, value=1.0)
-    #     mean_disc = st.slider("Mean discrepancy score", min_value=min_disc, max_value=max_disc, value=(min_disc + max_disc) / 2)
-    #     std_disc = st.slider("Standard deviation of discrepancy score", min_value=0.0, max_value=(max_disc - min_disc) / 2, value=(max_disc - min_disc) / 4)
-    #     distribution = st.selectbox("Distribution: Distribution of discrepancy scores to be used for simulation. Currently, only uniform distribution is implemented. We will implement normal and other distributions in future versions.", ["uniform", "normal"])
+        # Input fields
+        min_n_samples = st.number_input("Minimum number of samples: The minimum number of data points that a supervisor will sample (typically 1). Range > 0", min_value=1, value=1)
+        max_n_samples = st.number_input("Maximum number of samples: The maximum number of data points that a supervisor can sample (if this is not high enough, the guarantee may not be possible and the algorithm will ask you to increase this). Range > min_n_samples", min_value=min_n_samples + 1, value=100)
+        n_subs_per_block = st.number_input("Number of subordinates per block: The number of subordinates that one supervisor will test. Range > 0", min_value=1, value=10)
+        n_blocks_per_district = st.number_input("Number of blocks per district", min_value=1, value=5)
+        n_district = st.number_input("Number of districts", min_value=1, value=1)
+        level_test = st.selectbox("Level of test", ["Block", "District", "State"])
+        percent_punish = st.slider("Percentage of subordinates to be punished: The percentage of subordinates that will be punished. This should be less than 100% (the total number of subordinates). The higher this number, the easier it is to guarantee that worst offenders will be caught, so increase this if the number of samples being returned is too high. 0 < Range <= 100", min_value=0.0, max_value=100.0, value=10.0)
+        percent_guarantee = st.slider("Percentage of worst offenders guaranteed: The percentage of worst offenders that we can guarantee will be present in the set of subordinates that are punished. The closer this number is to n_punish, the more difficult it is to guarantee, so decrease this if the number of samples being returned is too high.  0 < Range <= 100", min_value=0.0, max_value=percent_punish, value=5.0)
+        confidence = st.slider("Confidence: The probability that n_guarantee worst offenders will be present in the set of n_punish subordinates with highest discrepancy scores. The higher this probability, the more difficult it is to guarantee, so decrease this if the number of samples being returned is too high. 0 < Range < 1", min_value=0.0, max_value=1.0, value=0.9)
+        n_simulations = st.number_input("Number of simulations: By default, this should be set to 100. The number of times the algorithm will be run to estimate the number of samples required. Higher n_simulations will give a more accurate answer, but will take longer to run. Range > 1", min_value=1, value=100)
+        min_disc = st.slider("Minimum discrepancy score: Minimum discrepancy score to be used for simulation. By default, set to 0 (no discrepancy between subordinate and supervisor). If you are working with a sector in which you have reason to believe the lowest observed discrepancy scores are higher than 0, set it to that number. 0 < Range < 1", min_value=0.0, max_value=1.0, value=0.0)
+        max_disc = st.slider("Maximum discrepancy score: Maximum discrepancy score to be used for simulation. By default, set to 1 (100% discrepancy between subordinate and supervisor). If you are working with a sector in which you have reason to believe the highest observed discrepancy scores are lower than 1, set it to that number. min_disc < Range < 1", min_value=min_disc, max_value=1.0, value=1.0)
+        mean_disc = st.slider("Mean discrepancy score", min_value=min_disc, max_value=max_disc, value=(min_disc + max_disc) / 2)
+        std_disc = st.slider("Standard deviation of discrepancy score", min_value=0.0, max_value=(max_disc - min_disc) / 2, value=(max_disc - min_disc) / 4)
+        distribution = st.selectbox("Distribution: Distribution of discrepancy scores to be used for simulation. Currently, only uniform distribution is implemented. We will implement normal and other distributions in future versions.", ["uniform", "normal"])
 
-    #     if st.button("Calculate L1 Sample Size"):
-    #         input_data = {
-    #             "min_n_samples": min_n_samples,
-    #             "max_n_samples": max_n_samples,
-    #             "n_subs_per_block": n_subs_per_block,
-    #             "n_blocks_per_district": n_blocks_per_district,
-    #             "n_district": n_district,
-    #             "level_test": level_test,
-    #             "percent_punish": percent_punish,
-    #             "percent_guarantee": percent_guarantee,
-    #             "confidence": confidence,
-    #             "n_simulations": n_simulations,
-    #             "min_disc": min_disc,
-    #             "max_disc": max_disc,
-    #             "mean_disc": mean_disc,
-    #             "std_disc": std_disc,
-    #             "distribution": distribution
-    #         }
+        if st.button("Calculate L1 Sample Size"):
+            input_data = {
+                "min_n_samples": min_n_samples,
+                "max_n_samples": max_n_samples,
+                "n_subs_per_block": n_subs_per_block,
+                "n_blocks_per_district": n_blocks_per_district,
+                "n_district": n_district,
+                "level_test": level_test,
+                "percent_punish": percent_punish,
+                "percent_guarantee": percent_guarantee,
+                "confidence": confidence,
+                "n_simulations": n_simulations,
+                "min_disc": min_disc,
+                "max_disc": max_disc,
+                "mean_disc": mean_disc,
+                "std_disc": std_disc,
+                "distribution": distribution
+            }
             
-    #         # Error handling
-    #         error_status, error_message = check_errors(input_data)
-    #         if error_status == 0:
-    #             st.error(f"Error: {error_message}")
-    #             return
+            # Error handling
+            error_status, error_message = check_errors(input_data)
+            if error_status == 0:
+                st.error(f"Error: {error_message}")
+                return
 
-    #         response = requests.post(L1_SAMPLE_SIZE_ENDPOINT, json=input_data)
+            response = requests.post(L1_SAMPLE_SIZE_ENDPOINT, json=input_data)
             
-    #         if response.status_code == 200:
-    #             result = response.json()
-    #             st.success(f"L1 Sample Size: {result['value']}")
-    #             st.info(result['message'])
-    #         else:
-    #             st.error(f"Error: {response.json()['detail']}")
+            if response.status_code == 200:
+                result = response.json()
+                st.success(f"L1 Sample Size: {result['value']}")
+                st.info(result['message'])
+            else:
+                st.error(f"Error: {response.json()['detail']}")
 
-    # def l2_sample_size_calculator():
-    #     st.subheader("L2 Sample Size Calculator")
+    def l2_sample_size_calculator():
+        st.subheader("L2 Sample Size Calculator")
         
-    #     # Input fields
-    #     total_samples = st.number_input("Total number of samples: The total number of data points that third party will sample (typically between 100-1000). Range > 0", min_value=1, value=100)
-    #     average_truth_score = st.slider("Average truth score: The expected average truth score across all blocks (typically between 0.2-0.5). Ideally, should be based on some real data from the sector in question. Higher is worse (i.e. more mismatches between subordinate and 3P). 0 < Range < 1", min_value=0.0, max_value=1.0, value=0.5)
-    #     variance_across_blocks = st.slider("Variance across blocks: The expected standard deviation of mean truth score across blocks (typically between 0.1-0.5). Ideally, should be based on some real data from the sector in question. The higher this value, the easier it will be to correctly rank the blocks. Range > 0", min_value=0.0, max_value=1.0, value=0.1)
-    #     variance_within_block = st.slider("Variance within block: The expected standard deviation across subordinates within a block (typically between 0.1-0.5). Ideally, should be based on some real data from the sector in question. The higher this value, the more difficult it will be to correctly rank the blocks. Range > 0", min_value=0.0, max_value=1.0, value=0.1)
-    #     level_test = st.selectbox("Level of test: The aggregation level at which 3P will test and give reward/punishment.", ["Block", "District", "State"])
-    #     n_subs_per_block = st.number_input("Number of subordinates per block: The number of subordinates in a block. Range > 1", min_value=1, value=10)
-    #     n_blocks_per_district = st.number_input("Number of blocks per district: The number of blocks in a district. Range >= 1", min_value=1, value=5)
-    #     n_district = st.number_input("Number of districts: Number of districts. Range >= 1", min_value=1, value=1)
-    #     n_simulations = st.number_input("Number of simulations: By default, this should be set to 100. The number of times the algorithm will be run to estimate the number of samples required. Higher n_simulations will give a more accurate answer, but will take longer to run. Range > 1", min_value=1, value=100)
-    #     min_sub_per_block = st.number_input("Minimum subordinates per block: Minimum number of subordinates to be measured in each block. By default, this should be set to 1. 0 < Range < n_sub_per_block", min_value=1, value=1)
+        # Input fields
+        total_samples = st.number_input("Total number of samples: The total number of data points that third party will sample (typically between 100-1000). Range > 0", min_value=1, value=100)
+        average_truth_score = st.slider("Average truth score: The expected average truth score across all blocks (typically between 0.2-0.5). Ideally, should be based on some real data from the sector in question. Higher is worse (i.e. more mismatches between subordinate and 3P). 0 < Range < 1", min_value=0.0, max_value=1.0, value=0.5)
+        variance_across_blocks = st.slider("Variance across blocks: The expected standard deviation of mean truth score across blocks (typically between 0.1-0.5). Ideally, should be based on some real data from the sector in question. The higher this value, the easier it will be to correctly rank the blocks. Range > 0", min_value=0.0, max_value=1.0, value=0.1)
+        variance_within_block = st.slider("Variance within block: The expected standard deviation across subordinates within a block (typically between 0.1-0.5). Ideally, should be based on some real data from the sector in question. The higher this value, the more difficult it will be to correctly rank the blocks. Range > 0", min_value=0.0, max_value=1.0, value=0.1)
+        level_test = st.selectbox("Level of test: The aggregation level at which 3P will test and give reward/punishment.", ["Block", "District", "State"])
+        n_subs_per_block = st.number_input("Number of subordinates per block: The number of subordinates in a block. Range > 1", min_value=1, value=10)
+        n_blocks_per_district = st.number_input("Number of blocks per district: The number of blocks in a district. Range >= 1", min_value=1, value=5)
+        n_district = st.number_input("Number of districts: Number of districts. Range >= 1", min_value=1, value=1)
+        n_simulations = st.number_input("Number of simulations: By default, this should be set to 100. The number of times the algorithm will be run to estimate the number of samples required. Higher n_simulations will give a more accurate answer, but will take longer to run. Range > 1", min_value=1, value=100)
+        min_sub_per_block = st.number_input("Minimum subordinates per block: Minimum number of subordinates to be measured in each block. By default, this should be set to 1. 0 < Range < n_sub_per_block", min_value=1, value=1)
 
-    #     if st.button("Calculate L2 Sample Size"):
-    #         input_data = {
-    #             "total_samples": total_samples,
-    #             "average_truth_score": average_truth_score,
-    #             "variance_across_blocks": variance_across_blocks,
-    #             "variance_within_block": variance_within_block,
-    #             "level_test": level_test,
-    #             "n_subs_per_block": n_subs_per_block,
-    #             "n_blocks_per_district": n_blocks_per_district,
-    #             "n_district": n_district,
-    #             "n_simulations": n_simulations,
-    #             "min_sub_per_block": min_sub_per_block
-    #         }
+        if st.button("Calculate L2 Sample Size"):
+            input_data = {
+                "total_samples": total_samples,
+                "average_truth_score": average_truth_score,
+                "variance_across_blocks": variance_across_blocks,
+                "variance_within_block": variance_within_block,
+                "level_test": level_test,
+                "n_subs_per_block": n_subs_per_block,
+                "n_blocks_per_district": n_blocks_per_district,
+                "n_district": n_district,
+                "n_simulations": n_simulations,
+                "min_sub_per_block": min_sub_per_block
+            }
             
-    #         # Error handling
-    #         error_status, error_message = check_errors(input_data)
-    #         if error_status == 0:
-    #             st.error(f"Error: {error_message}")
-    #             return
+            # Error handling
+            error_status, error_message = check_errors(input_data)
+            if error_status == 0:
+                st.error(f"Error: {error_message}")
+                return
 
-    #         response = requests.post(L2_SAMPLE_SIZE_ENDPOINT, json=input_data)
+            response = requests.post(L2_SAMPLE_SIZE_ENDPOINT, json=input_data)
             
-    #         if response.status_code == 200:
-    #             result = response.json()
-    #             st.success(f"L2 Sample Size: {result['value']['n_samples']}")
-    #             st.info(result['message'])
+            if response.status_code == 200:
+                result = response.json()
+                st.success(f"L2 Sample Size: {result['value']['n_samples']}")
+                st.info(result['message'])
                 
-    #             # Create plot
-    #             fig = go.Figure()
-    #             fig.add_trace(go.Scatter(x=list(range(len(result['value']['true_disc']))), y=result['value']['true_disc'], mode='lines', name='True Discrepancy'))
-    #             fig.add_trace(go.Scatter(x=list(range(len(result['value']['meas_disc']))), y=result['value']['meas_disc'], mode='markers', name='Measured Discrepancy'))
-    #             fig.update_layout(
-    #                 title="True vs Measured Discrepancy",
-    #                 xaxis_title=f"{level_test} Index",
-    #                 yaxis_title="Discrepancy Score"
-    #             )
-    #             st.plotly_chart(fig)
-    #         else:
-    #             st.error(f"Error: {response.json()['detail']}")
+                # Create plot
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=list(range(len(result['value']['true_disc']))), y=result['value']['true_disc'], mode='lines', name='True Discrepancy'))
+                fig.add_trace(go.Scatter(x=list(range(len(result['value']['meas_disc']))), y=result['value']['meas_disc'], mode='markers', name='Measured Discrepancy'))
+                fig.update_layout(
+                    title="True vs Measured Discrepancy",
+                    xaxis_title=f"{level_test} Index",
+                    yaxis_title="Discrepancy Score"
+                )
+                st.plotly_chart(fig)
+            else:
+                st.error(f"Error: {response.json()['detail']}")
 
     def third_party_sampling_strategy():
         st.subheader("3P Sampling Strategy Predictor")
@@ -1195,12 +1195,12 @@ def pre_survey_analysis():
                 st.error(f"Error: {response.json()['detail']}")
 
     # Second level dropdown for Pre-survey Analysis
-    pre_survey_option = st.sidebar.selectbox("Select Pre-survey Analysis", ["3P Sampling Strategy Predictor"])
+    pre_survey_option = st.sidebar.selectbox("Select Pre-survey Analysis", ["L1 Sample Size Calculator", "L2 Sample Size Calculator", "3P Sampling Strategy Predictor"])
             
-    # if pre_survey_option == "L1 Sample Size Calculator":
-    #     l1_sample_size_calculator()
-    # elif pre_survey_option == "L2 Sample Size Calculator":
-    #     l2_sample_size_calculator()
+    if pre_survey_option == "L1 Sample Size Calculator":
+        l1_sample_size_calculator()
+    elif pre_survey_option == "L2 Sample Size Calculator":
+        l2_sample_size_calculator()
     if pre_survey_option == "3P Sampling Strategy Predictor":
         third_party_sampling_strategy()
 

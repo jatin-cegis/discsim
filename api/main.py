@@ -28,16 +28,18 @@ from api.models import (
     L2SampleSizeInput,
     ThirdPartySamplingInput,
 )
-from api.utils import (
+from api.utils.administrative_data_quality_checklist import (
     analyze_frequency_table,
     analyze_indicator_fill_rate,
     analyze_missing_entries,
     analyze_zero_entries,
-    error_handling,
     findUniqueIDs,
     uniqueIDcheck,
     dropExportDuplicates,
     run_preliminary_tests,
+)
+from api.utils.pre_survey_analysis import (
+    error_handling,
     l1_sample_size_calculator,
     l2_sample_size_calculator,
     third_party_sampling_strategy,
