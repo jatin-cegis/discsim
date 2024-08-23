@@ -1018,8 +1018,8 @@ def pre_survey_analysis():
 
     st.sidebar.header("Pre-survey Analysis Options")
 
-    # L1_SAMPLE_SIZE_ENDPOINT = f"{API_BASE_URL}/l1-sample-size"
-    # L2_SAMPLE_SIZE_ENDPOINT = f"{API_BASE_URL}/l2-sample-size"
+    L1_SAMPLE_SIZE_ENDPOINT = f"{API_BASE_URL}/l1-sample-size"
+    L2_SAMPLE_SIZE_ENDPOINT = f"{API_BASE_URL}/l2-sample-size"
     THIRD_PARTY_SAMPLING_ENDPOINT = f"{API_BASE_URL}/third-party-sampling"
     ERROR_HANDLING_ENDPOINT = f"{API_BASE_URL}/error-handling"
 
@@ -1219,4 +1219,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
