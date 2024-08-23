@@ -5,7 +5,6 @@ import plotly.graph_objects as go
 from scipy.stats import binom
 import plotly
 
-
 def error_handling(params):
     """
     Perform basic error checks on the input parameters.
@@ -140,8 +139,7 @@ def l1_sample_size_calculator(params):
     left, right = params["min_n_samples"], params["max_n_samples"]
     while left < right:
         mid = (left + right) // 2
-        success_count = sum(simulate(mid)
-                            for _ in range(params["n_simulations"]))
+        success_count = sum(simulate(mid) for _ in range(params["n_simulations"]))
         if success_count / params["n_simulations"] >= params["confidence"]:
             right = mid
         else:
@@ -184,8 +182,7 @@ def l2_sample_size_calculator(params):
         params["variance_across_blocks"],
         "normal",
     )
-    meas_disc = generate_meas_disc(
-        true_disc, params["total_samples"] // n_blocks)
+    meas_disc = generate_meas_disc(true_disc, params["total_samples"] // n_blocks)
 
     return {
         "status": 1,
@@ -244,8 +241,7 @@ def third_party_sampling_strategy(params):
         fig.add_trace(
             go.Box(
                 y=np.array(result["meas_disc"]).flatten(),
-                name=f"{result['n_sub_tested']} subs<br>{
-                    result['n_samples']} samples",
+                name=f"{result['n_sub_tested']} subs<br>{result['n_samples']} samples",
                 boxpoints="outliers",
             )
         )
