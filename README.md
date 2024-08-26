@@ -18,12 +18,17 @@ DiscSim/
 ├── api/
 │   ├── main.py          # FastAPI endpoints
 │   ├── models.py        # Schemas and classes
-│   ├── utils.py         # Helper/controller functions
+|   ├── database.py      # PostgreSQL schema
+│   ├── utils        # Helper/controller functions
+|   |   ├── administrative_data_quality_checklist.py
+|   |   └── pre_survey_analysis.py
 │   └── run.py           # Contains the run code for the Uvicorn server
 │
 ├── dashboard/
 │   └── app.py           # Streamlit frontend that uses the API endpoints
 │
+├── .flake8              # CLI-based project complexity calculator
+├── analyze_complexity.py  # mccabe-based project complexity calculator
 ├── Dockerfile
 ├── docker-compose.yml
 └── requirements.txt
@@ -34,7 +39,7 @@ DiscSim/
 ### Cloning the Repository
 
 ```bash
-git clone https://github.com/arjun-cegis/DiscSim.git
+git clone https://github.com/cegis-org/discsim.git
 cd DiscSim
 ```
 
