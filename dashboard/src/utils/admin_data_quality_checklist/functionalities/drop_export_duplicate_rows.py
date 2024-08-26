@@ -20,6 +20,8 @@ GET_PROCESSED_DATA_ENDPOINT = f"{API_BASE_URL}/get_processed_data"
 GET_DATAFRAME_ENDPOINT = f"{API_BASE_URL}/get_dataframe"
 
 def drop_export_duplicate_rows(uploaded_file):
+    st.session_state.drop_export_rows_complete = False
+    st.session_state.drop_export_entries_complete = False
     st.subheader("Drop/Export Duplicate Rows")
     st.write("This function checks for fully duplicate rows in the dataset and returns the unique and the duplicate DataFrames individually.")
     with st.expander("ℹ️ Info"):
@@ -55,7 +57,7 @@ def drop_export_duplicate_rows(uploaded_file):
                 if response.status_code == 200:
                     result = response.json()
                     st.success("Processing completed!")
-                    st.session_state.drop_export_complete = True
+                    st.session_state.drop_export_rows_complete = True
 
                     unique_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=unique").json())
                     duplicate_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=duplicate").json())
@@ -80,7 +82,7 @@ def drop_export_duplicate_rows(uploaded_file):
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
-    if st.session_state.get('drop_export_complete', False):
+    if st.session_state.get('drop_export_rows_complete', False):
         # Download Unique Rows
         unique_filename = st.text_input("Enter filename for unique rows (without .csv)", value="unique_rows")
         if st.button("Download Unique Rows"):
@@ -95,7 +97,3 @@ def drop_export_duplicate_rows(uploaded_file):
                 download_url = f"{GET_PROCESSED_DATA_ENDPOINT}?data_type=duplicate&filename={duplicate_filename}.csv"
                 st.markdown(f'<a href="{download_url}" download="{duplicate_filename}.csv">Click here to download duplicate rows</a>', unsafe_allow_html=True)
                 st.warning("Note that this is the CSV containing all the duplicate entries, download the unique deduplicated file for better analysis.")
-    else:
-        # Reset the download options
-        st.session_state.unique_filename = ""
-        st.session_state.duplicate_filename = ""

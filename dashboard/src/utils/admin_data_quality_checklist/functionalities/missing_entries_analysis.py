@@ -19,7 +19,8 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 MISSING_ENTRIES_ENDPOINT = f"{API_BASE_URL}/missing_entries"
 
 def missing_entries_analysis(uploaded_file, df):
-    st.session_state.drop_export_complete = False
+    st.session_state.drop_export_rows_complete = False
+    st.session_state.drop_export_entries_complete = False    
     st.subheader("Missing Entries Analysis")
     st.write("This function returns the count and percentage of missing values for a given variable, with optional filtering and grouping by a categorical variable.")
     with st.expander("ℹ️ Info"):

@@ -18,7 +18,8 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 INDICATOR_FILL_RATE_ENDPOINT = f"{API_BASE_URL}/indicator_fill_rate"
 
 def indicator_fill_rate_analysis(uploaded_file, df):
-    st.session_state.drop_export_complete = False
+    st.session_state.drop_export_rows_complete = False
+    st.session_state.drop_export_entries_complete = False
     st.subheader("Indicator Fill Rate Analysis")
     st.write("This function analyzes a variable for missing, zero, and other invalid values, returning counts and percentages in a table format, with optional filtering or grouping by a categorical variable and customizable invalid value conditions (e.g., value > x).")
     with st.expander("ℹ️ Info"):

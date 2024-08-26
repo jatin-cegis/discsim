@@ -13,8 +13,10 @@ def initialize_states():
         st.session_state.previous_uploaded_file = None
     if "navbar_selection" not in st.session_state:
         st.session_state.navbar_selection = "Unique ID Verifier"
-    if "drop_export_complete" not in st.session_state:
-        st.session_state.drop_export_complete = False
+    if "drop_export_entries_complete" not in st.session_state:
+        st.session_state.drop_export_entries_complete = False
+    if "drop_export_rows_complete" not in st.session_state:
+        st.session_state.drop_export_rows_complete = False
     if "previous_file_option" not in st.session_state:
         st.session_state.previous_file_option = None
     if "uploaded_file" not in st.session_state:

@@ -16,7 +16,8 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 FIND_UNIQUE_IDS_ENDPOINT = f"{API_BASE_URL}/find_unique_ids"
 
 def unique_id_verifier(uploaded_file):
-    st.session_state.drop_export_complete = False
+    st.session_state.drop_export_rows_complete = False
+    st.session_state.drop_export_entries_complete = False
     st.subheader("Unique ID Verifier")
     st.write("Use this feature to let the system identify the list of unique IDs in the dataset.")
     with st.expander("ℹ️ Info"):

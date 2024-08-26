@@ -16,7 +16,8 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 UNIQUE_ID_CHECK_ENDPOINT = f"{API_BASE_URL}/unique_id_check"
 
 def check_specific_columns_as_unique_id(df):
-    st.session_state.drop_export_complete = False
+    st.session_state.drop_export_rows_complete = False
+    st.session_state.drop_export_entries_complete = False
     st.subheader("Check Specific Columns as Unique ID")
     st.write("Use this feature to check whether the column(s) you think form the unique ID is indeed the unique ID.")
     with st.expander("ℹ️ Info"):
