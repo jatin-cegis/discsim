@@ -116,13 +116,6 @@ You can run the API server and the Streamlit frontend in a few different ways.
 streamlit run dashboard/app.py
 ```
 
-### In Action!
-
-Here's a picture of the Streamlit Frontend and the API servers(using Docker) running parallelly in a split terminal
-
-![image](https://github.com/user-attachments/assets/f3513373-5ea9-4ffb-bcd1-779902de6f43)
-
-
 ## Contributing
 
 Feel free to fork this repository and submit pull requests. For major changes, please open an issue first to discuss what you would like to change.
