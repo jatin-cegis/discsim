@@ -3,7 +3,7 @@ import requests
 import sys
 import os
 from dotenv import load_dotenv
-from src.utils.admin_data_quality_checklist.helpers.get_relevant_function import get_relevant_functionality
+from src.utils.admin_data_quality_checklist.helpers.functionality_map import get_relevant_functionality
 
 load_dotenv()
 
