@@ -44,7 +44,7 @@ def unique_id_verifier(uploaded_file):
                         df = pd.DataFrame(unique_ids)
                         df['UniqueID'] = df['UniqueID'].apply(lambda x: ' + '.join(x))
                         df = df.rename(columns={'UniqueID': 'Unique ID', 'Numeric_DataTypes': 'Is Numeric'})
-                        st.dataframe(df, use_container_width=True)
+                        st.dataframe(df, use_container_width=True, hide_index=True)
                     else:
                         st.warning("No unique identifiers found. All columns or combinations have at least one duplicate.")
                 else:

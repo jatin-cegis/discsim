@@ -128,7 +128,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                                 if data[category]:
                                     st.write(f"{category.capitalize()} data (up to 10 rows):")
                                     category_df = pd.DataFrame(data[category])
-                                    st.dataframe(category_df, use_container_width=True)
+                                    st.dataframe(category_df, use_container_width=True, hide_index=True)
                                 else:
                                     st.write(f"No {category} data found.")
                         else:
@@ -136,7 +136,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                                 if data[category]:
                                     st.write(f"{category.capitalize()} data (up to 10 rows):")
                                     category_df = pd.DataFrame(data[category])
-                                    st.dataframe(category_df, use_container_width=True)
+                                    st.dataframe(category_df, use_container_width=True, hide_index=True)
                                 else:
                                     st.write(f"No {category} data found.")
 
@@ -180,13 +180,13 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                         for group, analysis in result["analysis"].items():
                             st.write(f"Group: {group}")
                             analysis_df = pd.DataFrame(analysis)
-                            st.dataframe(analysis_df, use_container_width=True)
+                            st.dataframe(analysis_df, use_container_width=True, hide_index=True)
                             display_detailed_data(result["detailed_data"][group])
                             st.write("---")
                     else:
                         st.write("Indicator Fill Rate:")
                         analysis_df = pd.DataFrame(result["analysis"])
-                        st.dataframe(analysis_df, use_container_width=True)
+                        st.dataframe(analysis_df, use_container_width=True, hide_index=True)
                         # Create a simple pie chart of percentages
                         fig = plot_pie_chart(labels=analysis_df['Category'], 
                                             values=analysis_df['Percentage'], 

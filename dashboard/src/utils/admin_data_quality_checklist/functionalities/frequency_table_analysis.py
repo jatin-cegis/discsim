@@ -74,13 +74,13 @@ def frequency_table_analysis(uploaded_file, df):
                             top_n_df = pd.DataFrame(top_n_table)
                             top_n_df = top_n_df.sort_values("count", ascending=False)
                             top_n_df = top_n_df[[column_to_analyze, group_by, "count", "share %"]]
-                            st.dataframe(top_n_df, use_container_width=True)
+                            st.dataframe(top_n_df, use_container_width=True, hide_index=True)
                         else:
                             st.write("All Frequency Values:")
                             full_df = pd.DataFrame(full_table)
                             full_df = full_df[[column_to_analyze, group_by, "count", "share %"]]
                             full_df = full_df.sort_values("count", ascending=False)
-                            st.dataframe(full_df, use_container_width=True)
+                            st.dataframe(full_df, use_container_width=True, hide_index=True)
 
                     else:
                         full_table, top_n_table = result["analysis"]
@@ -89,12 +89,12 @@ def frequency_table_analysis(uploaded_file, df):
                             top_n_df = pd.DataFrame(top_n_table)
                             top_n_df = top_n_df.sort_values("count", ascending=False)
                             top_n_df.columns = [column_to_analyze, "count", "share %"]
-                            st.dataframe(top_n_df, use_container_width=True)
+                            st.dataframe(top_n_df, use_container_width=True, hide_index=True)
                         else:
                             full_df = pd.DataFrame(full_table)
                             full_df.columns = [column_to_analyze, "count", "share %"]
                             full_df = full_df.sort_values("count", ascending=False)
-                            st.dataframe(full_df, use_container_width=True)
+                            st.dataframe(full_df, use_container_width=True, hide_index=True)
 
                     if result["filtered"]:
                         st.info(f"Results are filtered by {filter_by_col} = {filter_by_value}")

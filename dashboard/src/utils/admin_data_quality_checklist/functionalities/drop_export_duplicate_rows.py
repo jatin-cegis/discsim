@@ -72,11 +72,11 @@ def drop_export_duplicate_rows(uploaded_file):
                     
                     # Display dataframes
                     st.subheader("Unique Rows")
-                    st.dataframe(unique_df)
+                    st.dataframe(unique_df, hide_index=True)
 
                     if export:
                         st.subheader("Duplicate Rows")
-                        st.dataframe(duplicate_df)
+                        st.dataframe(duplicate_df, hide_index=True)
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:

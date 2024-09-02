@@ -80,7 +80,7 @@ def missing_entries_analysis(uploaded_file, df):
                             'text': 'center',
                             'align-items': 'center',
                             'justify-content': 'center'
-                        }, subset=['Missing Count', 'Missing Percentage']), use_container_width=True)
+                        }, subset=['Missing Count', 'Missing Percentage']), use_container_width=True, hide_index=True)
                         
                         # Create a 100% stacked column chart
                         data = pd.DataFrame([(group, percentage, 100-percentage if percentage is not None else 0) 
@@ -123,7 +123,7 @@ def missing_entries_analysis(uploaded_file, df):
                                 st.warning(f"Column '{column_to_analyze}' not found in the missing entries table. Displaying unsorted data.")
                             
                             st.write("Rows with Missing Entries:")
-                            st.dataframe(missing_entries_df, use_container_width=True)
+                            st.dataframe(missing_entries_df, use_container_width=True, hide_index=True)
                     else:
                         st.error("The 'missing_entries_table' key is not present in the API response.")
 

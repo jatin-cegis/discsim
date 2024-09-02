@@ -69,7 +69,7 @@ def zero_entries_analysis(uploaded_file, df):
                                         for group, (count, percentage) in result["analysis"].items()]
                         grouped_df = pd.DataFrame(grouped_data)
                         grouped_df = grouped_df.sort_values("Zero Count", ascending=False)
-                        st.dataframe(grouped_df, use_container_width=True)
+                        st.dataframe(grouped_df, use_container_width=True, hide_index=True)
                         
                         data = pd.DataFrame([(group, percentage, 100-percentage) for group, (count, percentage) in result["analysis"].items()],
                                             columns=[group_column_name, 'Zero', 'Non-Zero'])
@@ -84,7 +84,7 @@ def zero_entries_analysis(uploaded_file, df):
                     else:
                         count, percentage = result["analysis"]
                         analysis_df = pd.DataFrame([{"Zero Count": count, "Zero Percentage": f"{percentage:.2f}%"}])
-                        st.dataframe(analysis_df, use_container_width=True)
+                        st.dataframe(analysis_df, use_container_width=True, hide_index=True)
                         
                         labels = ['Zero', 'Non-Zero']
                         values = [percentage, 100-percentage]
@@ -102,7 +102,7 @@ def zero_entries_analysis(uploaded_file, df):
                         else:
                             st.warning(f"Column '{column_to_analyze}' not found in the zero entries table. Displaying unsorted data.")
                         st.write("Rows with Zero Entries:")
-                        st.dataframe(zero_entries_df, use_container_width=True)
+                        st.dataframe(zero_entries_df, use_container_width=True, hide_index=True)
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:
