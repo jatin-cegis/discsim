@@ -64,11 +64,13 @@ def sidebar_functionality_select():
         "Choose a functionality",
         list(FUNCTIONALITY_MAP.keys())
     )
+    st.session_state.navbar_selection = functionality
     return functionality
 
 def execute_functionality(functionality, uploaded_file, df=None):
-    func_info = FUNCTIONALITY_MAP[functionality]
-    if func_info["requires_df"]:
-        return func_info["function"](uploaded_file, df)
-    else:
-        return func_info["function"](uploaded_file)
+    if st.session_state.navbar_selection == functionality:
+        func_info = FUNCTIONALITY_MAP[functionality]
+        if func_info["requires_df"]:
+            return func_info["function"](uploaded_file, df)
+        else:
+            return func_info["function"](uploaded_file)

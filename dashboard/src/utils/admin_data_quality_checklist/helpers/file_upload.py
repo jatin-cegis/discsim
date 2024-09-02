@@ -51,7 +51,7 @@ def handle_file_upload(file_option):
                 return None
 
             file_names = [file["filename"] for file in files]
-            selected_file = st.selectbox("Select a previously uploaded file", file_names)
+            selected_file = st.sidebar.selectbox("Select a previously uploaded file", file_names)
 
             if selected_file:
                 try:
