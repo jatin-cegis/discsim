@@ -4,7 +4,6 @@ import sys
 import os
 from src.utils.state_management import initialize_states, reset_session_states, reset_upload
 from src.utils.admin_data_quality_checklist.helpers.file_upload import handle_file_upload
-from src.utils.admin_data_quality_checklist.helpers.display_preview import display_data_preview
 from src.utils.admin_data_quality_checklist.helpers.preliminary_tests import run_preliminary_tests
 from src.utils.admin_data_quality_checklist.helpers.functionality_map import execute_functionality, sidebar_functionality_select
 
@@ -39,8 +38,6 @@ def admin_data_quality_check():
             
         # Run preliminary tests
         if run_preliminary_tests(uploaded_file):
-            # Display data preview
-            display_data_preview(uploaded_file)
             
             # Sidebar for functionality selection
             functionality = sidebar_functionality_select()
