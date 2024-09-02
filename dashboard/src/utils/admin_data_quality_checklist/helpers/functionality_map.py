@@ -17,7 +17,7 @@ FUNCTIONALITY_MAP = {
     "Check Specific Columns as Unique ID": {
         "function": check_specific_columns_as_unique_id,
         "keywords": [],
-        "requires_df": True
+        "requires_df": "only_df"
     },
     "Drop/Export Duplicate Entries": {
         "function": drop_export_duplicate_entries,
@@ -62,7 +62,8 @@ def sidebar_functionality_select():
     st.sidebar.header("Select Functionality")
     functionality = st.sidebar.selectbox(
         "Choose a functionality",
-        list(FUNCTIONALITY_MAP.keys())
+        list(FUNCTIONALITY_MAP.keys()),
+        index=list(FUNCTIONALITY_MAP.keys()).index(st.session_state.navbar_selection)  # Use current state as default
     )
     st.session_state.navbar_selection = functionality
     return functionality
@@ -70,7 +71,9 @@ def sidebar_functionality_select():
 def execute_functionality(functionality, uploaded_file, df=None):
     if st.session_state.navbar_selection == functionality:
         func_info = FUNCTIONALITY_MAP[functionality]
-        if func_info["requires_df"]:
+        if func_info["function"] == check_specific_columns_as_unique_id:
+            return func_info["function"](df)
+        elif func_info["function"] != check_specific_columns_as_unique_id and func_info["requires_df"]:
             return func_info["function"](uploaded_file, df)
         else:
             return func_info["function"](uploaded_file)
