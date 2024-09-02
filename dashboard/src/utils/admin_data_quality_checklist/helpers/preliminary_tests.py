@@ -24,7 +24,6 @@ def run_preliminary_tests(uploaded_file):
             if response.status_code == 200:
                 result = response.json()
                 if result["status"] == 0:
-                    st.success("Preliminary tests passed successfully!")
                     if result["warnings"]:
                         st.warning("Warnings:")
                         for warning in result["warnings"]:
