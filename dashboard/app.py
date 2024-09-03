@@ -13,7 +13,11 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Construct the path to logo.png
 logo_path = os.path.join(script_dir, "logo.jpg")
+logo_page_path = os.path.join(script_dir, "logo_page.png")
+im_page = Image.open(logo_page_path)
 im = Image.open(logo_path)
+
+st.logo(im_page)
 
 st.set_page_config(
         page_title="DiscSim | CEGIS",
