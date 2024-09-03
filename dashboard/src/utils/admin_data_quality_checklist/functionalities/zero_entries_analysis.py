@@ -21,10 +21,8 @@ ZERO_ENTRIES_ENDPOINT = f"{API_BASE_URL}/zero_entries"
 def zero_entries_analysis(uploaded_file, df):
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
-    st.subheader("Zero Entries Analysis")
-    st.write("The function returns the count and percentage of zero values for a variable, with optional filtering and grouping by a categorical variable.")
-    with st.expander("ℹ️ Info"):
-        st.markdown("""
+    title_info_markdown = """
+        The function returns the count and percentage of zero values for a variable, with optional filtering and grouping by a categorical variable.
         - Analyzes zero entries in a specified column of the dataset.
         - Options:
         - Select a column to analyze
@@ -33,7 +31,8 @@ def zero_entries_analysis(uploaded_file, df):
         - Provides the count and percentage of zero entries.
         - Displays a table of rows with zero entries.
         - Valid input format: CSV file
-        """)
+    """
+    st.subheader("Zero Entries Analysis", help=title_info_markdown)
 
     column_to_analyze = st.selectbox("Select column to analyze", df.columns.tolist())
     group_by = st.selectbox("Group by (optional): Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.", ["None"] + df.columns.tolist())

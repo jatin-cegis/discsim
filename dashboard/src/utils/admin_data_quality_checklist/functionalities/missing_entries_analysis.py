@@ -21,15 +21,14 @@ MISSING_ENTRIES_ENDPOINT = f"{API_BASE_URL}/missing_entries"
 def missing_entries_analysis(uploaded_file, df):
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False    
-    st.subheader("Missing Entries Analysis")
-    st.write("This function returns the count and percentage of missing values for a given variable, with optional filtering and grouping by a categorical variable.")
-    with st.expander("ℹ️ Info"):
-        st.markdown("""
+    title_info_markdown = """
+        This function returns the count and percentage of missing values for a given variable, with optional filtering and grouping by a categorical variable.
         - Analyzes the dataset to find missing entries in a specified column.
         - Optionally groups or filters the analysis by other categorical columns.
         - Provides a table of rows with missing entries.
         - Valid input format: CSV file
-        """)
+    """
+    st.subheader("Missing Entries Analysis", help=title_info_markdown)
 
     column_to_analyze = st.selectbox("Select column to analyze for missing entries:", options=df.columns.tolist(), index=0)
     group_by = st.selectbox("Group by (optional): Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.", options=["None"] + df.columns.tolist(), index=0)

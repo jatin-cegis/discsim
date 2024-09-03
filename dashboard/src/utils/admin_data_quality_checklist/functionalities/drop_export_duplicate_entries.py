@@ -22,10 +22,8 @@ GET_DATAFRAME_ENDPOINT = f"{API_BASE_URL}/get_dataframe"
 def drop_export_duplicate_entries(uploaded_file, df):
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
-    st.subheader("Drop/Export Duplicate Entries")
-    st.write("The function identifies duplicate entries in the dataset and returns the unique and the duplicate DataFrames individually.")
-    with st.expander("ℹ️ Info"):
-        st.markdown("""
+    title_info_markdown = """
+        The function identifies duplicate entries in the dataset and returns the unique and the duplicate DataFrames individually.
         - Removes duplicate rows based on specified unique identifier column(s).
         - Options:
         - Select which duplicate to keep: first, last, or none.
@@ -33,7 +31,8 @@ def drop_export_duplicate_entries(uploaded_file, df):
         - Supports processing large files in chunks for better performance.
         - Handles infinity and NaN values by replacing them with NaN.
         - Valid input format: CSV file
-        """)
+    """
+    st.subheader("Drop/Export Duplicate Entries", help=title_info_markdown)
     uid_col = st.multiselect("Select unique identifier column(s)", df.columns.tolist())
     kept_row = st.selectbox("Which duplicate to keep: first(keeps the first occurrence), last(keeps the last occurrence), or none(removes all occurrences)", ["first", "last", "none"])
     export = st.checkbox("Export duplicates", value=True)

@@ -18,16 +18,16 @@ UNIQUE_ID_CHECK_ENDPOINT = f"{API_BASE_URL}/unique_id_check"
 def check_specific_columns_as_unique_id(df):
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
-    st.subheader("Check Specific Columns as Unique ID")
-    st.write("Use this feature to check whether the column(s) you think form the unique ID is indeed the unique ID.")
-    with st.expander("ℹ️ Info"):
-        st.markdown("""
+    title_info_markdown = """
+        Use this feature to check whether the column(s) you think form the unique ID is indeed the unique ID.
         - Verifies if selected column(s) can serve as a unique identifier for the dataset.
         - You can select up to 4 columns to check.
         - The function will return whether the selected column(s) can work as a unique ID.
         - Valid input format: CSV file
         - A minimum of ONE column must be selected.
-        """)
+    """
+    st.subheader("Check Specific Columns as Unique ID", help=title_info_markdown)
+    
     columns = st.multiselect("Select columns to check", options=df.columns.tolist())
     
     if columns and st.button("Check Unique ID"):

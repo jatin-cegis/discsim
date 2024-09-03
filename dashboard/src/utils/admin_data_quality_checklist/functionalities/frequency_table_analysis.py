@@ -17,24 +17,18 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 FREQUENCY_TABLE_ENDPOINT = f"{API_BASE_URL}/frequency_table"
 
 def frequency_table_analysis(uploaded_file, df):
-    st.subheader("Frequency Table Analysis")
-    st.write(
-        "This function takes a variable as a user input and returns the frequency table of number and share of observations of each unique value present in the variable."
-    )
-    with st.expander("ℹ️ Info"):
-        st.markdown(
-            """
-            - Generates a frequency table for a specified column in the dataset.
-            - Options:
-            - Select a column to analyze
-            - Specify the number of top frequent values to display separately
-            - Optionally group by a categorical variable
-            - Optionally filter by a categorical variable
-            - Provides counts and percentages for each unique value in the selected column.
-            - Valid input format: CSV file
-            """
-        )
-
+    title_info_markdown = '''
+        This function takes a variable as a user input and returns the frequency table of number and share of observations of each unique value present in the variable.
+        - Generates a frequency table for a specified column in the dataset.
+        - Options:
+        - Select a column to analyze
+        - Specify the number of top frequent values to display separately
+        - Optionally group by a categorical variable
+        - Optionally filter by a categorical variable
+        - Provides counts and percentages for each unique value in the selected column.
+        - Valid input format: CSV file
+    '''
+    st.subheader("Frequency Table Analysis", help=title_info_markdown)
     column_to_analyze = st.selectbox("Select column to analyze", df.columns.tolist())
     top_n = st.number_input(
         "Number of top frequent values to display(0 for all values)", min_value=0, value=0

@@ -18,16 +18,15 @@ FIND_UNIQUE_IDS_ENDPOINT = f"{API_BASE_URL}/find_unique_ids"
 def unique_id_verifier(uploaded_file):
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
-    st.subheader("Unique ID Verifier")
-    st.write("Use this feature to let the system identify the list of unique IDs in the dataset.")
-    with st.expander("ℹ️ Info"):
-        st.markdown("""
+    title_info_markdown = """
+        Use this feature to let the system identify the list of unique IDs in the dataset.
         - Numerical columns, or combinations which are comprised of more numerical columns, will be given precedence while displaying the output.
         - If you have also used any of the other modules before, you can also use the same dataset used there by clicking the "Use existing dataset" button below.
         - Valid input format for dataset: xlsx or csv
         - A minimum of ONE column has to be selected
         - Max no. of selectable columns: As many as the number of column headers
-        """)
+    """
+    st.subheader("Unique ID Verifier", help=title_info_markdown)
     if st.button("Find Unique IDs"):
         with st.spinner("Finding unique IDs..."):
             try:

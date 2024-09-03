@@ -9,18 +9,16 @@ from src.utils.pre_survey_analysis.third_party_sampling_strategy import third_pa
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def pre_survey_analysis():
-    st.title("Pre-survey Analysis")
-
-    # Homepage content
-    st.write("""
-    Welcome to the Pre-survey Analysis module. This module helps you determine optimal sample sizes and sampling strategies for your survey. Choose from the following options:
-    
-    1. L1 Sample Size Calculator: Estimate the supervisor sample size required to guarantee identification of outlier subordinates.
-    2. L2 Sample Size Calculator: Calculate the optimal sample size for measuring discrepancy at different administrative levels.
-    3. 3P Sampling Strategy Predictor: Determine the best strategy for third-party sampling given resource constraints.
-    
-    Select an option from the sidebar to get started.
-    """)
+    title_info_markdown = '''
+        Welcome to the Pre-survey Analysis module. This module helps you determine optimal sample sizes and sampling strategies for your survey. Choose from the following options:
+        
+        1. L1 Sample Size Calculator: Estimate the supervisor sample size required to guarantee identification of outlier subordinates.
+        2. L2 Sample Size Calculator: Calculate the optimal sample size for measuring discrepancy at different administrative levels.
+        3. 3P Sampling Strategy Predictor: Determine the best strategy for third-party sampling given resource constraints.
+        
+        Select an option from the sidebar to get started.
+    '''
+    st.title("Pre-survey Analysis", help=title_info_markdown)
 
     st.sidebar.header("Pre-survey Analysis Options")
 

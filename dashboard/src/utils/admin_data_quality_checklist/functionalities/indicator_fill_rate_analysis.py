@@ -20,10 +20,8 @@ INDICATOR_FILL_RATE_ENDPOINT = f"{API_BASE_URL}/indicator_fill_rate"
 def indicator_fill_rate_analysis(uploaded_file, df):
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
-    st.subheader("Indicator Fill Rate Analysis")
-    st.write("This function analyzes a variable for missing, zero, and other invalid values, returning counts and percentages in a table format, with optional filtering or grouping by a categorical variable and customizable invalid value conditions (e.g., value > x).")
-    with st.expander("ℹ️ Info"):
-        st.markdown("""
+    title_info_markdown = """
+        This function analyzes a variable for missing, zero, and other invalid values, returning counts and percentages in a table format, with optional filtering or grouping by a categorical variable and customizable invalid value conditions (e.g., value > x).
         - Analyzes the fill rate and data quality of a specified column in the dataset.
         - Options:
         - Select a column to analyze
@@ -33,7 +31,8 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         - Provides counts and percentages for missing, zero, invalid, and valid values.
         - Displays samples of missing, zero, invalid, and valid data.
         - Valid input format: CSV file
-        """)
+    """
+    st.subheader("Indicator Fill Rate Analysis", help=title_info_markdown)
 
     def is_numeric_column(series):
         return pd.api.types.is_numeric_dtype(series) or series.dtype == 'object' and series.str.isnumeric().all()

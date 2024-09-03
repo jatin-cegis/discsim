@@ -22,10 +22,8 @@ GET_DATAFRAME_ENDPOINT = f"{API_BASE_URL}/get_dataframe"
 def drop_export_duplicate_rows(uploaded_file):
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
-    st.subheader("Drop/Export Duplicate Rows")
-    st.write("This function checks for fully duplicate rows in the dataset and returns the unique and the duplicate DataFrames individually.")
-    with st.expander("ℹ️ Info"):
-        st.markdown("""
+    title_info_markdown = """
+        This function checks for fully duplicate rows in the dataset and returns the unique and the duplicate DataFrames individually.
         - Analyzes the dataset to find completely duplicated rows.
         - Removes duplicate rows based on all columns.
         - Options:
@@ -33,7 +31,8 @@ def drop_export_duplicate_rows(uploaded_file):
         - Export duplicates to a separate file.
         - Provides the count and percentage of duplicate rows in the dataset.
         - Valid input format: CSV file
-        """)
+    """
+    st.subheader("Drop/Export Duplicate Rows", help=title_info_markdown)    
 
     kept_row = st.selectbox("Which duplicate to keep: first(keeps the first occurrence), last(keeps the last occurrence), or none(removes all occurrences)", ["first", "last", "none"])
     export = st.checkbox("Export duplicates", value=True)
