@@ -10,3 +10,4 @@ psycopg2-binary
 sqlalchemy
 mccabe
 python-dotenv
+streamlit-navigation-bar
