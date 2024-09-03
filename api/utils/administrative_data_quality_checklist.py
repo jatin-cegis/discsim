@@ -67,6 +67,16 @@ def findUniqueIDs(data: List[Dict]) -> List[Dict[str, Union[List[str], int]]]:
     uniqueIDcols = []
     single_unique_cols = set()
 
+    def get_column_with_dtype(column: str) -> str:
+        """Get column name with its datatype in brackets."""
+        dtype = df[column].dtype
+        if pd.api.types.is_numeric_dtype(dtype):
+            return f"{column} (numeric)"
+        elif pd.api.types.is_string_dtype(dtype):
+            return f"{column} (string)"
+        else:
+            return f"{column} (other)"
+
     def count_numeric_datatypes(columns: List[str]) -> int:
         """Count the number of numeric datatypes in given columns."""
         return sum(df[col].dtype in ["int64", "float64"] for col in columns)
@@ -75,7 +85,7 @@ def findUniqueIDs(data: List[Dict]) -> List[Dict[str, Union[List[str], int]]]:
     for col in df.columns:
         if df[col].nunique() == len(df):
             uniqueIDcols.append(
-                {"UniqueID": [col], "Numeric_DataTypes": count_numeric_datatypes([col])}
+                {"UniqueID": [get_column_with_dtype(col)], "Numeric_DataTypes": count_numeric_datatypes([col])}
             )
             single_unique_cols.add(col)
 
@@ -87,7 +97,7 @@ def findUniqueIDs(data: List[Dict]) -> List[Dict[str, Union[List[str], int]]]:
                     num_numeric_datatypes = count_numeric_datatypes(combo)
                     uniqueIDcols.append(
                         {
-                            "UniqueID": list(combo),
+                            "UniqueID": [get_column_with_dtype(col) for col in combo],
                             "Numeric_DataTypes": num_numeric_datatypes,
                         }
                     )
