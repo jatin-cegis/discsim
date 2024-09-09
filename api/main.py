@@ -98,8 +98,8 @@ async def upload_file(
 
 @app.get("/list_files")
 async def list_files(db: Session = Depends(get_db)):
-    files = db.query(UploadedFile.id, UploadedFile.filename).all()
-    return [{"id": file.id, "filename": file.filename} for file in files]
+    files = db.query(UploadedFile.id, UploadedFile.filename, UploadedFile.upload_datetime).all()
+    return [{"id": file.id, "filename": file.filename, "upload_datetime": file.upload_datetime.isoformat()} for file in files]
 
 
 @app.get("/get_file/{file_id}")
@@ -111,6 +111,7 @@ async def get_file(file_id: int, db: Session = Depends(get_db)):
     # Return file content and filename as JSON
     return {
         "filename": file.filename,
+        "datetime": file.upload_datetime.isoformat(),
         "content": file.content.decode(
             "utf-8"
         ),  # Decode binary content for JSON compatibility
