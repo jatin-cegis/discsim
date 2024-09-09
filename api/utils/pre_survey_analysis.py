@@ -1,9 +1,9 @@
-import json
 import numpy as np
-from typing import List, Dict
-import plotly.graph_objects as go
 from scipy.stats import binom
-import plotly
+import matplotlib.pyplot as plt
+import base64
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from io import BytesIO
 
 def error_handling(params):
     """
@@ -44,7 +44,7 @@ def error_handling(params):
 
 def number_of_subs(level_test, n_subs_per_block, n_blocks_per_district, n_district):
     """
-    Calculate the number of subjects based on the level of testing.
+    Calculate the number of subjects and blocks based on the level of testing.
 
     Args:
     level_test (str): The level at which the test is being conducted ('Block', 'District', or 'State').
@@ -53,15 +53,71 @@ def number_of_subs(level_test, n_subs_per_block, n_blocks_per_district, n_distri
     n_district (int): Number of districts.
 
     Returns:
-    int: The total number of subjects for the given level.
+    tuple: A tuple containing the number of subjects and the number of blocks.
     """
-    if level_test == "Block":
-        return n_subs_per_block
-    elif level_test == "District":
-        return n_subs_per_block * n_blocks_per_district
-    elif level_test == "State":
-        return n_subs_per_block * n_blocks_per_district * n_district
+    if level_test == 'Block':
+        return n_subs_per_block, n_blocks_per_district
+    elif level_test == 'District':
+        return n_subs_per_block * n_blocks_per_district, n_district
+    elif level_test == 'State':
+        return n_subs_per_block * n_blocks_per_district * n_district, 1
+    else:
+        print('\'level test\' should be either \'Block\' or \'District\' or \'State\'')
+        return None, None
 
+def get_real_ts(n_blocks, average_truth_score, variance_across_blocks, n_sub_per_block, variance_within_block):
+    block_mean_ts = generate_true_disc(n_blocks, 0, 1, average_truth_score, variance_across_blocks, 'normal')
+    real_order = list(np.argsort(block_mean_ts))
+    real_ts = [generate_true_disc(n_sub_per_block, 0, 1, block_mean_ts[block], variance_within_block, 'normal') for block in range(n_blocks)]
+    return real_order, real_ts
+
+def get_list_n_sub(n_sub_per_block, min_sub_per_block):
+    return list(range(min_sub_per_block, n_sub_per_block + 1))
+
+def get_list_n_samples(total_samples, n_blocks, list_n_sub):
+    return [int(total_samples/(n_blocks*n_sub)) for n_sub in list_n_sub]
+
+def get_meas_ts(n_blocks, n_sub_per_block, n_sub_test, n_samples, real_ts, random_state):
+    meas_ts = np.zeros(n_blocks)
+    for block in range(n_blocks):
+        subs_test = np.random.choice(list(range(n_sub_per_block)), size=n_sub_test)
+        meas_ts[block] = np.mean([binom.rvs(n_samples, real_ts[block][sub], random_state=random_state)/n_samples for sub in subs_test])
+    return meas_ts
+
+def make_plot(meas_order, list_n_sub, list_n_samples, n_blocks, percent_blocks_plot):
+    fig, ax1 = plt.subplots(figsize=[10, 8])
+    n_cond = len(list_n_sub)
+    n_blocks_plot = max(1, int(n_blocks * percent_blocks_plot / 100))
+    colors = plt.cm.Reds(np.linspace(0.3, 1, n_blocks_plot))
+
+    mean_rank = np.zeros([n_blocks_plot, n_cond])
+    std_rank = np.zeros([n_blocks_plot, n_cond])
+    for block in range(n_blocks_plot):
+        mean_rank[block, :] = np.array([n_blocks - np.mean(meas_order[i][block, :] + 1) for i in range(n_cond)])
+        std_rank[block, :] = np.array([np.std(meas_order[i][block, :]) for i in range(n_cond)])
+        ax1.errorbar(list_n_sub, mean_rank[block, :], std_rank[block, :],
+                     color=colors[block], marker='o', elinewidth=0.5, capsize=2,
+                     label=f'Real rank of unit with measured rank = {n_blocks - block}')
+
+    ax1.plot(list_n_sub, np.ones(n_cond)*n_blocks, color='b', linestyle='--', linewidth=1.5, label='Highest possible rank (k)')
+    ax1.legend(fontsize=14)
+    ax1.set_xticks(list_n_sub)
+    ax1.set_xlabel('Number of L0s (m) per block tested by supervisor', fontsize=14)
+    ax1.set_ylabel('Real rank of blocks with\nthe best measured truth scores', fontsize=14)
+    ax1.set_ylim([0, n_blocks + 1])
+
+    divider = make_axes_locatable(ax1)
+    ax2 = divider.append_axes("bottom", size="5%", pad=0.7)
+    ax2.spines['top'].set_visible(False)
+    ax2.spines['right'].set_visible(False)
+    ax2.spines['left'].set_visible(False)
+    ax2.set_xticks(list_n_sub)
+    ax2.set_xticklabels(list_n_samples)
+    ax2.set_xlim(ax1.get_xlim())
+    ax2.set_xlabel('Number of samples (n) per L0', fontsize=14)
+    ax2.yaxis.set_visible(False)
+
+    return fig
 
 def generate_true_disc(n, min_disc, max_disc, mean_disc, std_disc, distribution):
     """
@@ -194,80 +250,54 @@ def l2_sample_size_calculator(params):
         },
     }
 
-
 def third_party_sampling_strategy(params):
     error_status, error_message = error_handling(params)
     if error_status == 0:
         return {"status": 0, "message": error_message}
 
-    n_sub = number_of_subs(
+    n_sub_per_block, n_blocks = number_of_subs(
         params["level_test"],
         params["n_subs_per_block"],
         params["n_blocks_per_district"],
-        params["n_district"],
+        params["n_district"]
     )
-    n_blocks = n_sub // params["n_subs_per_block"]
 
-    # Generate true discrepancy scores
-    true_disc = generate_true_disc(
+    real_order, real_ts = get_real_ts(
         n_blocks,
-        0,
-        1,
         params["average_truth_score"],
         params["variance_across_blocks"],
-        "normal",
+        n_sub_per_block,
+        params["variance_within_block"]
     )
 
-    results = []
-    for n_sub_tested in range(1, params["n_subs_per_block"] + 1):
-        n_samples = params["total_samples"] // (n_blocks * n_sub_tested)
-        meas_disc = np.array(
-            [
-                generate_meas_disc(true_disc, n_samples)
-                for _ in range(params["n_simulations"])
-            ]
-        )
-        results.append(
-            {
-                "n_sub_tested": n_sub_tested,
-                "n_samples": n_samples,
-                "meas_disc": meas_disc.tolist(),
-            }
-        )
+    list_n_sub = get_list_n_sub(n_sub_per_block, params["min_sub_per_block"])
+    list_n_samples = get_list_n_samples(params["total_samples"], n_blocks, list_n_sub)
 
-    # Create box-and-whisker plot
-    fig = go.Figure()
-    for result in results:
-        fig.add_trace(
-            go.Box(
-                y=np.array(result["meas_disc"]).flatten(),
-                name=f"{result['n_sub_tested']} subs<br>{result['n_samples']} samples",
-                boxpoints="outliers",
-            )
-        )
+    meas_order = {}
+    for i, n_sub in enumerate(list_n_sub):
+        n_samples = list_n_samples[i]
+        meas_order[i] = np.zeros([n_blocks, params["n_simulations"]])
+        
+        for sim in range(params["n_simulations"]):
+            meas_order[i][:, sim] = np.argsort(get_meas_ts(n_blocks, n_sub_per_block, n_sub, n_samples, real_ts, sim))
 
-    fig.add_trace(
-        go.Scatter(
-            y=true_disc,
-            mode="markers",
-            marker=dict(color="red", size=10, symbol="star"),
-            name="True Discrepancy",
-        )
-    )
+    fig = make_plot(meas_order, list_n_sub, list_n_samples, n_blocks, params["percent_blocks_plot"])
 
-    fig.update_layout(
-        title="Measured vs True Discrepancy",
-        xaxis_title="Number of Subordinates Tested per Block",
-        yaxis_title="Discrepancy Score",
-        boxmode="group",
-    )
+    # Convert plot to base64 string
+    buf = BytesIO()
+    fig.savefig(buf, format="png")
+    plt.close(fig)  # Close the figure to free up memory
+    plot_data = base64.b64encode(buf.getbuffer()).decode("ascii")
 
+    # Convert numpy types to Python types for JSON serialization
     return {
         "status": 1,
         "message": "3P Sampling Strategy calculated successfully.",
         "value": {
-            "true_disc": true_disc.tolist(),
-            "results": results,
-            "figure": json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder),
+            "real_order": [int(x) for x in real_order],
+            "meas_order": {str(k): v.tolist() for k, v in meas_order.items()},
+            "list_n_sub": [int(x) for x in list_n_sub],
+            "list_n_samples": [int(x) for x in list_n_samples],
+            "figure": plot_data
         },
     }

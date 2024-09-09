@@ -1,3 +1,4 @@
+Pillow
 fastapi
 uvicorn
 pandas
@@ -11,3 +12,4 @@ sqlalchemy
 mccabe
 python-dotenv
 streamlit-navigation-bar
+matplotlib

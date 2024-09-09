@@ -1,9 +1,10 @@
-import json
+import base64
+from io import BytesIO
 import streamlit as st
 import requests
 import sys
 import os
-import plotly.graph_objects as go
+from PIL import Image
 from dotenv import load_dotenv
 from src.utils.pre_survey_analysis.error_handling import check_errors
 
@@ -61,11 +62,8 @@ def third_party_sampling_strategy():
             st.info(result['message'])
             
             # Display the figure
-            fig = go.Figure(json.loads(result['value']['figure']))
-            fig.update_layout(
-                xaxis_title="Number of Subordinates Tested per Block",
-                yaxis_title="Discrepancy Score"
-            )
-            st.plotly_chart(fig)
+            image_data = base64.b64decode(result['value']['figure'])
+            image = Image.open(BytesIO(image_data))
+            st.image(image, caption="3P Sampling Strategy Plot", use_column_width=True)
         else:
             st.error(f"Error: {response.json()['detail']}")
