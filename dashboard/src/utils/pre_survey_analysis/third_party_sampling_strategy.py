@@ -4,6 +4,7 @@ import streamlit as st
 import requests
 import sys
 import os
+import plotly.graph_objects as go
 from PIL import Image
 from dotenv import load_dotenv
 from src.utils.pre_survey_analysis.error_handling import check_errors
@@ -61,9 +62,14 @@ def third_party_sampling_strategy():
             st.success("3P Sampling Strategy Prediction Complete")
             st.info(result['message'])
             
-            # Display the figure
-            image_data = base64.b64decode(result['value']['figure'])
+            # Display the interactive Plotly figure
+            fig = go.Figure(result['value']['figure'])
+            st.plotly_chart(fig, use_container_width=True)
+
+            # Display the figure image 
+            image_data = base64.b64decode(result['value']['figureImg'])
             image = Image.open(BytesIO(image_data))
             st.image(image, caption="3P Sampling Strategy Plot", use_column_width=True)
+
         else:
             st.error(f"Error: {response.json()['detail']}")

@@ -1,7 +1,9 @@
+import json
 import numpy as np
 from scipy.stats import binom
 import matplotlib.pyplot as plt
 import base64
+import plotly.graph_objects as go
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from io import BytesIO
 
@@ -250,6 +252,58 @@ def l2_sample_size_calculator(params):
         },
     }
 
+def make_plot_plotly(meas_order, list_n_sub, list_n_samples, n_blocks, percent_blocks_plot):
+    n_cond = len(list_n_sub)
+    n_blocks_plot = max(1, int(n_blocks * percent_blocks_plot / 100))
+    
+    fig = go.Figure()
+    
+    for block in range(n_blocks_plot):
+        mean_rank = np.array([n_blocks - np.mean(meas_order[i][block, :] + 1) for i in range(n_cond)])
+        std_rank = np.array([np.std(meas_order[i][block, :]) for i in range(n_cond)])
+        
+        fig.add_trace(go.Scatter(
+            x=list_n_sub,
+            y=mean_rank,
+            error_y=dict(type='data', array=std_rank, visible=True),
+            mode='markers+lines',
+            name=f'Real rank of unit with measured rank = {n_blocks - block}'
+        ))
+    
+    fig.add_trace(go.Scatter(
+        x=list_n_sub,
+        y=[n_blocks] * n_cond,
+        mode='lines',
+        line=dict(color='blue', dash='dash'),
+        name='Highest possible rank (k)'
+    ))
+    
+    fig.update_layout(
+        title='3P Sampling Strategy Prediction',
+        xaxis_title='Number of L0s (m) per block tested by supervisor',
+        yaxis_title='Real rank of blocks with the best measured truth scores',
+        xaxis=dict(tickmode='array', tickvals=list_n_sub, ticktext=list_n_sub),
+        yaxis=dict(range=[0, n_blocks + 1]),
+        legend_title='Ranks',
+        hovermode='closest'
+    )
+    
+    # Add secondary x-axis for number of samples
+    fig.update_layout(
+        xaxis2=dict(
+            overlaying='x',
+            side='bottom',
+            tickmode='array',
+            tickvals=list_n_sub,
+            ticktext=list_n_samples,
+            title='Number of samples (n) per L0',
+            anchor='y',
+            showgrid=False
+        )
+    )
+    
+    return fig
+
 def third_party_sampling_strategy(params):
     error_status, error_message = error_handling(params)
     if error_status == 0:
@@ -281,15 +335,14 @@ def third_party_sampling_strategy(params):
         for sim in range(params["n_simulations"]):
             meas_order[i][:, sim] = np.argsort(get_meas_ts(n_blocks, n_sub_per_block, n_sub, n_samples, real_ts, sim))
 
-    fig = make_plot(meas_order, list_n_sub, list_n_samples, n_blocks, params["percent_blocks_plot"])
-
+    figImg = make_plot(meas_order, list_n_sub, list_n_samples, n_blocks, params["percent_blocks_plot"])
+    fig = make_plot_plotly(meas_order, list_n_sub, list_n_samples, n_blocks, params["percent_blocks_plot"])
+    
     # Convert plot to base64 string
     buf = BytesIO()
-    fig.savefig(buf, format="png")
-    plt.close(fig)  # Close the figure to free up memory
+    figImg.savefig(buf, format="png")
+    plt.close(figImg)  # Close the figure to free up memory
     plot_data = base64.b64encode(buf.getbuffer()).decode("ascii")
-
-    # Convert numpy types to Python types for JSON serialization
     return {
         "status": 1,
         "message": "3P Sampling Strategy calculated successfully.",
@@ -298,6 +351,7 @@ def third_party_sampling_strategy(params):
             "meas_order": {str(k): v.tolist() for k, v in meas_order.items()},
             "list_n_sub": [int(x) for x in list_n_sub],
             "list_n_samples": [int(x) for x in list_n_samples],
-            "figure": plot_data
+            "figure": json.loads(fig.to_json()),
+            "figureImg": plot_data
         },
     }
