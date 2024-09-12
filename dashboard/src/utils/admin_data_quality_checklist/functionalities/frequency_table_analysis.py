@@ -28,7 +28,8 @@ def frequency_table_analysis(uploaded_file, df):
         - Provides counts and percentages for each unique value in the selected column.
         - Valid input format: CSV file
     '''
-    st.subheader("Frequency Table Analysis", help=title_info_markdown)
+    st.markdown("<h2 style='text-align: center;'>Frequency Table Analysis</h2>", unsafe_allow_html=True, help=title_info_markdown)
+
     column_to_analyze = st.selectbox("Select column to analyze", df.columns.tolist())
     top_n = st.number_input(
         "Number of top frequent values to display(0 for all values)", min_value=0, value=0

@@ -32,7 +32,8 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         - Displays samples of missing, zero, invalid, and valid data.
         - Valid input format: CSV file
     """
-    st.subheader("Indicator Fill Rate Analysis", help=title_info_markdown)
+    st.markdown("<h2 style='text-align: center;'>Indicator Fill Rate Analysis</h2>", unsafe_allow_html=True, help=title_info_markdown)
+
 
     def is_numeric_column(series):
         return pd.api.types.is_numeric_dtype(series) or series.dtype == 'object' and series.str.isnumeric().all()

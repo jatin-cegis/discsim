@@ -20,7 +20,6 @@ GET_PROCESSED_DATA_ENDPOINT = f"{API_BASE_URL}/get_processed_data"
 GET_DATAFRAME_ENDPOINT = f"{API_BASE_URL}/get_dataframe"
 
 def drop_export_duplicate_rows(uploaded_file):
-    st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
     title_info_markdown = """
         This function checks for fully duplicate rows in the dataset and returns the unique and the duplicate DataFrames individually.
@@ -32,10 +31,14 @@ def drop_export_duplicate_rows(uploaded_file):
         - Provides the count and percentage of duplicate rows in the dataset.
         - Valid input format: CSV file
     """
-    st.subheader("Drop/Export Duplicate Rows", help=title_info_markdown)    
-
-    kept_row = st.selectbox("Which duplicate to keep: first(keeps the first occurrence), last(keeps the last occurrence), or none(removes all occurrences)", ["first", "last", "none"])
-    export = st.checkbox("Export duplicates", value=True)
+    st.markdown("<h2 style='text-align: center;'>Drop/Export Duplicate Rows</h2>", unsafe_allow_html=True, help=title_info_markdown)
+    col1, col2, col21 = st.columns(3)
+    with col1:
+        kept_row = st.selectbox("Which duplicate to keep", ["first", "last", "none"], help="first(keeps the first occurrence), last(keeps the last occurrence), or none(removes all occurrences)")
+    with col2:
+        export = st.checkbox("Export duplicates", value=True)
+    with col21:
+        st.write("")
 
     if st.button("Process Duplicates"):
         with st.spinner("Processing..."):
@@ -55,14 +58,12 @@ def drop_export_duplicate_rows(uploaded_file):
 
                 if response.status_code == 200:
                     result = response.json()
-                    st.success("Processing completed!")
                     st.session_state.drop_export_rows_complete = True
 
                     unique_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=unique").json())
                     duplicate_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=duplicate").json())
                     
                     # Visualize the results
-                    total_rows = len(unique_df) + len(duplicate_df)
                     unique_rows = len(unique_df)
                     duplicate_rows = len(duplicate_df)
 
@@ -71,28 +72,33 @@ def drop_export_duplicate_rows(uploaded_file):
                     
                     # Display dataframes
                     st.subheader("Unique Rows")
-                    st.dataframe(unique_df, hide_index=True)
+                    with st.expander("Unique Rows:"):
+                        st.dataframe(unique_df, hide_index=True)
 
-                    if export:
+                    if export and len(duplicate_df)>0:
                         st.subheader("Duplicate Rows")
-                        st.dataframe(duplicate_df, hide_index=True)
+                        with st.expander("Duplicate Rows:"):
+                            st.dataframe(duplicate_df, hide_index=True)
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
     if st.session_state.get('drop_export_rows_complete', False):
-        # Download Unique Rows
-        unique_filename = st.text_input("Enter filename for unique rows (without .csv)", value="unique_rows")
-        if st.button("Download Unique Rows"):
-            download_url = f"{GET_PROCESSED_DATA_ENDPOINT}?data_type=unique&filename={unique_filename}.csv"
-            st.markdown(f'<a href="{download_url}" download="{unique_filename}.csv">Click here to download unique rows</a>', unsafe_allow_html=True)
-            st.warning("Please consider uploading the newly downloaded deduplicated file for further analysis.")
+        col3, col4 = st.columns(2)
+        with col3: 
+            # Download Unique Rows
+            unique_filename = st.text_input("Enter filename for unique rows (without .csv)", value="unique_rows")
+            if st.button("Download Unique Rows"):
+                download_url = f"{GET_PROCESSED_DATA_ENDPOINT}?data_type=unique&filename={unique_filename}.csv"
+                st.markdown(f'<a href="{download_url}" download="{unique_filename}.csv">Click here to download unique rows</a>', unsafe_allow_html=True)
+                st.warning("Please consider uploading the newly downloaded deduplicated file for further analysis.")
         
-        # Download Duplicate Rows (if exported)
-        if export:
-            duplicate_filename = st.text_input("Enter filename for duplicate rows (without .csv)", value="duplicate_rows")
-            if st.button("Download Duplicate Rows"):
-                download_url = f"{GET_PROCESSED_DATA_ENDPOINT}?data_type=duplicate&filename={duplicate_filename}.csv"
-                st.markdown(f'<a href="{download_url}" download="{duplicate_filename}.csv">Click here to download duplicate rows</a>', unsafe_allow_html=True)
-                st.warning("Note that this is the CSV containing all the duplicate entries, download the unique deduplicated file for better analysis.")
+        with col4:
+            # Download Duplicate Rows (if exported)
+            if export:
+                duplicate_filename = st.text_input("Enter filename for duplicate rows (without .csv)", value="duplicate_rows")
+                if st.button("Download Duplicate Rows"):
+                    download_url = f"{GET_PROCESSED_DATA_ENDPOINT}?data_type=duplicate&filename={duplicate_filename}.csv"
+                    st.markdown(f'<a href="{download_url}" download="{duplicate_filename}.csv">Click here to download duplicate rows</a>', unsafe_allow_html=True)
+                    st.warning("Note that this is the CSV containing all the duplicate entries, download the unique deduplicated file for better analysis.")

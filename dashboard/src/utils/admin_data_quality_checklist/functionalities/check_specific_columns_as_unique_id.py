@@ -26,7 +26,7 @@ def check_specific_columns_as_unique_id(df):
         - Valid input format: CSV file
         - A minimum of ONE column must be selected.
     """
-    st.subheader("Check Specific Columns as Unique ID", help=title_info_markdown)
+    st.markdown("<h2 style='text-align: center;'>Check Specific Columns as Unique ID</h2>", unsafe_allow_html=True, help=title_info_markdown)
     
     columns = st.multiselect("Select columns to check", options=df.columns.tolist())
     

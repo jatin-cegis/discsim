@@ -26,7 +26,8 @@ def unique_id_verifier(uploaded_file):
         - A minimum of ONE column has to be selected
         - Max no. of selectable columns: As many as the number of column headers
     """
-    st.subheader("Unique ID Verifier", help=title_info_markdown)
+    st.markdown("<h2 style='text-align: center;'>Unique ID Verifier</h2>", unsafe_allow_html=True, help=title_info_markdown)
+
     if st.button("Find Unique IDs"):
         with st.spinner("Finding unique IDs..."):
             try:

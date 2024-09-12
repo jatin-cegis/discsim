@@ -12,8 +12,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def admin_data_quality_check():
 
-    st.markdown("<h2 style='text-align: center;'>DiscSim Module 4: Administrative Data Quality Checks</h2>", unsafe_allow_html=True)
-
     # File selection
     file_option = st.sidebar.radio("Choose an option:", ("Upload a new file", "Select a previously uploaded file"))
 

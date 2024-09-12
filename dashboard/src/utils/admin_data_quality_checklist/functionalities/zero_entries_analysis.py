@@ -32,7 +32,7 @@ def zero_entries_analysis(uploaded_file, df):
         - Displays a table of rows with zero entries.
         - Valid input format: CSV file
     """
-    st.subheader("Zero Entries Analysis", help=title_info_markdown)
+    st.markdown("<h2 style='text-align: center;'>Zero Entries Analysis</h2>", unsafe_allow_html=True, help=title_info_markdown)
 
     column_to_analyze = st.selectbox("Select column to analyze", df.columns.tolist())
     group_by = st.selectbox("Group by (optional): Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.", ["None"] + df.columns.tolist())

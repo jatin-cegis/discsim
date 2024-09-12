@@ -28,7 +28,10 @@ def missing_entries_analysis(uploaded_file, df):
         - Provides a table of rows with missing entries.
         - Valid input format: CSV file
     """
-    st.subheader("Missing Entries Analysis", help=title_info_markdown)
+    st.markdown("<h2 style='text-align: center;'>Missing Entries Analysis</h2>", unsafe_allow_html=True, help=title_info_markdown)
+    col1, col2, col3 = st.columns(3)
+    
+
 
     column_to_analyze = st.selectbox("Select column to analyze for missing entries:", options=df.columns.tolist(), index=0)
     group_by = st.selectbox("Group by (optional): Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.", options=["None"] + df.columns.tolist(), index=0)
