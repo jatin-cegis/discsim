@@ -17,7 +17,7 @@ L2_SAMPLE_SIZE_ENDPOINT = f"{API_BASE_URL}/l2-sample-size"
 
 
 def l2_sample_size_calculator():
-    st.subheader("L2 Sample Size Calculator")
+    st.markdown("<h2 style='text-align: center;'>L2 Sample Size Calculator", unsafe_allow_html=True)
         
     # Input fields
     total_samples = st.number_input("Total number of samples", help="The total number of data points that third party will sample (typically between 100-1000). Range > 0", min_value=1, value=100)

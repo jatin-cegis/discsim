@@ -19,57 +19,68 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 THIRD_PARTY_SAMPLING_ENDPOINT = f"{API_BASE_URL}/third-party-sampling"
 
 def third_party_sampling_strategy():
-    st.subheader("3P Sampling Strategy Predictor")
+    st.markdown("<h2 style='text-align: center;'>Third-Party Sampling Strategy Predictor", unsafe_allow_html=True)
     
-    # Input fields
-    total_samples = st.number_input("Total number of samples", help="The total number of data points that third party will sample (typically between 100-1000). Range > 0", min_value=1, value=100)
-    average_truth_score = st.slider("Average truth score", help="The expected average truth score across all blocks (typically between 0.2-0.5). Ideally, should be based on some real data from the sector in question. Higher is worse (i.e. more mismatches between subordinate and 3P). 0 < Range < 1", min_value=0.0, max_value=1.0, value=0.5)
-    variance_across_blocks = st.slider("Variance across blocks", help="The expected standard deviation of mean truth score across blocks (typically between 0.1-0.5). Ideally, should be based on some real data from the sector in question. The higher this value, the easier it will be to correctly rank the blocks. Range > 0", min_value=0.0, max_value=1.0, value=0.1)
-    variance_within_block = st.slider("Variance within block", help="The expected standard deviation across subordinates within a block (typically between 0.1-0.5). Ideally, should be based on some real data from the sector in question. The higher this value, the more difficult it will be to correctly rank the blocks. Range > 0", min_value=0.0, max_value=1.0, value=0.1)
-    level_test = st.selectbox("Level of test", ["Block", "District", "State"], help="The aggregation level at which 3P will test and give reward/punishment.")
-    n_subs_per_block = st.number_input("Number of subordinates per block", help="The number of subordinates in a block. Range > 1", min_value=1, value=10)
-    n_blocks_per_district = st.number_input("Number of blocks per district", help="The number of blocks in a district. Range >= 1", min_value=1, value=5)
-    n_district = st.number_input("Number of districts", help="Number of districts. Range >= 1", min_value=1, value=1)
-    n_simulations = st.number_input("Number of simulations", help="By default, this should be set to 100. The number of times the algorithm will be run to estimate the number of samples required. Higher n_simulations will give a more accurate answer, but will take longer to run. Range > 1", min_value=1, value=100)
-    min_sub_per_block = st.number_input("Minimum subordinates per block", help="Minimum number of subordinates to be measured in each block. By default, this should be set to 1. 0 < Range < n_sub_per_block", min_value=1, value=1)
-    percent_blocks_plot = st.slider("Percentage of blocks to plot", min_value=0.0, max_value=100.0, value=10.0)
-
-    if st.button("Predict 3P Sampling Strategy"):
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        total_samples = st.number_input("Total samples", min_value=1, value=100, help="Total data points sampled (100-1000). Range > 0")
+    with col2:
+        avg_score = st.slider("Avg truth score", 0.0, 1.0, 0.5, help="Expected avg truth score (0.2-0.5). Higher is worse. 0 < Range < 1")
+    with col3:
+        var_across = st.slider("Variance across blocks", 0.0, 1.0, 0.1, help="Expected std dev of mean truth score across blocks (0.1-0.5). Range > 0")
+    
+    col4, col5, col6 = st.columns(3)
+    with col4:
+        var_within = st.slider("Variance within block", 0.0, 1.0, 0.1, help="Expected std dev within a block (0.1-0.5). Range > 0")
+    with col5:
+        level_test = st.selectbox("Level of test", ["Block", "District", "State"], help="Aggregation level for 3P testing")
+    with col6:
+        subs_per_block = st.number_input("Subordinates/block", min_value=1, value=10, help="Number of subordinates in a block. Range > 1")
+    
+    col7, col8, col9 = st.columns(3)
+    with col7:
+        blocks_per_district = st.number_input("Blocks/district", min_value=1, value=5, help="Number of blocks in a district. Range >= 1")
+    with col8:
+        districts = st.number_input("Districts", min_value=1, value=1, help="Number of districts. Range >= 1")
+    with col9:
+        n_simulations = st.number_input("Simulations", min_value=1, value=100, help="Simulation runs (default 100). Higher n gives more accuracy but takes longer. Range > 1")
+    
+    col10, col11, col12 = st.columns(3)
+    with col10:
+        min_sub_per_block = st.number_input("Min subordinates/block", min_value=1, value=1, help="Min subordinates measured per block (default 1). 0 < Range < n_sub_per_block")
+    with col11:
+        percent_blocks_plot = st.slider("% blocks to plot", 0.0, 100.0, 10.0)
+    with col12:
+        st.write("")  # Empty column for balance
+    
+    if st.button("Predict Third-Party Sampling Strategy"):
         input_data = {
-            "total_samples": total_samples,
-            "average_truth_score": average_truth_score,
-            "variance_across_blocks": variance_across_blocks,
-            "variance_within_block": variance_within_block,
-            "level_test": level_test,
-            "n_subs_per_block": n_subs_per_block,
-            "n_blocks_per_district": n_blocks_per_district,
-            "n_district": n_district,
-            "n_simulations": n_simulations,
-            "min_sub_per_block": min_sub_per_block,
+            "total_samples": total_samples, "average_truth_score": avg_score,
+            "variance_across_blocks": var_across, "variance_within_block": var_within,
+            "level_test": level_test, "n_subs_per_block": subs_per_block,
+            "n_blocks_per_district": blocks_per_district, "n_district": districts,
+            "n_simulations": n_simulations, "min_sub_per_block": min_sub_per_block,
             "percent_blocks_plot": percent_blocks_plot
         }
         
-        # Error handling
         error_status, error_message = check_errors(input_data)
         if error_status == 0:
             st.error(f"Error: {error_message}")
             return
 
-        response = requests.post(THIRD_PARTY_SAMPLING_ENDPOINT, json=input_data)
+        with st.spinner('Analyzing... Please wait.'):
+            response = requests.post(THIRD_PARTY_SAMPLING_ENDPOINT, json=input_data)
         
         if response.status_code == 200:
             result = response.json()
-            st.success("3P Sampling Strategy Prediction Complete")
             st.info(result['message'])
             
-            # Display the interactive Plotly figure
             fig = go.Figure(result['value']['figure'])
             st.plotly_chart(fig, use_container_width=True)
 
-            # Display the figure image 
             image_data = base64.b64decode(result['value']['figureImg'])
             image = Image.open(BytesIO(image_data))
-            st.image(image, caption="3P Sampling Strategy Plot", use_column_width=True)
-
+            st.image(image, caption="Third-Party Sampling Strategy Plot", use_column_width=True)
         else:
             st.error(f"Error: {response.json()['detail']}")
+    

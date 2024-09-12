@@ -15,7 +15,7 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 L1_SAMPLE_SIZE_ENDPOINT = f"{API_BASE_URL}/l1-sample-size"
 
 def l1_sample_size_calculator():
-    st.subheader("L1 Sample Size Calculator")
+    st.markdown("<h2 style='text-align: center;'>L1 Sample Size Calculator", unsafe_allow_html=True)
     
     # Input fields
     min_n_samples = st.number_input("Minimum number of samples", help="The minimum number of data points that a supervisor will sample (typically 1). Range > 0", min_value=1, value=1)
