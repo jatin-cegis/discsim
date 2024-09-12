@@ -33,14 +33,23 @@ def zero_entries_analysis(uploaded_file, df):
         - Valid input format: CSV file
     """
     st.markdown("<h2 style='text-align: center;'>Zero Entries Analysis</h2>", unsafe_allow_html=True, help=title_info_markdown)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        column_to_analyze = st.selectbox("Select column to analyze", df.columns.tolist())
+    with col2:
+        group_by = st.selectbox("Group by (optional)", ["None"] + df.columns.tolist(), help="Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.")
+    with col3:
+        filter_by_col = st.selectbox("Filter by (optional)", ["None"] + df.columns.tolist(), help="Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze missing entries for a specific condition.")
 
-    column_to_analyze = st.selectbox("Select column to analyze", df.columns.tolist())
-    group_by = st.selectbox("Group by (optional): Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.", ["None"] + df.columns.tolist())
-    filter_by_col = st.selectbox("Filter by (optional): Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze missing entries for a specific condition.", ["None"] + df.columns.tolist())
-
+    col4, col5, col6 = st.columns(3)
     if filter_by_col != "None":
-        filter_by_value = st.selectbox("Filter value", df[filter_by_col].unique().tolist())
-
+        with col4:
+            filter_by_value = st.selectbox("Filter value", df[filter_by_col].unique().tolist())
+        with col5:
+            st.write("")
+        with col6:
+            st.write("")
+        
     if st.button("Analyze Zero Entries"):
         with st.spinner("Analyzing zero entries..."):
             try:
@@ -59,8 +68,6 @@ def zero_entries_analysis(uploaded_file, df):
                 
                 if response.status_code == 200:
                     result = response.json()
-                    st.success("Analysis complete!")
-                    
                     if result["grouped"]:
                         st.write("Zero entries by group:")
                         group_column_name = group_by  # Use the selected group-by column name
@@ -99,9 +106,9 @@ def zero_entries_analysis(uploaded_file, df):
                         if column_to_analyze in zero_entries_df.columns:
                             zero_entries_df = zero_entries_df.sort_values(column_to_analyze, ascending=False)
                         else:
-                            st.warning(f"Column '{column_to_analyze}' not found in the zero entries table. Displaying unsorted data.")
-                        st.write("Rows with Zero Entries:")
-                        st.dataframe(zero_entries_df, use_container_width=True, hide_index=True)
+                            st.warning(f"Zero entries not found.")
+                        with st.expander("Rows with Zero Entries:"):
+                            st.dataframe(zero_entries_df, use_container_width=True, hide_index=True)
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:
