@@ -17,6 +17,33 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 
 INDICATOR_FILL_RATE_ENDPOINT = f"{API_BASE_URL}/indicator_fill_rate"
 
+def is_numeric_column(series):
+    return pd.api.types.is_numeric_dtype(series) or series.dtype == 'object' and series.str.isnumeric().all()
+
+def is_string_column(series):
+    return pd.api.types.is_string_dtype(series)
+
+def is_datetime_column(series):
+    if pd.api.types.is_datetime64_any_dtype(series):
+        return True
+    
+    # Try to parse the first non-null value as a date
+    first_valid = series.first_valid_index()
+    if first_valid is not None:
+        try:
+            pd.to_datetime(series[first_valid])
+            return True
+        except:
+            pass
+    
+    return False
+
+def get_numeric_operations():
+    return ['<', '<=', '>', '>=', '==', '!=']
+
+def get_string_operations():
+    return ['Contains', 'Does not contain']
+
 def indicator_fill_rate_analysis(uploaded_file, df):
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
@@ -33,67 +60,55 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         - Valid input format: CSV file
     """
     st.markdown("<h2 style='text-align: center;'>Indicator Fill Rate Analysis</h2>", unsafe_allow_html=True, help=title_info_markdown)
-
-
-    def is_numeric_column(series):
-        return pd.api.types.is_numeric_dtype(series) or series.dtype == 'object' and series.str.isnumeric().all()
-
-    def is_string_column(series):
-        return pd.api.types.is_string_dtype(series)
-
-    def is_datetime_column(series):
-        if pd.api.types.is_datetime64_any_dtype(series):
-            return True
-        
-        # Try to parse the first non-null value as a date
-        first_valid = series.first_valid_index()
-        if first_valid is not None:
-            try:
-                pd.to_datetime(series[first_valid])
-                return True
-            except:
-                pass
-        
-        return False
-
-    def get_numeric_operations():
-        return ['<', '<=', '>', '>=', '==', '!=']
-
-    def get_string_operations():
-        return ['Contains', 'Does not contain']
     
-    column_to_analyze = st.selectbox("Select column to analyze", df.columns.tolist())
-    group_by = st.selectbox("Group by (optional)", ["None"] + df.columns.tolist())
-    filter_by_col = st.selectbox("Filter by (optional)", ["None"] + df.columns.tolist())
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        column_to_analyze = st.selectbox("Select column to analyze", df.columns.tolist())
+    with col2:
+        group_by = st.selectbox("Group by (optional)", ["None"] + df.columns.tolist())
+    with col3:
+        filter_by_col = st.selectbox("Filter by (optional)", ["None"] + df.columns.tolist())
     
+    col31, col32, col33 = st.columns(3)
     if filter_by_col != "None":
-        filter_by_value = st.selectbox("Filter value", df[filter_by_col].unique().tolist())
+        with col31:
+            filter_by_value = st.selectbox("Filter value", df[filter_by_col].unique().tolist())
+        with col32:
+            st.write("")
+        with col33:
+            st.write("")
     
     if is_numeric_column(df[column_to_analyze]):
         st.write("Set condition for invalid values:")
-        col1, col2 = st.columns(2)
-        with col1:
+        col4, col5, col6 = st.columns(3)
+        with col4:
             operation = st.selectbox("Operation", get_numeric_operations())
-        with col2:
+        with col5:
             threshold = st.number_input("Threshold", value=0.0, step=0.1)
+        with col6:
+            st.write("")
         invalid_condition = f"{operation} {threshold}"
         include_zero_as_separate_category = st.checkbox("Include zero entries as a separate category", value=True)
     elif is_string_column(df[column_to_analyze]):
         st.write("Set condition for invalid string values:")
-        col1, col2 = st.columns(2)
-        with col1:
+        col7, col8, col9 = st.columns(3)
+        with col7:
             operation = st.selectbox("Operation", get_string_operations())
-        with col2:
+        with col8:
             value = st.selectbox("Value", df[column_to_analyze].unique().tolist())
+        with col9:
+            st.write("")
         invalid_condition = (operation, value)
         include_zero_as_separate_category = False
     elif is_datetime_column(df[column_to_analyze]):
         st.write("Set condition for invalid datetime values:")
-        col1, col2 = st.columns(2)
-        with col1:
+        col10, col11, col12 = st.columns(3)
+        with col10:
             start_date = st.date_input("Start date(Exclusive)")
-        with col2:
+        with col11:
             end_date = st.date_input("End date(Inclusive)")
+        with col12:
+            st.write("")
         invalid_condition = (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
         include_zero_as_separate_category = False
     else:
@@ -120,7 +135,6 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                 
                 if response.status_code == 200:
                     result = response.json()
-                    st.success("Analysis complete!")
                     
                     def display_detailed_data(data):
                         if include_zero_as_separate_category:
@@ -128,7 +142,8 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                                 if data[category]:
                                     st.write(f"{category.capitalize()} data (up to 10 rows):")
                                     category_df = pd.DataFrame(data[category])
-                                    st.dataframe(category_df, use_container_width=True, hide_index=True)
+                                    with st.expander(f"{category.capitalize()} data (up to 10 rows):"):
+                                        st.dataframe(category_df, use_container_width=True, hide_index=True)
                                 else:
                                     st.write(f"No {category} data found.")
                         else:
@@ -136,28 +151,10 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                                 if data[category]:
                                     st.write(f"{category.capitalize()} data (up to 10 rows):")
                                     category_df = pd.DataFrame(data[category])
-                                    st.dataframe(category_df, use_container_width=True, hide_index=True)
+                                    with st.expander(f"{category.capitalize()} data (up to 10 rows):"):
+                                        st.dataframe(category_df, use_container_width=True, hide_index=True)
                                 else:
                                     st.write(f"No {category} data found.")
-
-                    def prepare_data_for_plotting(analysis_df):
-                        plot_data = analysis_df.reset_index()
-                        if len(plot_data.columns) == 4:
-                            if include_zero_as_separate_category:
-                                plot_data.columns = ['Index', 'Category', 'Count', 'Percentage']
-                            else:
-                                plot_data = plot_data[plot_data['Category'] != 'Zero']
-                                plot_data.columns = ['Index', 'Category', 'Count', 'Percentage']
-                        elif len(plot_data.columns) == 3:
-                            if include_zero_as_separate_category:
-                                plot_data.columns = ['Category', 'Count', 'Percentage']
-                            else:
-                                plot_data = plot_data[plot_data['Category'] != 'Zero']
-                                plot_data.columns = ['Category', 'Count', 'Percentage']
-                        else:
-                            raise ValueError(f"Unexpected number of columns: {len(plot_data.columns)}")
-                        plot_data = plot_data.sort_values('Count', ascending=False)
-                        return plot_data
                     
                     if result["grouped"]:
                         st.write("Indicator Fill Rate by group:")
@@ -178,7 +175,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
 
                         # Display detailed data for each group
                         for group, analysis in result["analysis"].items():
-                            st.write(f"Group: {group}")
+                            st.subheader(f"Group: {group}")
                             analysis_df = pd.DataFrame(analysis)
                             st.dataframe(analysis_df, use_container_width=True, hide_index=True)
                             display_detailed_data(result["detailed_data"][group])
