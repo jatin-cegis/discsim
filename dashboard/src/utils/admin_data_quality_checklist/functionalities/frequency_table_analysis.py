@@ -29,14 +29,23 @@ def frequency_table_analysis(uploaded_file, df):
         - Valid input format: CSV file
     '''
     st.markdown("<h2 style='text-align: center;'>Frequency Table Analysis</h2>", unsafe_allow_html=True, help=title_info_markdown)
-
-    column_to_analyze = st.selectbox("Select column to analyze", df.columns.tolist())
-    top_n = st.number_input(
-        "Number of top frequent values to display(0 for all values)", min_value=0, value=0
-    )
-    group_by = st.selectbox("Group by (optional): Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.", ["None"] + df.columns.tolist())
-    filter_by_col = st.selectbox("Filter by (optional): Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze missing entries for a specific condition.", ["None"] + df.columns.tolist())
-
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        column_to_analyze = st.selectbox("Select column to analyze", df.columns.tolist())
+    with col2:
+        top_n = st.number_input(
+            "Number of top frequent values to display(0 for all values)", min_value=0, value=0
+        )
+    with col3:
+        group_by = st.selectbox("Group by (optional)", ["None"] + df.columns.tolist(), help="Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.")
+    
+    col4, col5, col6 = st.columns(3)
+    with col4:    
+        filter_by_col = st.selectbox("Filter by (optional)", ["None"] + df.columns.tolist(), help="Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze missing entries for a specific condition.")
+    with col5:
+        st.write("")
+    with col6:
+        st.write("")
     if filter_by_col != "None":
         filter_by_value = st.selectbox("Filter value", df[filter_by_col].unique().tolist())
 
@@ -55,7 +64,6 @@ def frequency_table_analysis(uploaded_file, df):
 
                 if response.status_code == 200:
                     result = response.json()
-                    st.success("Frequency table generated!")
 
                     if result["grouped"]:
                         st.write("Combined Frequency Table for All Groups:")
