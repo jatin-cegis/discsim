@@ -30,15 +30,21 @@ def missing_entries_analysis(uploaded_file, df):
     """
     st.markdown("<h2 style='text-align: center;'>Missing Entries Analysis</h2>", unsafe_allow_html=True, help=title_info_markdown)
     col1, col2, col3 = st.columns(3)
+    with col1:
+        column_to_analyze = st.selectbox("Select column to analyze for missing entries:", options=df.columns.tolist(), index=0)
+    with col2:
+        group_by = st.selectbox("Group by (optional)", options=["None"] + df.columns.tolist(), index=0, help="Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.")
+    with col3:
+        filter_by_col = st.selectbox("Filter by column (optional)", options=["None"] + df.columns.tolist(), index=0, help="Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze missing entries for a specific condition.")
     
-
-
-    column_to_analyze = st.selectbox("Select column to analyze for missing entries:", options=df.columns.tolist(), index=0)
-    group_by = st.selectbox("Group by (optional): Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.", options=["None"] + df.columns.tolist(), index=0)
-    filter_by_col = st.selectbox("Filter by column (optional): Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze missing entries for a specific condition.", options=["None"] + df.columns.tolist(), index=0)
-
+    col4, col5, col6 = st.columns(3)
     if filter_by_col != "None":
-        filter_by_value = st.selectbox("Filter value", df[filter_by_col].unique().tolist())
+        with col4:
+            filter_by_value = st.selectbox("Filter value", df[filter_by_col].unique().tolist())
+        with col5:
+            st.write("")
+        with col6:
+            st.write("")
     else:
         filter_by_value = None
 
@@ -61,7 +67,6 @@ def missing_entries_analysis(uploaded_file, df):
                                                     
                 if response.status_code == 200:
                     result = response.json()
-                    st.success("Analysis complete!")
                     
                     if result["grouped"]:
                         st.write("Missing entries by group:")
@@ -114,7 +119,7 @@ def missing_entries_analysis(uploaded_file, df):
                     # Display the table of missing entries
                     if "missing_entries_table" in result:
                         if not result["missing_entries_table"]:
-                            st.warning("The missing entries table is empty. There might be no missing entries, or an issue occurred.")
+                            st.warning("The missing entries table is empty.")
                         else:
                             missing_entries_df = pd.DataFrame(result["missing_entries_table"])
                                                                     
@@ -124,8 +129,8 @@ def missing_entries_analysis(uploaded_file, df):
                             else:
                                 st.warning(f"Column '{column_to_analyze}' not found in the missing entries table. Displaying unsorted data.")
                             
-                            st.write("Rows with Missing Entries:")
-                            st.dataframe(missing_entries_df, use_container_width=True, hide_index=True)
+                            with st.expander("Rows with Missing Entries:"):
+                                st.dataframe(missing_entries_df, use_container_width=True, hide_index=True)
                     else:
                         st.error("The 'missing_entries_table' key is not present in the API response.")
 

@@ -11,7 +11,6 @@ from src.utils.admin_data_quality_checklist.helpers.functionality_map import exe
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def admin_data_quality_check():
-
     # File selection
     file_option = st.sidebar.radio("Choose an option:", ("Upload a new file", "Select a previously uploaded file"))
 
