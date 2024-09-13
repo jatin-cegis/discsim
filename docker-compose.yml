@@ -15,9 +15,16 @@ services:
     restart: always
     environment:
       <<: *shared_environment
+      CMD: python api/run.py
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   db:
     image: postgres:latest
@@ -32,6 +39,26 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discsim-frontend
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    restart: always
+    environment:
+      <<: *shared_environment
+      CMD: streamlit run dashboard/app.py
+      API_BASE_URL: http://web:8000
+    depends_on:
+      web:
+        condition: service_healthy
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:

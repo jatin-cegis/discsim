@@ -23,8 +23,8 @@ RUN chmod +x /usr/local/bin/wait-for-it
 # Copy the entire project directory
 COPY . /app
 
-# Expose port 8000 to the outside world
-EXPOSE 8000
+# Expose ports 8000 (API) and 8501 (Streamlit) to the outside world
+EXPOSE 8000 8501
 
-# Wait for the database to be ready, then run the application
-CMD ["sh", "-c", "wait-for-it db:5432 -- python api/run.py"]
+# The CMD will be provided by docker-compose.yml
+CMD ["sh", "-c", "wait-for-it db:5432 -- $CMD"]
