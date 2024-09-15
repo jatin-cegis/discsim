@@ -126,26 +126,18 @@ pip install -r requirements.txt
 
 You can run the API server and the Streamlit frontend in a few different ways.
 
-### Running the API Server
+### Running the API backend, SQL Server, and the Streamlit frontend
 
-1. **Using Docker:**
+**Using Docker:**
 
    ```bash
    docker-compose build
    docker-compose up
    ```
 
-2. **Using Python directly:**
-
-   ```bash
-   python api/run.py
-   ```
-
-### Running the Streamlit Frontend
-
-```bash
-streamlit run dashboard/app.py
-```
+1. Your API server is now running on http://localhost:8000,
+2. The PostgreSQL will be running on http://localhost:5432
+3. And the frontend on http://localhost:8501 - this is the link you'll be opening on your browser to see it in action!
 
 ## Contributing
 
