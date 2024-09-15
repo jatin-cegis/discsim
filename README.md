@@ -14,14 +14,8 @@ The repository is organized as follows:
 
 ```
 discsim/
-├── .env
 ├── .env.example
-├── .flake8
-├── .github/
-├── ├── workflows/
-├──     ├── container-build.yml
 ├── .gitignore
-├── analyze_complexity.py
 ├── api/
 ├   ├── database.py
 ├   ├── main.py
@@ -64,7 +58,6 @@ discsim/
 ├           ├   ├── l2_sample_size_calculator.py
 ├           ├   ├── third_party_sampling_strategy.py
 ├           ├── state_management.py
-├── dir_tree_generator.py
 ├── docker-compose.yml
 ├── Dockerfile
 ├── LICENSE
