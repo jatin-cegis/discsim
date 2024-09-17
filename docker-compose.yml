@@ -1,6 +1,6 @@
 services:
   web:
-    image: ghcr.io/cegis-org/discsim:sha-fa9f907  # Use the GHCR image here
+    image: ghcr.io/cegis-org/discsim  # Use the GHCR image here
     container_name: discsim-api
     ports:
       - "8000:8000"
