@@ -1,4 +1,3 @@
-Pillow
 fastapi
 uvicorn
 pandas
@@ -9,7 +8,6 @@ scipy
 python-multipart
 psycopg2-binary
 sqlalchemy
-mccabe
 python-dotenv
 streamlit-navigation-bar
 matplotlib
