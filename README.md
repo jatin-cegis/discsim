@@ -13,25 +13,56 @@ DiscSim is a simulation tool with a backend API built using FastAPI and a fronte
 The repository is organized as follows:
 
 ```
-DiscSim/
-│
+discsim/
+├── .env.example
+├── .gitignore
 ├── api/
-│   ├── main.py          # FastAPI endpoints
-│   ├── models.py        # Schemas and classes
-|   ├── database.py      # PostgreSQL schema
-│   ├── utils        # Helper/controller functions
-|   |   ├── administrative_data_quality_checklist.py
-|   |   └── pre_survey_analysis.py
-│   └── run.py           # Contains the run code for the Uvicorn server
-│
+├   ├── database.py
+├   ├── main.py
+├   ├── models.py
+├   ├── README.md
+├   ├── run.py
+├   ├── utils/
+├       ├── administrative_data_quality_checklist.py
+├       ├── pre_survey_analysis.py
 ├── dashboard/
-│   └── app.py           # Streamlit frontend that uses the API endpoints
-│
-├── .flake8              # CLI-based project complexity calculator
-├── analyze_complexity.py  # mccabe-based project complexity calculator
-├── Dockerfile
+├   ├── app.py
+├   ├── logo.jpg
+├   ├── logo_page.png
+├   ├── modules/
+├   ├── pages/
+├   ├   ├── admin_data_quality_checklist.py
+├   ├   ├── pre_survey.py
+├   ├── src/
+├       ├── utils/
+├           ├── admin_data_quality_checklist/
+├           ├   ├── functionalities/
+├           ├   ├   ├── check_specific_columns_as_unique_id.py
+├           ├   ├   ├── drop_export_duplicate_entries.py
+├           ├   ├   ├── drop_export_duplicate_rows.py
+├           ├   ├   ├── frequency_table_analysis.py
+├           ├   ├   ├── indicator_fill_rate_analysis.py
+├           ├   ├   ├── missing_entries_analysis.py
+├           ├   ├   ├── unique_id_verifier.py
+├           ├   ├   ├── zero_entries_analysis.py
+├           ├   ├── helpers/
+├           ├       ├── display_preview.py
+├           ├       ├── fetch_files.py
+├           ├       ├── file_upload.py
+├           ├       ├── functionality_map.py
+├           ├       ├── graph_functions.py
+├           ├       ├── preliminary_tests.py
+├           ├── pre_survey_analysis/
+├           ├   ├── error_handling.py
+├           ├   ├── l1_sample_size_calculator.py
+├           ├   ├── l2_sample_size_calculator.py
+├           ├   ├── third_party_sampling_strategy.py
+├           ├── state_management.py
 ├── docker-compose.yml
-└── requirements.txt
+├── Dockerfile
+├── LICENSE
+├── README.md
+├── requirements.txt
 ```
 
 ## Getting Started
@@ -95,26 +126,18 @@ pip install -r requirements.txt
 
 You can run the API server and the Streamlit frontend in a few different ways.
 
-### Running the API Server
+### Running the API backend, SQL Server, and the Streamlit frontend
 
-1. **Using Docker:**
+**Using Docker:**
 
    ```bash
    docker-compose build
    docker-compose up
    ```
 
-2. **Using Python directly:**
-
-   ```bash
-   python api/run.py
-   ```
-
-### Running the Streamlit Frontend
-
-```bash
-streamlit run dashboard/app.py
-```
+1. Your API server is now running on http://localhost:8000,
+2. The PostgreSQL will be running on http://localhost:5432
+3. And the frontend on http://localhost:8501 - this is the link you'll be opening on your browser to see it in action!
 
 ## Contributing
 
