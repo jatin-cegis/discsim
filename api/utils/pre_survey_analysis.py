@@ -86,34 +86,40 @@ def get_meas_ts(n_blocks, n_sub_per_block, n_sub_test, n_samples, real_ts, rando
         meas_ts[block] = np.mean([binom.rvs(n_samples, real_ts[block][sub], random_state=random_state)/n_samples for sub in subs_test])
     return meas_ts
 
-def get_ranks(meas_order, real_order, n_blocks, percent_blocks_plot, list_n_sub, n_simulations):
+def get_ranks(meas_order, real_order, n_blocks, percent_blocks_plot, list_n_sub, n_simulations, errorbar_type):
     n_cond = len(list_n_sub)
-    n_blocks_plot = int(n_blocks*percent_blocks_plot/100)
-    if n_blocks_plot < 1:
-        n_blocks_plot = 1
-        
-    mean_rank = np.zeros([n_blocks_plot, n_cond])
-    std_rank = np.zeros([n_blocks_plot, n_cond])
-        
-    for block in range(n_blocks_plot):
-        mean_rank[block, :] = np.array([np.mean([real_order.index(meas_order[i][n_blocks - block - 1, sim]) for sim in range(n_simulations)]) + 1 for i in range(n_cond)])
-        std_rank[block, :] = np.array([np.std([real_order.index(meas_order[i][n_blocks - block - 1, sim]) for sim in range(n_simulations)]) for i in range(n_cond)])
+    n_blocks_plot = max(1, int(n_blocks*percent_blocks_plot/100))
     
-    return mean_rank, std_rank
+    mean_rank = np.zeros([n_blocks_plot, n_cond])
+    errorbars = np.zeros([n_blocks_plot, n_cond])
+    
+    for block in range(n_blocks_plot):
+        for i in range(n_cond):
+            ranks = [real_order.index(meas_order[i][n_blocks - block - 1, sim]) + 1 for sim in range(n_simulations)]
+            mean_rank[block, i] = np.mean(ranks)
+            
+            if errorbar_type == 'standard deviation':
+                errorbars[block, i] = np.std(ranks, ddof=1)
+            elif errorbar_type == 'standard error of the mean':
+                errorbars[block, i] = np.std(ranks, ddof=1) / np.sqrt(n_simulations)
+            elif errorbar_type == f"95% confidence interval":
+                errorbars[block, i] = 1.95 * np.std(ranks, ddof=1) / np.sqrt(n_simulations)
+    
+    return mean_rank, errorbars
 
-def make_plot(mean_rank, std_rank, list_n_sub, list_n_samples, n_blocks, percent_blocks_plot):
+def make_plot(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, percent_blocks_plot, errorbar_type):
     fig, ax1 = plt.subplots(figsize=[10, 8])
     n_cond = len(list_n_sub)
     n_blocks_plot = max(1, int(n_blocks * percent_blocks_plot / 100))
     colors = plt.cm.Reds(np.linspace(0.3, 1, n_blocks_plot))
 
     for block in range(n_blocks_plot):
-        ax1.errorbar(list_n_sub, mean_rank[block, :], std_rank[block, :],
+        ax1.errorbar(list_n_sub, mean_rank[block, :], errorbars[block, :],
                      color=colors[block], marker='o', elinewidth=0.5, capsize=2,
                      label=f'Real rank of unit with measured rank = {n_blocks - block}')
 
     ax1.plot(list_n_sub, np.ones(n_cond)*n_blocks, color='b', linestyle='--', linewidth=1.5, label='Highest possible rank (k)')
-    ax1.legend(fontsize=14)
+    ax1.legend(fontsize=14, title=f'Errorbars: {errorbar_type}')
     ax1.set_xticks(list_n_sub)
     ax1.set_xlabel('Number of L0s (m) per block tested by supervisor', fontsize=14)
     ax1.set_ylabel('Real rank of blocks with\nthe best measured truth scores', fontsize=14)
@@ -263,7 +269,7 @@ def l2_sample_size_calculator(params):
         },
     }
 
-def make_plot_plotly(mean_rank, std_rank, list_n_sub, list_n_samples, n_blocks, percent_blocks_plot):
+def make_plot_plotly(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, percent_blocks_plot, errorbar_type):
     n_cond = len(list_n_sub)
     n_blocks_plot = max(1, int(n_blocks * percent_blocks_plot / 100))
     
@@ -273,7 +279,7 @@ def make_plot_plotly(mean_rank, std_rank, list_n_sub, list_n_samples, n_blocks, 
         fig.add_trace(go.Scatter(
             x=list_n_sub,
             y=mean_rank[block, :],
-            error_y=dict(type='data', array=std_rank[block, :], visible=True),
+            error_y=dict(type='data', array=errorbars[block, :], visible=True),
             mode='markers+lines',
             name=f'Real rank of unit with measured rank = {n_blocks - block}'
         ))
@@ -292,11 +298,10 @@ def make_plot_plotly(mean_rank, std_rank, list_n_sub, list_n_samples, n_blocks, 
         yaxis_title='Real rank of blocks with the best measured truth scores',
         xaxis=dict(tickmode='array', tickvals=list_n_sub, ticktext=list_n_sub),
         yaxis=dict(range=[0, n_blocks + 1]),
-        legend_title='Ranks',
+        legend_title=f'Ranks (Errorbars: {errorbar_type})',
         hovermode='closest'
     )
     
-    # Add secondary x-axis for number of samples
     fig.update_layout(
         xaxis2=dict(
             overlaying='x',
@@ -343,15 +348,14 @@ def third_party_sampling_strategy(params):
         for sim in range(params["n_simulations"]):
             meas_order[i][:, sim] = np.argsort(get_meas_ts(n_blocks, n_sub_per_block, n_sub, n_samples, real_ts, sim))
 
-    mean_rank, std_rank = get_ranks(meas_order, real_order, n_blocks, params["percent_blocks_plot"], list_n_sub, params["n_simulations"])
+    mean_rank, errorbars = get_ranks(meas_order, real_order, n_blocks, params["percent_blocks_plot"], list_n_sub, params["n_simulations"], params["errorbar_type"])
 
-    figImg = make_plot(mean_rank, std_rank, list_n_sub, list_n_samples, n_blocks, params["percent_blocks_plot"])
-    fig = make_plot_plotly(mean_rank, std_rank, list_n_sub, list_n_samples, n_blocks, params["percent_blocks_plot"])
+    figImg = make_plot(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, params["percent_blocks_plot"], params["errorbar_type"])
+    fig = make_plot_plotly(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, params["percent_blocks_plot"], params["errorbar_type"])
     
-    # Convert plot to base64 string
     buf = BytesIO()
     figImg.savefig(buf, format="png")
-    plt.close(figImg)  # Close the figure to free up memory
+    plt.close(figImg)
     plot_data = base64.b64encode(buf.getbuffer()).decode("ascii")
     return {
         "status": 1,
@@ -362,7 +366,7 @@ def third_party_sampling_strategy(params):
             "list_n_sub": [int(x) for x in list_n_sub],
             "list_n_samples": [int(x) for x in list_n_samples],
             "mean_rank": mean_rank.tolist(),
-            "std_rank": std_rank.tolist(),
+            "errorbars": errorbars.tolist(),
             "figure": json.loads(fig.to_json()),
             "figureImg": plot_data
         },
