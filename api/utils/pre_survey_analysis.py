@@ -1,9 +1,7 @@
-import json
 import numpy as np
 from scipy.stats import binom
 import matplotlib.pyplot as plt
 import base64
-import plotly.graph_objects as go
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from io import BytesIO
 
@@ -107,6 +105,33 @@ def get_ranks(meas_order, real_order, n_blocks, percent_blocks_plot, list_n_sub,
     
     return mean_rank, errorbars
 
+def get_n_blocks_plot(list_n_sub, n_blocks, percent_blocks_plot):
+    n_cond = len(list_n_sub)
+    n_blocks_plot = max(1, int(n_blocks*percent_blocks_plot/100))
+    return n_cond, n_blocks_plot
+
+def get_num_real_units(n_cond, n_simulations, n_blocks_plot, real_order, meas_order, n_blocks, errorbar_type):
+    mean_n_real = np.zeros(n_cond)
+    errorbars_n_real = np.zeros(n_cond)
+    
+    for i in range(n_cond):
+        n_real = np.zeros(n_simulations)
+        for sim in range(n_simulations):
+            for block in range(n_blocks_plot):
+                real_rank = real_order.index(meas_order[i][n_blocks - block - 1, sim])
+                if real_rank >= n_blocks - n_blocks_plot:
+                    n_real[sim] += 1
+        
+        mean_n_real[i] = np.mean(n_real)
+        if errorbar_type == 'standard deviation':
+            errorbars_n_real[i] = np.std(n_real, ddof=1)
+        elif errorbar_type == 'standard error of the mean':
+            errorbars_n_real[i] = np.std(n_real, ddof=1) / np.sqrt(n_simulations)
+        elif errorbar_type == "95% confidence interval":
+            errorbars_n_real[i] = 1.95 * np.std(n_real, ddof=1) / np.sqrt(n_simulations)
+            
+    return mean_n_real, errorbars_n_real
+
 def make_plot(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, percent_blocks_plot, errorbar_type):
     fig, ax1 = plt.subplots(figsize=[10, 8])
     n_cond = len(list_n_sub)
@@ -137,6 +162,65 @@ def make_plot(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, percen
     ax2.yaxis.set_visible(False)
 
     return fig
+
+def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_plot, errorbar_type,
+                        figsize=(8, 6), x_label_fontsize=14, y_label_fontsize=14, linecolor='k', markerstyle='o',
+                        elinewidth=0.5, errorbar_capsize=2, legend_fontsize=14):
+    """
+    Create a matplotlib figure showing the number of 'real' best units found.
+    
+    Args:
+    list_n_sub: List of numbers of subordinates tested per unit
+    list_n_samples: List of numbers of samples per subordinate
+    mean_n_real: Mean number of real best units found
+    errorbars_n_real: Error bars for the number of real best units
+    n_blocks_plot: Number of blocks to plot
+    errorbar_type: Type of error bars to display
+    
+    Returns:
+    matplotlib.figure.Figure: The generated figure
+    """
+    # Create figure and axis handles
+    fig, ax1 = plt.subplots(nrows=1, ncols=1, figsize=figsize)
+
+    # Plot mean and error bars of number of real green zone units
+    ax1.errorbar(list_n_sub, mean_n_real, errorbars_n_real, 
+                color=linecolor, marker=markerstyle, elinewidth=elinewidth, 
+                capsize=errorbar_capsize)
+
+    # Plot dashed line to show the maximum possible number of real green zone units
+    ax1.plot(list_n_sub, np.ones(len(list_n_sub))*n_blocks_plot, color='b', linestyle='--', 
+             linewidth=1.5, label='Number of units rewarded (b)')
+    ax1.legend(fontsize=legend_fontsize, title=f'Errorbars: {errorbar_type}')
+
+    # Set up the primary x-axis (number of L0s per unit)
+    ax1.set_xticks(list_n_sub)
+    ax1.set_xlim(list_n_sub[0] - 0.5, list_n_sub[-1]*1.1)
+    ax1.set_xlabel('Number of L0s tested per unit (m)', fontsize=x_label_fontsize)
+
+    # Create a divider for the primary x-axis to append a new x-axis below
+    divider = make_axes_locatable(ax1)
+    ax2 = divider.append_axes("bottom", size="5%", pad=0.7)
+
+    # Hide the new x-axis' frame
+    ax2.spines['top'].set_visible(False)
+    ax2.spines['right'].set_visible(False)
+    ax2.spines['left'].set_visible(False)
+
+    # Set the ticks and tick labels for the secondary x-axis
+    ax2.set_xticks(list_n_sub)
+    ax2.set_xticklabels(list_n_samples)
+    ax2.set_xlim(ax1.get_xlim())
+    ax2.set_xlabel('Number of samples per L0 (n)', fontsize=x_label_fontsize)
+
+    # Hide the y-axis for the secondary x-axis
+    ax2.yaxis.set_visible(False)
+    ax1.set_ylim([0, n_blocks_plot + 1])
+
+    ax1.set_ylabel("Number of 'real' best units found (c)", fontsize=y_label_fontsize)
+    
+    return fig
+
 
 def generate_true_disc(n, min_disc, max_disc, mean_disc, std_disc, distribution):
     """
@@ -269,54 +353,6 @@ def l2_sample_size_calculator(params):
         },
     }
 
-def make_plot_plotly(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, percent_blocks_plot, errorbar_type):
-    n_cond = len(list_n_sub)
-    n_blocks_plot = max(1, int(n_blocks * percent_blocks_plot / 100))
-    
-    fig = go.Figure()
-    
-    for block in range(n_blocks_plot):
-        fig.add_trace(go.Scatter(
-            x=list_n_sub,
-            y=mean_rank[block, :],
-            error_y=dict(type='data', array=errorbars[block, :], visible=True),
-            mode='markers+lines',
-            name=f'Real rank of unit with measured rank = {n_blocks - block}'
-        ))
-    
-    fig.add_trace(go.Scatter(
-        x=list_n_sub,
-        y=[n_blocks] * n_cond,
-        mode='lines',
-        line=dict(color='blue', dash='dash'),
-        name='Highest possible rank (k)'
-    ))
-    
-    fig.update_layout(
-        title='3P Sampling Strategy Prediction',
-        xaxis_title='Number of L0s (m) per block tested by supervisor',
-        yaxis_title='Real rank of blocks with the best measured truth scores',
-        xaxis=dict(tickmode='array', tickvals=list_n_sub, ticktext=list_n_sub),
-        yaxis=dict(range=[0, n_blocks + 1]),
-        legend_title=f'Ranks (Errorbars: {errorbar_type})',
-        hovermode='closest'
-    )
-    
-    fig.update_layout(
-        xaxis2=dict(
-            overlaying='x',
-            side='bottom',
-            tickmode='array',
-            tickvals=list_n_sub,
-            ticktext=list_n_samples,
-            title='Number of samples (n) per L0',
-            anchor='y',
-            showgrid=False
-        )
-    )
-    
-    return fig
-
 def third_party_sampling_strategy(params):
     error_status, error_message = error_handling(params)
     if error_status == 0:
@@ -350,13 +386,41 @@ def third_party_sampling_strategy(params):
 
     mean_rank, errorbars = get_ranks(meas_order, real_order, n_blocks, params["percent_blocks_plot"], list_n_sub, params["n_simulations"], params["errorbar_type"])
 
+    # Get number of 'real' green zone units
+    mean_n_real, errorbars_n_real = get_num_real_units(
+        len(list_n_sub), 
+        params["n_simulations"], 
+        max(1, int(n_blocks*params["percent_blocks_plot"]/100)), 
+        real_order, 
+        meas_order, 
+        n_blocks, 
+        params["errorbar_type"]
+    )
+
+    # Create first figure (existing plot)
     figImg = make_plot(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, params["percent_blocks_plot"], params["errorbar_type"])
-    fig = make_plot_plotly(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, params["percent_blocks_plot"], params["errorbar_type"])
     
-    buf = BytesIO()
-    figImg.savefig(buf, format="png")
+    # Create second figure using matplotlib
+    fig2 = make_plot_num_real_units(
+        list_n_sub, 
+        list_n_samples, 
+        mean_n_real, 
+        errorbars_n_real,
+        max(1, int(n_blocks*params["percent_blocks_plot"]/100)),
+        params["errorbar_type"]
+    )
+    
+    # Save both figures to base64
+    buf1 = BytesIO()
+    figImg.savefig(buf1, format="png")
     plt.close(figImg)
-    plot_data = base64.b64encode(buf.getbuffer()).decode("ascii")
+    plot_data1 = base64.b64encode(buf1.getbuffer()).decode("ascii")
+    
+    buf2 = BytesIO()
+    fig2.savefig(buf2, format="png")
+    plt.close(fig2)
+    plot_data2 = base64.b64encode(buf2.getbuffer()).decode("ascii")
+
     return {
         "status": 1,
         "message": "3P Sampling Strategy calculated successfully.",
@@ -367,7 +431,9 @@ def third_party_sampling_strategy(params):
             "list_n_samples": [int(x) for x in list_n_samples],
             "mean_rank": mean_rank.tolist(),
             "errorbars": errorbars.tolist(),
-            "figure": json.loads(fig.to_json()),
-            "figureImg": plot_data
+            "mean_n_real": mean_n_real.tolist(),
+            "errorbars_n_real": errorbars_n_real.tolist(),
+            "figureImg": plot_data1,
+            "figure2": plot_data2
         },
     }

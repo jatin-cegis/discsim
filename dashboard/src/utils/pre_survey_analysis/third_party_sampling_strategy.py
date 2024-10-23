@@ -4,7 +4,6 @@ import streamlit as st
 import requests
 import sys
 import os
-import plotly.graph_objects as go
 from PIL import Image
 from dotenv import load_dotenv
 from src.utils.pre_survey_analysis.error_handling import check_errors
@@ -74,13 +73,14 @@ def third_party_sampling_strategy():
         if response.status_code == 200:
             result = response.json()
             st.info(result['message'])
-            
-            fig = go.Figure(result['value']['figure'])
-            st.plotly_chart(fig, use_container_width=True)
 
-            image_data = base64.b64decode(result['value']['figureImg'])
-            image = Image.open(BytesIO(image_data))
-            st.image(image, caption="Third-Party Sampling Strategy Plot", use_column_width=True)
+            fig1 = base64.b64decode(result['value']['figureImg'])
+            image1 = Image.open(BytesIO(fig1))
+            st.image(image1, caption="Third-Party Sampling Strategy Plot", use_column_width=True)
+            
+            fig2 = base64.b64decode(result['value']['figure2'])
+            image2 = Image.open(BytesIO(fig2))
+            st.image(image2, caption="Third-Party Sampling Strategy Plot", use_column_width=True)
         else:
             st.error(f"Error: {response.json()['detail']}")
     
