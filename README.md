@@ -8,63 +8,6 @@ Often, it is not clear what re-sampling strategy should be used to obtain the mo
 
 DiscSim is a simulation tool with a backend API built using FastAPI and a frontend interface developed with Streamlit. The project is containerized using Docker for easy deployment.
 
-## Project Structure
-
-The repository is organized as follows:
-
-```
-discsim/
-├── .env.example
-├── .gitignore
-├── api/
-├   ├── database.py
-├   ├── main.py
-├   ├── models.py
-├   ├── README.md
-├   ├── run.py
-├   ├── utils/
-├       ├── administrative_data_quality_checklist.py
-├       ├── pre_survey_analysis.py
-├── dashboard/
-├   ├── app.py
-├   ├── logo.jpg
-├   ├── logo_page.png
-├   ├── modules/
-├   ├── pages/
-├   ├   ├── admin_data_quality_checklist.py
-├   ├   ├── pre_survey.py
-├   ├── src/
-├       ├── utils/
-├           ├── admin_data_quality_checklist/
-├           ├   ├── functionalities/
-├           ├   ├   ├── check_specific_columns_as_unique_id.py
-├           ├   ├   ├── drop_export_duplicate_entries.py
-├           ├   ├   ├── drop_export_duplicate_rows.py
-├           ├   ├   ├── frequency_table_analysis.py
-├           ├   ├   ├── indicator_fill_rate_analysis.py
-├           ├   ├   ├── missing_entries_analysis.py
-├           ├   ├   ├── unique_id_verifier.py
-├           ├   ├   ├── zero_entries_analysis.py
-├           ├   ├── helpers/
-├           ├       ├── display_preview.py
-├           ├       ├── fetch_files.py
-├           ├       ├── file_upload.py
-├           ├       ├── functionality_map.py
-├           ├       ├── graph_functions.py
-├           ├       ├── preliminary_tests.py
-├           ├── pre_survey_analysis/
-├           ├   ├── error_handling.py
-├           ├   ├── l1_sample_size_calculator.py
-├           ├   ├── l2_sample_size_calculator.py
-├           ├   ├── third_party_sampling_strategy.py
-├           ├── state_management.py
-├── docker-compose.yml
-├── Dockerfile
-├── LICENSE
-├── README.md
-├── requirements.txt
-```
-
 ## Getting Started
 
 ### Cloning the Repository
