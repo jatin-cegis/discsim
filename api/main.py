@@ -63,8 +63,8 @@ last_deduplicated_data = None
 async def startup_event():
     Base.metadata.create_all(bind=engine)
 
-@app.get("/")
-async def root():
+@app.get("/health")
+async def health():
     return {"status": "ok"}
 
 @app.post("/upload_file")
