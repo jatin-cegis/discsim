@@ -1,0 +1,61 @@
+import streamlit as st
+import pandas as pd
+import sys
+import os
+from src.utils.state_management import (
+    initialize_states,
+    reset_session_states,
+    reset_upload,
+)
+from src.utils.post_survey_analysis.helpers.file_upload import handle_file_upload
+from src.utils.post_survey_analysis.functionality import execute_post_survey_analysis
+
+# Add the parent directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+def post_survey_analysis():
+    st.title("Post-Survey Analysis")
+
+    # File selection
+    file_option = st.sidebar.radio(
+        "Choose an option:",
+        ("Upload a new file", "Select a previously uploaded file"),
+    )
+
+    # Initialize states
+    initialize_states()
+
+    # Define page-specific session state keys
+    previous_file_option_key = "previous_file_option_post_survey_analysis"
+    uploaded_file_key = "uploaded_file_post_survey_analysis"
+    previous_uploaded_file_key = "previous_uploaded_file_post_survey_analysis"
+    reset_upload_key = "reset_upload_post_survey_analysis"
+
+    # Clear relevant session state when switching options
+    if st.session_state.get(previous_file_option_key) != file_option:
+        st.session_state[uploaded_file_key] = None
+        st.session_state.uploaded_file_id = None
+        reset_session_states()
+        st.session_state[previous_file_option_key] = file_option
+
+    uploaded_file = handle_file_upload(
+        file_option, category="post_survey_analysis"
+    )
+
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        st.session_state[uploaded_file_key] = uploaded_file
+        if uploaded_file != st.session_state.get(previous_uploaded_file_key):
+            reset_session_states()
+            st.session_state[previous_uploaded_file_key] = uploaded_file
+
+        execute_post_survey_analysis(uploaded_file, df)
+
+    else:
+        st.info("Please upload a CSV file to begin.")
+        reset_session_states()
+        st.session_state[previous_uploaded_file_key] = None
+
+    if st.session_state.get(reset_upload_key, False):
+        reset_upload()
+        st.rerun()

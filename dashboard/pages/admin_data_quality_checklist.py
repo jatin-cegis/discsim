@@ -24,7 +24,7 @@ def admin_data_quality_check():
         reset_session_states()
         st.session_state.previous_file_option = file_option
 
-    uploaded_file = handle_file_upload(file_option)
+    uploaded_file = handle_file_upload(file_option, category="admin_data_quality_checklist")
 
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)

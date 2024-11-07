@@ -1,7 +1,15 @@
 import time
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, Integer, String, LargeBinary, DateTime
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    LargeBinary,
+    DateTime,
+    UniqueConstraint,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
@@ -14,16 +22,18 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-
 Base = declarative_base()
 
 
 class UploadedFile(Base):
     __tablename__ = "uploaded_files"
     id = Column(Integer, primary_key=True, index=True)
-    filename = Column(String, unique=True, index=True)
+    filename = Column(String, index=True)
     content = Column(LargeBinary)
     upload_datetime = Column(DateTime(timezone=True), server_default=func.now())
+    category = Column(String, index=True)
+
+    __table_args__ = (UniqueConstraint('filename', 'category', name='_filename_category_uc'),)
 
 
 def get_engine(retries=5, delay=2):

@@ -28,14 +28,16 @@ st.set_page_config(
         page_icon=im,
     )
 
-page = st_navbar(["Pre-survey Analysis", "Administrative Data Quality"])
+page = st_navbar(["Pre-survey", "Admin Data Quality", "Post-survey"])
 
 def main():
     
-    if page == "Pre-survey Analysis":
+    if page == "Pre-survey":
         pg.pre_survey_analysis()
-    elif page == "Administrative Data Quality":
+    elif page == "Admin Data Quality":
         pg.admin_data_quality_check()
+    elif page == "Post-survey":
+        pg.post_survey_analysis()
 
 if __name__ == "__main__":
     main()

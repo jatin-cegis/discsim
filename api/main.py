@@ -44,6 +44,7 @@ from api.utils.pre_survey_analysis import (
     l2_sample_size_calculator,
     third_party_sampling_strategy,
 )
+from api.utils.post_survey_analysis import calculate_discrepancy_scores
 from api.database import get_db, UploadedFile
 from api.database import engine, Base
 
@@ -74,12 +75,13 @@ async def health():
 @app.post("/upload_file")
 async def upload_file(
     file: UploadFile = File(...),
+    category: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    # Check if a file with the same name already exists
+    # Check if a file with the same name and category already exists
     existing_file = (
         db.query(UploadedFile)
-        .filter(UploadedFile.filename == file.filename)
+        .filter(UploadedFile.filename == file.filename, UploadedFile.category == category)
         .first()
     )
 
@@ -87,15 +89,15 @@ async def upload_file(
         return JSONResponse(
             status_code=409,  # Conflict
             content={
-                "message": f"'{file.filename}' already exists.",
+                "message": f"'{file.filename}' already exists in category '{category}'.",
                 "id": existing_file.id,
             },
         )
 
     # Proceed with saving the file if it doesn't exist
     contents = await file.read()
-    file_content = io.StringIO(contents.decode("utf-8")).read().encode("utf-8")
-    db_file = UploadedFile(filename=file.filename, content=file_content)
+    file_content = contents  # Store the file content as is
+    db_file = UploadedFile(filename=file.filename, content=file_content, category=category)
     db.add(db_file)
     db.commit()
     db.refresh(db_file)
@@ -104,9 +106,23 @@ async def upload_file(
 
 
 @app.get("/list_files")
-async def list_files(db: Session = Depends(get_db)):
-    files = db.query(UploadedFile.id, UploadedFile.filename, UploadedFile.upload_datetime).all()
-    return [{"id": file.id, "filename": file.filename, "upload_datetime": file.upload_datetime.isoformat()} for file in files]
+async def list_files(
+    category: str = Query(...),
+    db: Session = Depends(get_db)
+):
+    files = (
+        db.query(UploadedFile.id, UploadedFile.filename, UploadedFile.upload_datetime)
+        .filter(UploadedFile.category == category)
+        .all()
+    )
+    return [
+        {
+            "id": file.id,
+            "filename": file.filename,
+            "upload_datetime": file.upload_datetime.isoformat(),
+        }
+        for file in files
+    ]
 
 
 @app.get("/get_file/{file_id}")
@@ -710,3 +726,20 @@ async def predict_third_party_sampling(input_data: ThirdPartySamplingInput):
     if result["status"] == 0:
         raise HTTPException(status_code=400, detail=result["message"])
     return result
+
+@app.post("/post_survey_analysis")
+async def post_survey_analysis(
+    file: UploadFile = File(...),
+    margin_of_error: float = Form(default=0.0),
+):
+    try:
+        contents = await file.read()
+        df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+
+        # Perform discrepancy calculations
+        result = calculate_discrepancy_scores(df, margin_of_error)
+
+        return JSONResponse(content=result)
+    except Exception as e:
+        print(f"Error in post_survey_analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
