@@ -61,7 +61,11 @@ last_deduplicated_data = None
 
 @app.on_event("startup")
 async def startup_event():
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"Error creating tables: {e}")
+
 
 @app.get("/health")
 async def health():

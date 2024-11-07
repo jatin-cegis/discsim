@@ -26,9 +26,6 @@ class UploadedFile(Base):
     upload_datetime = Column(DateTime(timezone=True), server_default=func.now())
 
 
-Base.metadata.create_all(bind=engine)
-
-
 def get_engine(retries=5, delay=2):
     for attempt in range(retries):
         try:

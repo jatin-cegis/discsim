@@ -1,5 +1,9 @@
 import numpy as np
 from scipy.stats import binom
+import matplotlib
+
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 import base64
 from mpl_toolkits.axes_grid1 import make_axes_locatable
