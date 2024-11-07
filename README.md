@@ -1,12 +1,14 @@
 # DiscSim
 
-This code was written for [`CEGIS`](https://www.cegis.org/) (Center for Effective Governance of Indian States), an organization that aims to help state governments in India achieve better development outcomes.
+DiscSim is a simulation tool developed for the [Center for Effective Governance of Indian States (CEGIS)](https://www.cegis.org/), an organization dedicated to assisting state governments in India to achieve better development outcomes.
 
-An important goal of CEGIS is to improve the quality of administrative data collected by state governments. One way in which this is achieved is to re-sample a subset of the data and measure the deviation from the original samples collected. These deviations are quantified as 'discrepancy scores', and large discrepancy scores are flagged for intervention by a third party.
+## Overview
 
-Often, it is not clear what re-sampling strategy should be used to obtain the most accurate and reliable discrepancy scores. The goal of this project is to create a simulator to predict discrepancy scores, and the statistical accuracy of the discrepancy scores, for different re-sampling strategies. This repository will be populated with python scripts and jupyter notebooks to implement the simulator. However, no data will be made public as it is sensitive data collected by state governments in India.
+An important goal of CEGIS is to improve the quality of administrative data collected by state governments. One approach is to re-sample a subset of the data and measure deviations from the original samples collected. These deviations are quantified as **discrepancy scores**, and significant scores are flagged for third-party intervention.
 
-DiscSim is a simulation tool with a backend API built using FastAPI and a frontend interface developed with Streamlit. The project is containerized using Docker for easy deployment.
+Often, it's unclear which re-sampling strategy yields the most accurate and reliable discrepancy scores. The goal of this project is to create a simulator that predicts discrepancy scores and assesses their statistical accuracy across different re-sampling strategies.
+
+DiscSim comprises a backend API built with FastAPI and a frontend interface developed using Streamlit. The project utilizes PostgreSQL for database management and is containerized with Docker for easy deployment.
 
 ## Getting Started
 
@@ -14,42 +16,22 @@ DiscSim is a simulation tool with a backend API built using FastAPI and a fronte
 
 ```bash
 git clone https://github.com/cegis-org/discsim.git
-cd DiscSim
+cd discsim
 ```
 
 ### Setting Up a Virtual Environment
 
-You can set up the virtual environment using either `conda` or `venv`. Below are the instructions for both.
+We recommend using a virtual environment to manage dependencies. You can use either `venv` or `conda`.
 
-#### Using Conda
+#### Using `venv`
 
-1. Create the environment:
-
-   ```bash
-   conda create -n venv python=3.11
-   ```
-
-2. Activate the environment:
+1. **Create the virtual environment:**
 
    ```bash
-   conda activate venv
+   python3 -m venv venv
    ```
 
-#### Using venv
-
-1. Create the environment:
-
-   ```bash
-   python -m venv venv
-   ```
-
-2. Activate the environment:
-
-   - On Windows:
-
-     ```bash
-     venv\Scripts\activate
-     ```
+2. **Activate the virtual environment:**
 
    - On macOS/Linux:
 
@@ -57,35 +39,236 @@ You can set up the virtual environment using either `conda` or `venv`. Below are
      source venv/bin/activate
      ```
 
+   - On Windows:
+
+     ```bash
+     venv\Scripts\activate
+     ```
+
+#### Using `conda`
+
+1. **Create the environment:**
+
+   ```bash
+   conda create -n discsim-env python=3.11
+   ```
+
+2. **Activate the environment:**
+
+   ```bash
+   conda activate discsim-env
+   ```
+
 ### Installing Dependencies
 
-With the virtual environment activated, run:
+With the virtual environment activated, install the required packages:
 
 ```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+## Setting Up the PostgreSQL Database
+
+### Installing PostgreSQL
+
+#### On Ubuntu/Linux
+
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+```
+
+#### On macOS
+
+Install PostgreSQL using Homebrew:
+
+```bash
+brew update
+brew install postgresql
+brew services start postgresql
+```
+
+#### On Windows
+
+Download and install PostgreSQL from the [official website](https://www.postgresql.org/download/windows/).
+
+### Configuring the Database
+
+1. **Start the PostgreSQL service (if not already running):**
+
+   - On Ubuntu/Linux:
+
+     ```bash
+     sudo service postgresql start
+     ```
+
+2. **Switch to the `postgres` user:**
+
+   ```bash
+   sudo -u postgres psql
+   ```
+
+3. **Create the database and user:**
+
+   ```sql
+   -- Create the database
+   CREATE DATABASE discsim;
+
+   -- Create the user with a password
+   CREATE USER "user" WITH PASSWORD 'password';
+
+   -- Grant privileges on the database
+   GRANT ALL PRIVILEGES ON DATABASE discsim TO "user";
+   ```
+
+4. **Grant privileges on the `public` schema:**
+
+   ```sql
+   -- Change ownership of the public schema
+   ALTER SCHEMA public OWNER TO "user";
+
+   -- Grant all privileges on the schema
+   GRANT ALL ON SCHEMA public TO "user";
+
+   -- Grant privileges on all tables, sequences, and functions
+   GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "user";
+   GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "user";
+   GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO "user";
+   ```
+
+5. **Verify the privileges (optional):**
+
+   ```sql
+   -- List all schemas and their owners
+   \dn+
+
+   -- Check privileges on the public schema
+   SELECT nspname, nspowner, has_schema_privilege('user', nspname, 'CREATE, USAGE') AS has_privs
+   FROM pg_namespace
+   WHERE nspname = 'public';
+   ```
+
+6. **Exit the `psql` shell:**
+
+   ```sql
+   \q
+   ```
+
+## Configuring Environment Variables
+
+Create a `.env` file in the project's root directory and add the following content:
+
+```env
+# API configuration
+API_BASE_URL="http://localhost:8000"
+
+# PostgreSQL configuration
+POSTGRES_USER="user"
+POSTGRES_PASSWORD="password"
+POSTGRES_DB="discsim"
+
+# Database URL
+DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}"
+
+# Log level
+LOG_LEVEL=info
+```
+
+Ensure that the `DATABASE_URL` matches your local PostgreSQL configuration.
+
 ## Running the Application
 
-You can run the API server and the Streamlit frontend in a few different ways.
+### Running the Backend API and Frontend Locally
 
-### Running the API backend, SQL Server, and the Streamlit frontend
+#### Starting the Backend API Server
 
-**Using Docker:**
+1. **Activate your virtual environment if not already active:**
+
+   - On macOS/Linux:
+
+     ```bash
+     source venv/bin/activate
+     ```
+
+   - On Windows:
+
+     ```bash
+     venv\Scripts\activate
+     ```
+
+2. **Run the API server:**
+
+   ```bash
+   python api/run.py
+   ```
+
+   The API server will start on `http://localhost:8000`.
+
+#### Starting the Frontend Streamlit App
+
+1. **Open a new terminal window.**
+
+2. **Activate your virtual environment.**
+
+3. **Run the Streamlit app:**
+
+   ```bash
+   streamlit run dashboard/app.py --server.port=8501
+   ```
+
+   The frontend will be accessible at `http://localhost:8501`.
+
+#### Accessing the Application
+
+- **Frontend Interface:** Open your web browser and navigate to `http://localhost:8501` to interact with the application.
+- **API Documentation:** Access the API docs at `http://localhost:8000/docs`.
+
+### Running the Application with Docker (Optional)
+
+If you prefer to use Docker, you can run the entire application stack using Docker Compose.
+
+#### Prerequisites
+
+- **Docker**
+- **Docker Compose**
+
+#### Steps
+
+1. **Build and start the containers:**
 
    ```bash
    docker-compose build
    docker-compose up
    ```
 
-1. Your API server is now running on http://localhost:8000,
-2. The PostgreSQL will be running on http://localhost:5432
-3. And the frontend on http://localhost:8501 - this is the link you'll be opening on your browser to see it in action!
+2. **Access the services:**
+
+   - **API Server:** `http://localhost:8000`
+   - **Frontend:** `http://localhost:8501`
+
+   **Note:** The PostgreSQL database runs inside Docker and is accessible to the other containers.
 
 ## Contributing
 
-Feel free to fork this repository and submit pull requests. For major changes, please open an issue first to discuss what you would like to change.
+We welcome contributions! If you'd like to contribute to DiscSim:
 
----
+1. **Fork the repository.**
+2. **Create a new branch for your feature or bug fix:**
 
-Thank you for checking out DiscSim! 🚀
+   ```bash
+   git checkout -b feature-name
+   ```
+
+3. **Commit your changes and push to your fork.**
+4. **Submit a pull request.**
+
+For major changes, please open an issue first to discuss your ideas.
+
+## License
+
+MIT License.
+
+## Acknowledgments
+
+Thank you for checking out DiscSim! We hope this tool aids in enhancing the quality of administrative data and contributes to better governance and development outcomes.
