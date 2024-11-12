@@ -8,4 +8,9 @@ streamlit-navigation-bar
 matplotlib
 setuptools
 wheel
-Pillow
+fastapi
+uvicorn
+numpy
+python-multipart
+psycopg2-binary
+sqlalchemy

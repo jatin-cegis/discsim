@@ -1,15 +1,29 @@
 # Use the official Python image
-FROM python:3.11-slim
+FROM python:3.11
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    gfortran \
+    libatlas-base-dev \
+    liblapack-dev \
+    libblas-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install dependencies
-COPY api/requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+# Copy and install project dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install --default-timeout=1000 -r requirements.txt
 
-# Copy the API code
-COPY api/ /app/api/
+# Copy the entire project into the container
+COPY . .
+
+# Install the project as a package
+RUN pip install -e .
 
 # Expose the API port
 EXPOSE 8000

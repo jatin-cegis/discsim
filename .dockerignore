@@ -8,3 +8,5 @@ env/
 # Ignore Git and other unnecessary files
 .git/
 .gitignore
+
+discsim.egg-info
