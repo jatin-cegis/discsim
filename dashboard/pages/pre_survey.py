@@ -1,10 +1,6 @@
 import streamlit as st
-import sys
 import os
 from src.utils.pre_survey_analysis.third_party_sampling_strategy import third_party_sampling_strategy
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def pre_survey_analysis():
     title_info_markdown = '''

@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import sys
-import os
 from src.utils.state_management import (
     initialize_states,
     reset_session_states,
@@ -9,9 +7,6 @@ from src.utils.state_management import (
 )
 from src.utils.post_survey_analysis.helpers.file_upload import handle_file_upload
 from src.utils.post_survey_analysis.functionality import execute_post_survey_analysis
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def post_survey_analysis():
     st.title("Post-Survey Analysis")

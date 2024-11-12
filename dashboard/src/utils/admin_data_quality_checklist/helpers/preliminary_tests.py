@@ -1,15 +1,11 @@
 import streamlit as st
 import requests
-import sys
 import os
 from dotenv import load_dotenv
 from src.utils.admin_data_quality_checklist.helpers.functionality_map import get_relevant_functionality
 from src.utils.admin_data_quality_checklist.helpers.display_preview import display_data_preview
 
 load_dotenv()
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 API_BASE_URL = os.getenv("API_BASE_URL")
 

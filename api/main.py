@@ -1,6 +1,4 @@
 import json
-import sys
-import os
 import pandas as pd
 import numpy as np
 import io
@@ -47,9 +45,6 @@ from api.utils.pre_survey_analysis import (
 from api.utils.post_survey_analysis import calculate_discrepancy_scores
 from api.database import get_db, UploadedFile
 from api.database import engine, Base
-
-# Add the directory containing the 'api' module to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 app = FastAPI()
 

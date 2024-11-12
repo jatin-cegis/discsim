@@ -1,14 +1,9 @@
 import streamlit as st
 import pandas as pd
-import sys
-import os
 from src.utils.state_management import initialize_states, reset_session_states, reset_upload
 from src.utils.admin_data_quality_checklist.helpers.file_upload import handle_file_upload
 from src.utils.admin_data_quality_checklist.helpers.preliminary_tests import run_preliminary_tests
 from src.utils.admin_data_quality_checklist.helpers.functionality_map import execute_functionality, sidebar_functionality_select
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def admin_data_quality_check():
     # File selection

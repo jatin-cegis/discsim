@@ -1,66 +1,46 @@
-version: '3.8'
-
 services:
-  web:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
+  api:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: discsim-api
+      dockerfile: api/Dockerfile
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - LOG_LEVEL=${LOG_LEVEL}
+    depends_on:
+      - db
     ports:
       - "8000:8000"
-    restart: always
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - LOG_LEVEL=${LOG_LEVEL}
-    command: ["python", "api/run.py"]
-    depends_on:
-      db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+    networks:
+      - app-network
 
-  db:
-    image: postgres:latest
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  streamlit:
+  dashboard:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: discsim-frontend
+      dockerfile: dashboard/Dockerfile
+    environment:
+      - API_BASE_URL=${API_BASE_URL}
+    depends_on:
+      - api
     ports:
       - "8501:8501"
-    restart: always
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - LOG_LEVEL=${LOG_LEVEL}
-      - API_BASE_URL=${API_BASE_URL}
-    command: ["streamlit", "run", "dashboard/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
-    depends_on:
-      web:
-        condition: service_healthy
-      db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
+
+networks:
+  app-network:

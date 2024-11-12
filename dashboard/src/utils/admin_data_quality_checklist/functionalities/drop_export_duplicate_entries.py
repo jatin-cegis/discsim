@@ -1,17 +1,12 @@
 import json
 import os
-import sys
 from src.utils.admin_data_quality_checklist.helpers.graph_functions import plot_pie_chart
 import streamlit as st
 import pandas as pd
-import numpy as np
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 API_BASE_URL = os.getenv("API_BASE_URL")
 

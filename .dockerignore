@@ -1,0 +1,10 @@
+# Ignore Python cache and virtual environments
+__pycache__/
+*.pyc
+venv/
+env/
+.env
+
+# Ignore Git and other unnecessary files
+.git/
+.gitignore

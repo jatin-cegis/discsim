@@ -1,0 +1,10 @@
+streamlit
+pandas
+requests
+plotly
+scipy
+python-dotenv
+streamlit-navigation-bar
+matplotlib
+setuptools
+wheel

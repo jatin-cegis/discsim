@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 import traceback
 import streamlit as st
 import pandas as pd
@@ -8,9 +7,6 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 API_BASE_URL = os.getenv("API_BASE_URL")
 

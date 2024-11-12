@@ -1,15 +1,11 @@
 import streamlit as st
 from PIL import Image
-import sys
 import os
 import pages as pg
 from streamlit_navigation_bar import st_navbar
 from dotenv import load_dotenv
 
 load_dotenv()
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))

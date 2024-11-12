@@ -1,15 +1,11 @@
 import streamlit as st
 import requests
-import sys
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from src.utils.post_survey_analysis.helpers.fetch_files import fetch_file_from_api
 
 load_dotenv()
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 API_BASE_URL = os.getenv("API_BASE_URL")
 

@@ -2,16 +2,12 @@ import base64
 from io import BytesIO
 import streamlit as st
 import requests
-import sys
 import os
 from PIL import Image
 from dotenv import load_dotenv
 from src.utils.pre_survey_analysis.error_handling import check_errors
 
 load_dotenv()
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 API_BASE_URL = os.getenv("API_BASE_URL")
 
