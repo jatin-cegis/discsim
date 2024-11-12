@@ -8,3 +8,4 @@ streamlit-navigation-bar
 matplotlib
 setuptools
 wheel
+Pillow

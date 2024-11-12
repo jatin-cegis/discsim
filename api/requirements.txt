@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 pandas
+numpy
 requests
 scipy
 python-multipart
