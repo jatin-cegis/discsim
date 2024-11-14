@@ -1,9 +1,6 @@
 import pandas as pd
 from typing import Dict, Any, List
 import plotly.express as px
-import base64
-from io import BytesIO
-import json
 
 def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0) -> Dict[str, Any]:
     """

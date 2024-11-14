@@ -4,7 +4,6 @@ import requests
 import os
 from dotenv import load_dotenv
 import plotly.io as pio
-import json
 import base64
 
 load_dotenv()
