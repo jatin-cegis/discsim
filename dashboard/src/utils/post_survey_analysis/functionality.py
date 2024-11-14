@@ -3,9 +3,9 @@ import pandas as pd
 import requests
 import os
 from dotenv import load_dotenv
-from PIL import Image
+import plotly.io as pio
+import json
 import base64
-from io import BytesIO
 
 load_dotenv()
 
@@ -73,11 +73,11 @@ def execute_post_survey_analysis(uploaded_file, df):
         # Display Plots
         st.subheader("Discrepancy Plots")
 
-        # Function to decode and display base64 images
-        def display_plot(plot_b64, caption):
+        # Function to deserialize and display Plotly figures
+        def display_plot(plot_json, caption):
             try:
-                image = Image.open(BytesIO(base64.b64decode(plot_b64)))
-                st.image(image, caption=caption, use_column_width=True)
+                fig = pio.from_json(plot_json)
+                st.plotly_chart(fig, use_container_width=True)
             except Exception as e:
                 st.error(f"Failed to load plot: {caption}. Error: {str(e)}")
 

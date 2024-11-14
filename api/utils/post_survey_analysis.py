@@ -1,14 +1,14 @@
 import pandas as pd
 from typing import Dict, Any, List
-import matplotlib.pyplot as plt
+import plotly.express as px
 import base64
 from io import BytesIO
-import seaborn as sns
+import json
 
 def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0) -> Dict[str, Any]:
     """
     Calculate discrepancy measures and composite discrepancy score for each L0 and L1 combination.
-    Additionally, generate plots for these metrics.
+    Additionally, generate interactive Plotly plots for these metrics.
 
     Args:
         df (pd.DataFrame): DataFrame containing the survey data.
@@ -114,9 +114,9 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
         
         # Append results with casting to native Python types
         results.append({
-            'L0_id': str(l0_id),  # Keep as string
+            'L0_id': str(l0_id),  # Keep as string to handle alphanumerics
             'L0_name': str(l0_name),
-            'L1_id': str(l1_id),  # Keep as string
+            'L1_id': str(l1_id),  # Keep as string to handle alphanumerics
             'L1_name': str(l1_name),
             'average_height_discrepancy_cm': float(round(avg_height_discrepancy, 2)),
             'average_weight_discrepancy_kg': float(round(avg_weight_discrepancy, 2)),
@@ -135,107 +135,112 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
             'composite_discrepancy_score': float(round(composite_score, 2))
         })
     
-    # After gathering all results, generate plots
+    # After gathering all results, generate Plotly plots
     discrepancy_df = pd.DataFrame(results)
     
+    plots = {}
+    
     # Plot 1: Height Discrepancy (cm) vs L0
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x='L0_name', y='average_height_discrepancy_cm', data=discrepancy_df)
-    plt.title('Average Height Discrepancy (cm) per L0')
-    plt.xlabel('L0 Name')
-    plt.ylabel('Average Height Discrepancy (cm)')
-    plt.tight_layout()
-    buf_height = BytesIO()
-    plt.savefig(buf_height, format='png')
-    plt.close()
-    plot_height = base64.b64encode(buf_height.getvalue()).decode('utf-8')
+    fig_height = px.bar(
+        discrepancy_df,
+        x='L0_name',
+        y='average_height_discrepancy_cm',
+        title='Average Height Discrepancy (cm) per L0',
+        labels={'L0_name': 'L0 Name', 'average_height_discrepancy_cm': 'Average Height Discrepancy (cm)'},
+        color='average_height_discrepancy_cm',
+        color_continuous_scale='Viridis'  # Valid colorscale
+    )
+    plots['height_discrepancy_plot'] = fig_height.to_json()
     
     # Plot 2: Weight Discrepancy (kg) vs L0
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x='L0_name', y='average_weight_discrepancy_kg', data=discrepancy_df)
-    plt.title('Average Weight Discrepancy (kg) per L0')
-    plt.xlabel('L0 Name')
-    plt.ylabel('Average Weight Discrepancy (kg)')
-    plt.tight_layout()
-    buf_weight = BytesIO()
-    plt.savefig(buf_weight, format='png')
-    plt.close()
-    plot_weight = base64.b64encode(buf_weight.getvalue()).decode('utf-8')
+    fig_weight = px.bar(
+        discrepancy_df,
+        x='L0_name',
+        y='average_weight_discrepancy_kg',
+        title='Average Weight Discrepancy (kg) per L0',
+        labels={'L0_name': 'L0 Name', 'average_weight_discrepancy_kg': 'Average Weight Discrepancy (kg)'},
+        color='average_weight_discrepancy_kg',
+        color_continuous_scale='Magma'  # Valid colorscale
+    )
+    plots['weight_discrepancy_plot'] = fig_weight.to_json()
     
     # Plot 3: Height Measurement Accuracy (%) vs L0
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x='L0_name', y='height_accuracy_percent', data=discrepancy_df)
-    plt.title('Height Measurement Accuracy (%) per L0')
-    plt.xlabel('L0 Name')
-    plt.ylabel('Height Measurement Accuracy (%)')
-    plt.tight_layout()
-    buf_height_acc = BytesIO()
-    plt.savefig(buf_height_acc, format='png')
-    plt.close()
-    plot_height_acc = base64.b64encode(buf_height_acc.getvalue()).decode('utf-8')
+    fig_height_acc = px.bar(
+        discrepancy_df,
+        x='L0_name',
+        y='height_accuracy_percent',
+        title='Height Measurement Accuracy (%) per L0',
+        labels={'L0_name': 'L0 Name', 'height_accuracy_percent': 'Height Measurement Accuracy (%)'},
+        color='height_accuracy_percent',
+        color_continuous_scale='RdBu'  # Changed from 'Coolwarm' to 'RdBu'
+    )
+    plots['height_accuracy_plot'] = fig_height_acc.to_json()
     
     # Plot 4: Weight Measurement Accuracy (%) vs L0
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x='L0_name', y='weight_accuracy_percent', data=discrepancy_df)
-    plt.title('Weight Measurement Accuracy (%) per L0')
-    plt.xlabel('L0 Name')
-    plt.ylabel('Weight Measurement Accuracy (%)')
-    plt.tight_layout()
-    buf_weight_acc = BytesIO()
-    plt.savefig(buf_weight_acc, format='png')
-    plt.close()
-    plot_weight_acc = base64.b64encode(buf_weight_acc.getvalue()).decode('utf-8')
+    fig_weight_acc = px.bar(
+        discrepancy_df,
+        x='L0_name',
+        y='weight_accuracy_percent',
+        title='Weight Measurement Accuracy (%) per L0',
+        labels={'L0_name': 'L0 Name', 'weight_accuracy_percent': 'Weight Measurement Accuracy (%)'},
+        color='weight_accuracy_percent',
+        color_continuous_scale='Plasma'  # Valid colorscale
+    )
+    plots['weight_accuracy_plot'] = fig_weight_acc.to_json()
     
     # Plot 5: Classification Accuracy - Wasting vs L0
-    classification_wasting_df = discrepancy_df[['L0_name', 'classification_accuracy_wasting_percent', 
-                                                'classification_mam_as_normal_percent', 
-                                                'classification_sam_as_mam_percent', 
-                                                'classification_other_wasting_misclassification_percent']]
-    classification_wasting_melted = classification_wasting_df.melt(id_vars='L0_name', 
-                                                                     var_name='Classification',
-                                                                     value_name='Percentage')
+    classification_wasting_df = discrepancy_df[[
+        'L0_name', 
+        'classification_accuracy_wasting_percent', 
+        'classification_mam_as_normal_percent', 
+        'classification_sam_as_mam_percent', 
+        'classification_other_wasting_misclassification_percent'
+    ]]
+    classification_wasting_melted = classification_wasting_df.melt(
+        id_vars='L0_name', 
+        var_name='Classification',
+        value_name='Percentage'
+    )
     
-    plt.figure(figsize=(12, 7))
-    sns.barplot(x='L0_name', y='Percentage', hue='Classification', data=classification_wasting_melted, palette='Set2')
-    plt.title('Classification Accuracy - Wasting vs L0')
-    plt.xlabel('L0 Name')
-    plt.ylabel('Percentage (%)')
-    plt.legend(title='Classification', bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.tight_layout()
-    buf_class_wasting = BytesIO()
-    plt.savefig(buf_class_wasting, format='png')
-    plt.close()
-    plot_class_wasting = base64.b64encode(buf_class_wasting.getvalue()).decode('utf-8')
+    fig_class_wasting = px.bar(
+        classification_wasting_melted,
+        x='L0_name',
+        y='Percentage',
+        color='Classification',
+        title='Classification Accuracy - Wasting vs L0',
+        labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
+        color_discrete_sequence=px.colors.qualitative.Set2
+    )
+    fig_class_wasting.update_layout(barmode='stack')
+    plots['classification_wasting_plot'] = fig_class_wasting.to_json()
     
     # Plot 6: Classification Accuracy - Stunting vs L0
-    classification_stunting_df = discrepancy_df[['L0_name', 'classification_accuracy_stunting_percent', 
-                                                'classification_mam_as_normal_stunting_percent', 
-                                                'classification_sam_as_mam_stunting_percent', 
-                                                'classification_other_stunting_misclassification_percent']]
-    classification_stunting_melted = classification_stunting_df.melt(id_vars='L0_name', 
-                                                                     var_name='Classification',
-                                                                     value_name='Percentage')
+    classification_stunting_df = discrepancy_df[[
+        'L0_name', 
+        'classification_accuracy_stunting_percent', 
+        'classification_mam_as_normal_stunting_percent', 
+        'classification_sam_as_mam_stunting_percent', 
+        'classification_other_stunting_misclassification_percent'
+    ]]
+    classification_stunting_melted = classification_stunting_df.melt(
+        id_vars='L0_name', 
+        var_name='Classification',
+        value_name='Percentage'
+    )
     
-    plt.figure(figsize=(12, 7))
-    sns.barplot(x='L0_name', y='Percentage', hue='Classification', data=classification_stunting_melted, palette='Set3')
-    plt.title('Classification Accuracy - Stunting vs L0')
-    plt.xlabel('L0 Name')
-    plt.ylabel('Percentage (%)')
-    plt.legend(title='Classification', bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.tight_layout()
-    buf_class_stunting = BytesIO()
-    plt.savefig(buf_class_stunting, format='png')
-    plt.close()
-    plot_class_stunting = base64.b64encode(buf_class_stunting.getvalue()).decode('utf-8')
+    fig_class_stunting = px.bar(
+        classification_stunting_melted,
+        x='L0_name',
+        y='Percentage',
+        color='Classification',
+        title='Classification Accuracy - Stunting vs L0',
+        labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
+        color_discrete_sequence=px.colors.qualitative.Set3
+    )
+    fig_class_stunting.update_layout(barmode='stack')
+    plots['classification_stunting_plot'] = fig_class_stunting.to_json()
     
     return {
         'grouped_discrepancy_scores': results,
-        'plots': {
-            'height_discrepancy_plot': plot_height,
-            'weight_discrepancy_plot': plot_weight,
-            'height_accuracy_plot': plot_height_acc,
-            'weight_accuracy_plot': plot_weight_acc,
-            'classification_wasting_plot': plot_class_wasting,
-            'classification_stunting_plot': plot_class_stunting
-        }
+        'plots': plots
     }
