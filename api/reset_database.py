@@ -1,5 +1,3 @@
-import os
-
 from api.database import engine, Base, UploadedFile
 
 # Drop the specific table
