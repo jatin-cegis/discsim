@@ -15,8 +15,8 @@ def execute_post_survey_analysis(uploaded_file, df):
     st.header("Composite Discrepancy Score Calculation")
 
     # Display the dataframe
-    st.subheader("Uploaded Data")
-    st.write(df.head())
+    with st.expander("Uploaded Data Head:"):
+        st.dataframe(df.head(), use_container_width=True, hide_index=True)
 
     # Check if necessary columns are present
     required_columns = [
@@ -73,12 +73,13 @@ def execute_post_survey_analysis(uploaded_file, df):
         # Sort the dataframe by composite discrepancy score in descending order
         scores_df = scores_df.sort_values('composite_discrepancy_score', ascending=False)
 
-        st.subheader("Discrepancy Measures per L0 and L1")
-        st.dataframe(scores_df)
+        with st.expander("Discrepancy Measures per L0 and L1:"):
+            st.dataframe(scores_df, use_container_width=True, hide_index=True)
 
         # Display Composite Discrepancy Scores
-        st.subheader("Composite Discrepancy Scores")
         composite_scores = scores_df[['L0_name', 'L1_name', 'composite_discrepancy_score']]
+        with st.expander("Composite Discrepancy Scores:"):
+            st.dataframe(composite_scores, use_container_width=True, hide_index=True)
 
         # Plot the composite discrepancy scores
         st.subheader("Composite Discrepancy Score Plot")
@@ -93,9 +94,6 @@ def execute_post_survey_analysis(uploaded_file, df):
             display_plot(plots['composite_discrepancy_plot'], "Composite Discrepancy Score per L0")
         else:
             st.warning("Composite Discrepancy Score Plot not available.")
-
-        # Display the composite scores table
-        st.table(composite_scores)
 
         # Display Plots
         st.subheader("Discrepancy Plots")
