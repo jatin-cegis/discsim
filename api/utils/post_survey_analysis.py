@@ -2,14 +2,15 @@ import pandas as pd
 from typing import Dict, Any, List
 import plotly.express as px
 
-def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0) -> Dict[str, Any]:
+def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float = 0.0, margin_of_error_weight: float = 0.0) -> Dict[str, Any]:
     """
     Calculate discrepancy measures and composite discrepancy score for each L0 and L1 combination.
     Additionally, generate interactive Plotly plots for these metrics.
 
     Args:
         df (pd.DataFrame): DataFrame containing the survey data.
-        margin_of_error (float): Acceptable margin of error for measurements.
+        margin_of_error_height (float): Acceptable margin of error for height measurements.
+        margin_of_error_weight (float): Acceptable margin of error for weight measurements.
 
     Returns:
         Dict[str, Any]: Dictionary containing the results per L0 and L1, including plots.
@@ -27,8 +28,8 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
             raise ValueError(f"Required column '{col}' is missing from the data.")
     
     # Calculate discrepancies
-    df['height_discrepancy_cm'] = (df['L1_height'] - df['L0_height']).abs() - margin_of_error
-    df['weight_discrepancy_kg'] = (df['L1_weight'] - df['L0_weight']).abs() - margin_of_error
+    df['height_discrepancy_cm'] = (df['L1_height'] - df['L0_height']).abs() - margin_of_error_height
+    df['weight_discrepancy_kg'] = (df['L1_weight'] - df['L0_weight']).abs() - margin_of_error_weight
     
     # Clip negative discrepancies to zero
     df['height_discrepancy_cm'] = df['height_discrepancy_cm'].clip(lower=0)
@@ -37,6 +38,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
     # Classification accuracy metrics
     df['wasting_accuracy'] = df.apply(lambda row: 'Accurate' if row['wasting_L0'] == row['wasting_L1'] else 'Misclassified', axis=1)
     df['stunting_accuracy'] = df.apply(lambda row: 'Accurate' if row['stunting_L0'] == row['stunting_L1'] else 'Misclassified', axis=1)
+    df['underweight_accuracy'] = df.apply(lambda row: 'Accurate' if row['underweight_L0'] == row['underweight_L1'] else 'Misclassified', axis=1)
     
     # Group by L0_id and L1_id
     grouped = df.groupby(['L0_id', 'L1_id'])
@@ -55,8 +57,8 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
         weight_discrepancy_prevalence = (group['weight_discrepancy_kg'] > 0).mean() * 100
         
         # Measurement Accuracy
-        height_accuracy = (group['height_discrepancy_cm'] <= margin_of_error).mean() * 100
-        weight_accuracy = (group['weight_discrepancy_kg'] <= margin_of_error).mean() * 100
+        height_accuracy = (group['height_discrepancy_cm'] <= margin_of_error_height).mean() * 100
+        weight_accuracy = (group['weight_discrepancy_kg'] <= margin_of_error_weight).mean() * 100
         
         # Classification Accuracy - Wasting
         wasting_acc = (group['wasting_accuracy'] == 'Accurate').mean() * 100
@@ -69,6 +71,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
         stunting_mam_as_normal = group[(group['stunting_L1'].isin(['MAM', 'SAM'])) & (group['stunting_L0'] == 'Normal')].shape[0] / group.shape[0] * 100
         stunting_sam_as_mam = group[(group['stunting_L1'] == 'SAM') & (group['stunting_L0'] == 'MAM')].shape[0] / group.shape[0] * 100
         stunting_other_misclassification = 100 - (stunting_acc + stunting_mam_as_normal + stunting_sam_as_mam)
+        
+        # Classification Accuracy - Underweight
+        underweight_acc = (group['underweight_accuracy'] == 'Accurate').mean() * 100
+        underweight_mam_as_normal = group[(group['underweight_L1'].isin(['MAM', 'SAM'])) & (group['underweight_L0'] == 'Normal')].shape[0] / group.shape[0] * 100
+        underweight_sam_as_mam = group[(group['underweight_L1'] == 'SAM') & (group['underweight_L0'] == 'MAM')].shape[0] / group.shape[0] * 100
+        underweight_other_misclassification = 100 - (underweight_acc + underweight_mam_as_normal + underweight_sam_as_mam)
         
         # Composite Score Calculation
         # Normalize measures (Higher values indicate worse performance)
@@ -124,6 +132,10 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
             'classification_mam_as_normal_stunting_percent': float(round(stunting_mam_as_normal, 2)),
             'classification_sam_as_mam_stunting_percent': float(round(stunting_sam_as_mam, 2)),
             'classification_other_stunting_misclassification_percent': float(round(stunting_other_misclassification, 2)),
+            'classification_accuracy_underweight_percent': float(round(underweight_acc, 2)),
+            'classification_mam_as_normal_underweight_percent': float(round(underweight_mam_as_normal, 2)),
+            'classification_sam_as_mam_underweight_percent': float(round(underweight_sam_as_mam, 2)),
+            'classification_other_underweight_misclassification_percent': float(round(underweight_other_misclassification, 2)),
             'composite_discrepancy_score': float(round(composite_score, 2))
         })
     
@@ -274,6 +286,35 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
         yaxis={'categoryorder':'total ascending'}
     )
     plots['composite_discrepancy_plot'] = fig_composite.to_json()
+
+    # Plot 8: Classification Accuracy - Underweight vs L0 (Stacked Horizontal Bar)
+    classification_underweight_df = discrepancy_df[[
+        'L0_name', 
+        'classification_accuracy_underweight_percent', 
+        'classification_mam_as_normal_underweight_percent', 
+        'classification_sam_as_mam_underweight_percent', 
+        'classification_other_underweight_misclassification_percent'
+    ]]
+    classification_underweight_melted = classification_underweight_df.melt(
+        id_vars='L0_name', 
+        var_name='Classification',
+        value_name='Percentage'
+    )
+    
+    classification_underweight_melted = classification_underweight_melted.sort_values('Percentage', ascending=False)
+    
+    fig_class_underweight = px.bar(
+        classification_underweight_melted,
+        x='Percentage',
+        y='L0_name',
+        color='Classification',
+        orientation='h',
+        title='Classification Accuracy - Underweight vs L0',
+        labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
+        color_discrete_sequence=px.colors.qualitative.Set1
+    )
+    fig_class_underweight.update_layout(barmode='stack', yaxis={'categoryorder':'total ascending'})
+    plots['classification_underweight_plot'] = fig_class_underweight.to_json()
     
     return {
         'grouped_discrepancy_scores': results,

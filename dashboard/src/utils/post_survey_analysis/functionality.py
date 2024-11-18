@@ -31,19 +31,29 @@ def execute_post_survey_analysis(uploaded_file, df):
         st.error(f"The following required columns are missing: {', '.join(missing_columns)}")
         return
 
-    # Input for margin of error
-    margin_of_error = st.number_input(
-        "Margin of Error", 
+    # Inputs for margins of error
+    margin_of_error_height = st.number_input(
+        "Margin of Error for Height (cm)", 
         min_value=0.0, 
         value=0.0, 
         step=0.1,
-        help="Acceptable margin of error to account for natural growth or measurement errors."
+        help="Acceptable margin of error for height measurements."
+    )
+    margin_of_error_weight = st.number_input(
+        "Margin of Error for Weight (kg)", 
+        min_value=0.0, 
+        value=0.0, 
+        step=0.1,
+        help="Acceptable margin of error for weight measurements."
     )
 
     # Prepare data for API
     uploaded_file.seek(0)
     files = {"file": ("uploaded_file.csv", uploaded_file, "text/csv")}
-    data = {"margin_of_error": margin_of_error}
+    data = {
+        "margin_of_error_height": margin_of_error_height,
+        "margin_of_error_weight": margin_of_error_weight
+    }
 
     # Send request to API
     with st.spinner("Calculating discrepancy scores..."):
@@ -125,6 +135,12 @@ def execute_post_survey_analysis(uploaded_file, df):
             display_plot(plots['classification_stunting_plot'], "Classification Accuracy - Stunting vs L0")
         else:
             st.warning("Classification Accuracy - Stunting Plot not available.")
+
+        # Plot 7: Classification Accuracy - Underweight vs L0
+        if 'classification_underweight_plot' in plots:
+            display_plot(plots['classification_underweight_plot'], "Classification Accuracy - Underweight vs L0")
+        else:
+            st.warning("Classification Accuracy - Underweight Plot not available.")
 
         # Optionally, provide download link for discrepancy scores
         st.subheader("Download Discrepancy Scores")

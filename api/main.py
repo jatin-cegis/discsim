@@ -725,14 +725,15 @@ async def predict_third_party_sampling(input_data: ThirdPartySamplingInput):
 @app.post("/post_survey_analysis")
 async def post_survey_analysis(
     file: UploadFile = File(...),
-    margin_of_error: float = Form(default=0.0),
+    margin_of_error_height: float = Form(0.0),
+    margin_of_error_weight: float = Form(0.0)
 ):
     try:
         contents = await file.read()
         df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
 
         # Perform discrepancy calculations
-        result = calculate_discrepancy_scores(df, margin_of_error)
+        result = calculate_discrepancy_scores(df, margin_of_error_height, margin_of_error_weight)
 
         return JSONResponse(content=result)
     except Exception as e:
