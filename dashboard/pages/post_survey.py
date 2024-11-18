@@ -9,6 +9,8 @@ from src.utils.post_survey_analysis.helpers.file_upload import handle_file_uploa
 from src.utils.post_survey_analysis.functionality import execute_post_survey_analysis
 
 def post_survey_analysis():
+
+    st.sidebar.header("ECD Nested Supervision")
     
     # File selection
     file_option = st.sidebar.radio(

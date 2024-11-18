@@ -60,6 +60,8 @@ def execute_post_survey_analysis(uploaded_file, df):
 
         # Convert to DataFrame for better handling
         scores_df = pd.DataFrame(grouped_scores)
+        # Sort the dataframe by composite discrepancy score in descending order
+        scores_df = scores_df.sort_values('composite_discrepancy_score', ascending=False)
 
         st.subheader("Discrepancy Measures per L0 and L1")
         st.dataframe(scores_df)
@@ -67,18 +69,26 @@ def execute_post_survey_analysis(uploaded_file, df):
         # Display Composite Discrepancy Scores
         st.subheader("Composite Discrepancy Scores")
         composite_scores = scores_df[['L0_name', 'L1_name', 'composite_discrepancy_score']]
-        st.table(composite_scores)
 
-        # Display Plots
-        st.subheader("Discrepancy Plots")
-
-        # Function to deserialize and display Plotly figures
+        # Plot the composite discrepancy scores
+        st.subheader("Composite Discrepancy Score Plot")
         def display_plot(plot_json, caption):
             try:
                 fig = pio.from_json(plot_json)
                 st.plotly_chart(fig, use_container_width=True)
             except Exception as e:
                 st.error(f"Failed to load plot: {caption}. Error: {str(e)}")
+
+        if 'composite_discrepancy_plot' in plots:
+            display_plot(plots['composite_discrepancy_plot'], "Composite Discrepancy Score per L0")
+        else:
+            st.warning("Composite Discrepancy Score Plot not available.")
+
+        # Display the composite scores table
+        st.table(composite_scores)
+
+        # Display Plots
+        st.subheader("Discrepancy Plots")
 
         # Plot 1: Height Discrepancy (cm) vs L0
         if 'height_discrepancy_plot' in plots:

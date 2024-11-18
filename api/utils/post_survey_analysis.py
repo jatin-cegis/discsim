@@ -71,38 +71,33 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
         stunting_other_misclassification = 100 - (stunting_acc + stunting_mam_as_normal + stunting_sam_as_mam)
         
         # Composite Score Calculation
-        # Normalize measures
+        # Normalize measures (Higher values indicate worse performance)
         max_height_discrepancy = df['height_discrepancy_cm'].max()
         max_weight_discrepancy = df['weight_discrepancy_kg'].max()
         
         norm_height_discrepancy = avg_height_discrepancy / max_height_discrepancy if max_height_discrepancy != 0 else 0
         norm_weight_discrepancy = avg_weight_discrepancy / max_weight_discrepancy if max_weight_discrepancy != 0 else 0
         
-        # Normalize prevalence percentages to [0,1]
-        norm_height_discrepancy_prevalence = height_discrepancy_prevalence / 100
-        norm_weight_discrepancy_prevalence = weight_discrepancy_prevalence / 100
-        
-        # Normalize measurement accuracies to [0,1]
-        norm_height_accuracy = height_accuracy / 100
-        norm_weight_accuracy = weight_accuracy / 100
+        # Invert accuracies to reflect higher values as worse performance
+        norm_height_accuracy = 1 - (height_accuracy / 100)
+        norm_weight_accuracy = 1 - (weight_accuracy / 100)
+        norm_wasting_accuracy = 1 - (wasting_acc / 100)
         
         # Composite Score Calculation with Equal Weights
         weights = {
             'average_height_discrepancy': 1,
             'average_weight_discrepancy': 1,
-            'height_discrepancy_prevalence': 1,
-            'weight_discrepancy_prevalence': 1,
             'height_accuracy': 1,
-            'weight_accuracy': 1
+            'weight_accuracy': 1,
+            'classification_accuracy_wasting': 1
         }
         
         composite_score = (
             weights['average_height_discrepancy'] * norm_height_discrepancy +
             weights['average_weight_discrepancy'] * norm_weight_discrepancy +
-            weights['height_discrepancy_prevalence'] * norm_height_discrepancy_prevalence +
-            weights['weight_discrepancy_prevalence'] * norm_weight_discrepancy_prevalence +
             weights['height_accuracy'] * norm_height_accuracy +
-            weights['weight_accuracy'] * norm_weight_accuracy
+            weights['weight_accuracy'] * norm_weight_accuracy +
+            weights['classification_accuracy_wasting'] * norm_wasting_accuracy
         )
         
         # Normalize composite score to 0-100 scale
@@ -137,55 +132,75 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
     
     plots = {}
     
-    # Plot 1: Height Discrepancy (cm) vs L0
+    # Plot 1: Average Height Discrepancy (cm) per L0 (Horizontal Bar)
+    discrepancy_df_sorted = discrepancy_df.sort_values('average_height_discrepancy_cm', ascending=False)
     fig_height = px.bar(
-        discrepancy_df,
-        x='L0_name',
-        y='average_height_discrepancy_cm',
+        discrepancy_df_sorted,
+        x='average_height_discrepancy_cm',
+        y='L0_name',
+        orientation='h',
         title='Average Height Discrepancy (cm) per L0',
         labels={'L0_name': 'L0 Name', 'average_height_discrepancy_cm': 'Average Height Discrepancy (cm)'},
         color='average_height_discrepancy_cm',
-        color_continuous_scale='Viridis'  # Valid colorscale
+        color_continuous_scale='Viridis'
+    )
+    fig_height.update_layout(
+        yaxis={'categoryorder':'total ascending'}
     )
     plots['height_discrepancy_plot'] = fig_height.to_json()
     
-    # Plot 2: Weight Discrepancy (kg) vs L0
+    # Plot 2: Average Weight Discrepancy (kg) per L0 (Horizontal Bar)
+    discrepancy_df_sorted = discrepancy_df.sort_values('average_weight_discrepancy_kg', ascending=False)
     fig_weight = px.bar(
-        discrepancy_df,
-        x='L0_name',
-        y='average_weight_discrepancy_kg',
+        discrepancy_df_sorted,
+        x='average_weight_discrepancy_kg',
+        y='L0_name',
+        orientation='h',
         title='Average Weight Discrepancy (kg) per L0',
         labels={'L0_name': 'L0 Name', 'average_weight_discrepancy_kg': 'Average Weight Discrepancy (kg)'},
         color='average_weight_discrepancy_kg',
-        color_continuous_scale='Magma'  # Valid colorscale
+        color_continuous_scale='Magma'
+    )
+    fig_weight.update_layout(
+        yaxis={'categoryorder':'total ascending'}
     )
     plots['weight_discrepancy_plot'] = fig_weight.to_json()
     
-    # Plot 3: Height Measurement Accuracy (%) vs L0
+    # Plot 3: Height Measurement Accuracy (%) per L0 (Horizontal Bar)
+    discrepancy_df_sorted = discrepancy_df.sort_values('height_accuracy_percent', ascending=False)
     fig_height_acc = px.bar(
-        discrepancy_df,
-        x='L0_name',
-        y='height_accuracy_percent',
+        discrepancy_df_sorted,
+        x='height_accuracy_percent',
+        y='L0_name',
+        orientation='h',
         title='Height Measurement Accuracy (%) per L0',
         labels={'L0_name': 'L0 Name', 'height_accuracy_percent': 'Height Measurement Accuracy (%)'},
         color='height_accuracy_percent',
-        color_continuous_scale='RdBu'  # Changed from 'Coolwarm' to 'RdBu'
+        color_continuous_scale='RdBu'
+    )
+    fig_height_acc.update_layout(
+        yaxis={'categoryorder':'total ascending'}
     )
     plots['height_accuracy_plot'] = fig_height_acc.to_json()
     
-    # Plot 4: Weight Measurement Accuracy (%) vs L0
+    # Plot 4: Weight Measurement Accuracy (%) per L0 (Horizontal Bar)
+    discrepancy_df_sorted = discrepancy_df.sort_values('weight_accuracy_percent', ascending=False)
     fig_weight_acc = px.bar(
-        discrepancy_df,
-        x='L0_name',
-        y='weight_accuracy_percent',
+        discrepancy_df_sorted,
+        x='weight_accuracy_percent',
+        y='L0_name',
+        orientation='h',
         title='Weight Measurement Accuracy (%) per L0',
         labels={'L0_name': 'L0 Name', 'weight_accuracy_percent': 'Weight Measurement Accuracy (%)'},
         color='weight_accuracy_percent',
-        color_continuous_scale='Plasma'  # Valid colorscale
+        color_continuous_scale='Plasma'
+    )
+    fig_weight_acc.update_layout(
+        yaxis={'categoryorder':'total ascending'}
     )
     plots['weight_accuracy_plot'] = fig_weight_acc.to_json()
     
-    # Plot 5: Classification Accuracy - Wasting vs L0
+    # Plot 5: Classification Accuracy - Wasting vs L0 (Stacked Horizontal Bar)
     classification_wasting_df = discrepancy_df[[
         'L0_name', 
         'classification_accuracy_wasting_percent', 
@@ -199,19 +214,22 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
         value_name='Percentage'
     )
     
+    classification_wasting_melted = classification_wasting_melted.sort_values('Percentage', ascending=False)
+    
     fig_class_wasting = px.bar(
         classification_wasting_melted,
-        x='L0_name',
-        y='Percentage',
+        x='Percentage',
+        y='L0_name',
         color='Classification',
+        orientation='h',
         title='Classification Accuracy - Wasting vs L0',
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
         color_discrete_sequence=px.colors.qualitative.Set2
     )
-    fig_class_wasting.update_layout(barmode='stack')
+    fig_class_wasting.update_layout(barmode='stack', yaxis={'categoryorder':'total ascending'})
     plots['classification_wasting_plot'] = fig_class_wasting.to_json()
     
-    # Plot 6: Classification Accuracy - Stunting vs L0
+    # Plot 6: Classification Accuracy - Stunting vs L0 (Stacked Horizontal Bar)
     classification_stunting_df = discrepancy_df[[
         'L0_name', 
         'classification_accuracy_stunting_percent', 
@@ -225,17 +243,37 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error: float = 0.0)
         value_name='Percentage'
     )
     
+    classification_stunting_melted = classification_stunting_melted.sort_values('Percentage', ascending=False)
+    
     fig_class_stunting = px.bar(
         classification_stunting_melted,
-        x='L0_name',
-        y='Percentage',
+        x='Percentage',
+        y='L0_name',
         color='Classification',
+        orientation='h',
         title='Classification Accuracy - Stunting vs L0',
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
         color_discrete_sequence=px.colors.qualitative.Set3
     )
-    fig_class_stunting.update_layout(barmode='stack')
+    fig_class_stunting.update_layout(barmode='stack', yaxis={'categoryorder':'total ascending'})
     plots['classification_stunting_plot'] = fig_class_stunting.to_json()
+    
+    # Plot 7: Composite Discrepancy Score per L0 (Horizontal Bar)
+    discrepancy_df_sorted = discrepancy_df.sort_values('composite_discrepancy_score', ascending=False)
+    fig_composite = px.bar(
+        discrepancy_df_sorted,
+        x='composite_discrepancy_score',
+        y='L0_name',
+        orientation='h',
+        title='Composite Discrepancy Score per L0',
+        labels={'L0_name': 'L0 Name', 'composite_discrepancy_score': 'Composite Discrepancy Score'},
+        color='composite_discrepancy_score',
+        color_continuous_scale='Cividis'
+    )
+    fig_composite.update_layout(
+        yaxis={'categoryorder':'total ascending'}
+    )
+    plots['composite_discrepancy_plot'] = fig_composite.to_json()
     
     return {
         'grouped_discrepancy_scores': results,
