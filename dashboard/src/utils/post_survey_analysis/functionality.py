@@ -31,21 +31,24 @@ def execute_post_survey_analysis(uploaded_file, df):
         st.error(f"The following required columns are missing: {', '.join(missing_columns)}")
         return
 
-    # Inputs for margins of error
-    margin_of_error_height = st.number_input(
-        "Margin of Error for Height (cm)", 
-        min_value=0.0, 
-        value=0.0, 
-        step=0.1,
-        help="Acceptable margin of error for height measurements."
-    )
-    margin_of_error_weight = st.number_input(
-        "Margin of Error for Weight (kg)", 
-        min_value=0.0, 
-        value=0.0, 
-        step=0.1,
-        help="Acceptable margin of error for weight measurements."
-    )
+    # Inputs for margins of error (Side by Side)
+    col1, col2 = st.columns(2)
+    with col1:
+        margin_of_error_height = st.number_input(
+            "Margin of Error for Height (cm)", 
+            min_value=0.0, 
+            value=0.0, 
+            step=0.1,
+            help="Acceptable margin of error for height measurements."
+        )
+    with col2:
+        margin_of_error_weight = st.number_input(
+            "Margin of Error for Weight (kg)", 
+            min_value=0.0, 
+            value=0.0, 
+            step=0.1,
+            help="Acceptable margin of error for weight measurements."
+        )
 
     # Prepare data for API
     uploaded_file.seek(0)
@@ -83,6 +86,7 @@ def execute_post_survey_analysis(uploaded_file, df):
 
         # Plot the composite discrepancy scores
         st.subheader("Composite Discrepancy Score Plot")
+
         def display_plot(plot_json, caption):
             try:
                 fig = pio.from_json(plot_json)
@@ -98,47 +102,56 @@ def execute_post_survey_analysis(uploaded_file, df):
         # Display Plots
         st.subheader("Discrepancy Plots")
 
-        # Plot 1: Height Discrepancy (cm) vs L0
-        if 'height_discrepancy_plot' in plots:
-            display_plot(plots['height_discrepancy_plot'], "Average Height Discrepancy (cm) per L0")
-        else:
-            st.warning("Height Discrepancy Plot not available.")
+        # Arrange the average height and weight discrepancy plots side by side
+        col3, col4 = st.columns(2)
+        with col3:
+            # Plot 1: Average Height Discrepancy (cm) vs L0
+            if 'height_discrepancy_plot' in plots:
+                display_plot(plots['height_discrepancy_plot'], "Average Height Discrepancy (cm) per L0")
+            else:
+                st.warning("Height Discrepancy Plot not available.")
+        with col4:
+            # Plot 2: Average Weight Discrepancy (kg) vs L0
+            if 'weight_discrepancy_plot' in plots:
+                display_plot(plots['weight_discrepancy_plot'], "Average Weight Discrepancy (kg) per L0")
+            else:
+                st.warning("Weight Discrepancy Plot not available.")
 
-        # Plot 2: Weight Discrepancy (kg) vs L0
-        if 'weight_discrepancy_plot' in plots:
-            display_plot(plots['weight_discrepancy_plot'], "Average Weight Discrepancy (kg) per L0")
-        else:
-            st.warning("Weight Discrepancy Plot not available.")
+        # Arrange the height and weight measurement accuracy plots side by side
+        col5, col6 = st.columns(2)
+        with col5:
+            # Plot 3: Height Measurement Accuracy (%) vs L0
+            if 'height_accuracy_plot' in plots:
+                display_plot(plots['height_accuracy_plot'], "Height Measurement Accuracy (%) per L0")
+            else:
+                st.warning("Height Measurement Accuracy Plot not available.")
+        with col6:
+            # Plot 4: Weight Measurement Accuracy (%) vs L0
+            if 'weight_accuracy_plot' in plots:
+                display_plot(plots['weight_accuracy_plot'], "Weight Measurement Accuracy (%) per L0")
+            else:
+                st.warning("Weight Measurement Accuracy Plot not available.")
 
-        # Plot 3: Height Measurement Accuracy (%) vs L0
-        if 'height_accuracy_plot' in plots:
-            display_plot(plots['height_accuracy_plot'], "Height Measurement Accuracy (%) per L0")
-        else:
-            st.warning("Height Measurement Accuracy Plot not available.")
-
-        # Plot 4: Weight Measurement Accuracy (%) vs L0
-        if 'weight_accuracy_plot' in plots:
-            display_plot(plots['weight_accuracy_plot'], "Weight Measurement Accuracy (%) per L0")
-        else:
-            st.warning("Weight Measurement Accuracy Plot not available.")
-
-        # Plot 5: Classification Accuracy - Wasting vs L0
-        if 'classification_wasting_plot' in plots:
-            display_plot(plots['classification_wasting_plot'], "Classification Accuracy - Wasting vs L0")
-        else:
-            st.warning("Classification Accuracy - Wasting Plot not available.")
-
-        # Plot 6: Classification Accuracy - Stunting vs L0
-        if 'classification_stunting_plot' in plots:
-            display_plot(plots['classification_stunting_plot'], "Classification Accuracy - Stunting vs L0")
-        else:
-            st.warning("Classification Accuracy - Stunting Plot not available.")
-
-        # Plot 7: Classification Accuracy - Underweight vs L0
-        if 'classification_underweight_plot' in plots:
-            display_plot(plots['classification_underweight_plot'], "Classification Accuracy - Underweight vs L0")
-        else:
-            st.warning("Classification Accuracy - Underweight Plot not available.")
+        # Arrange the three classification accuracy plots side by side
+        col7, col8, col9 = st.columns(3)
+        with col7:
+            # Plot 5: Classification Accuracy - Wasting vs L0
+            if 'classification_wasting_plot' in plots:
+                display_plot(plots['classification_wasting_plot'], "Classification Accuracy - Wasting vs L0")
+            else:
+                st.warning("Classification Accuracy - Wasting Plot not available.")
+        with col8:
+            # Plot 6: Classification Accuracy - Stunting vs L0
+            if 'classification_stunting_plot' in plots:
+                display_plot(plots['classification_stunting_plot'], "Classification Accuracy - Stunting vs L0")
+            else:
+                st.warning("Classification Accuracy - Stunting Plot not available.")
+        with col9:
+            # Plot 7: Classification Accuracy - Underweight vs L0
+            if 'classification_underweight_plot' in plots:
+                display_plot(plots['classification_underweight_plot'], "Classification Accuracy - Underweight vs L0")
+            else:
+                st.warning("Classification Accuracy - Underweight Plot not available.")
 
         # Optionally, provide download link for discrepancy scores
         st.subheader("Download Discrepancy Scores")

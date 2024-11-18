@@ -157,7 +157,15 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         color_continuous_scale='Viridis'
     )
     fig_height.update_layout(
-        yaxis={'categoryorder':'total ascending'}
+        yaxis={'categoryorder':'total ascending'},
+        coloraxis_colorbar=dict(
+            orientation='h',
+            yanchor='top',
+            y=-0.2,
+            xanchor='center',
+            x=0.5,
+            title='Average Height Discrepancy (cm)'
+        )
     )
     plots['height_discrepancy_plot'] = fig_height.to_json()
     
@@ -174,7 +182,15 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         color_continuous_scale='Magma'
     )
     fig_weight.update_layout(
-        yaxis={'categoryorder':'total ascending'}
+        yaxis={'categoryorder':'total ascending'},
+        coloraxis_colorbar=dict(
+            orientation='h',
+            yanchor='top',
+            y=-0.2,
+            xanchor='center',
+            x=0.5,
+            title='Average Weight Discrepancy (kg)'
+        )
     )
     plots['weight_discrepancy_plot'] = fig_weight.to_json()
     
@@ -191,7 +207,15 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         color_continuous_scale='RdBu'
     )
     fig_height_acc.update_layout(
-        yaxis={'categoryorder':'total ascending'}
+        yaxis={'categoryorder':'total ascending'},
+        coloraxis_colorbar=dict(
+            orientation='h',
+            yanchor='top',
+            y=-0.2,
+            xanchor='center',
+            x=0.5,
+            title='Height Measurement Accuracy (%)'
+        )
     )
     plots['height_accuracy_plot'] = fig_height_acc.to_json()
     
@@ -208,7 +232,15 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         color_continuous_scale='Plasma'
     )
     fig_weight_acc.update_layout(
-        yaxis={'categoryorder':'total ascending'}
+        yaxis={'categoryorder':'total ascending'},
+        coloraxis_colorbar=dict(
+            orientation='h',
+            yanchor='top',
+            y=-0.2,
+            xanchor='center',
+            x=0.5,
+            title='Weight Measurement Accuracy (%)'
+        )
     )
     plots['weight_accuracy_plot'] = fig_weight_acc.to_json()
     
@@ -238,7 +270,17 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
         color_discrete_sequence=px.colors.qualitative.Set2
     )
-    fig_class_wasting.update_layout(barmode='stack', yaxis={'categoryorder':'total ascending'})
+    fig_class_wasting.update_layout(
+        barmode='stack',
+        yaxis={'categoryorder':'total ascending'},
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.25,
+            xanchor="center",
+            x=0.5
+        )
+    )
     plots['classification_wasting_plot'] = fig_class_wasting.to_json()
     
     # Plot 6: Classification Accuracy - Stunting vs L0 (Stacked Horizontal Bar)
@@ -267,27 +309,20 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
         color_discrete_sequence=px.colors.qualitative.Set3
     )
-    fig_class_stunting.update_layout(barmode='stack', yaxis={'categoryorder':'total ascending'})
+    fig_class_stunting.update_layout(
+        barmode='stack',
+        yaxis={'categoryorder':'total ascending'},
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.25,
+            xanchor="center",
+            x=0.5
+        )
+    )
     plots['classification_stunting_plot'] = fig_class_stunting.to_json()
     
-    # Plot 7: Composite Discrepancy Score per L0 (Horizontal Bar)
-    discrepancy_df_sorted = discrepancy_df.sort_values('composite_discrepancy_score', ascending=False)
-    fig_composite = px.bar(
-        discrepancy_df_sorted,
-        x='composite_discrepancy_score',
-        y='L0_name',
-        orientation='h',
-        title='Composite Discrepancy Score per L0',
-        labels={'L0_name': 'L0 Name', 'composite_discrepancy_score': 'Composite Discrepancy Score'},
-        color='composite_discrepancy_score',
-        color_continuous_scale='Cividis'
-    )
-    fig_composite.update_layout(
-        yaxis={'categoryorder':'total ascending'}
-    )
-    plots['composite_discrepancy_plot'] = fig_composite.to_json()
-
-    # Plot 8: Classification Accuracy - Underweight vs L0 (Stacked Horizontal Bar)
+    # Plot 7: Classification Accuracy - Underweight vs L0 (Stacked Horizontal Bar)
     classification_underweight_df = discrepancy_df[[
         'L0_name', 
         'classification_accuracy_underweight_percent', 
@@ -313,8 +348,43 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
         color_discrete_sequence=px.colors.qualitative.Set1
     )
-    fig_class_underweight.update_layout(barmode='stack', yaxis={'categoryorder':'total ascending'})
+    fig_class_underweight.update_layout(
+        barmode='stack',
+        yaxis={'categoryorder':'total ascending'},
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.25,
+            xanchor="center",
+            x=0.5
+        )
+    )
     plots['classification_underweight_plot'] = fig_class_underweight.to_json()
+    
+    # Plot 8: Composite Discrepancy Score per L0 (Horizontal Bar)
+    discrepancy_df_sorted = discrepancy_df.sort_values('composite_discrepancy_score', ascending=False)
+    fig_composite = px.bar(
+        discrepancy_df_sorted,
+        x='composite_discrepancy_score',
+        y='L0_name',
+        orientation='h',
+        title='Composite Discrepancy Score per L0',
+        labels={'L0_name': 'L0 Name', 'composite_discrepancy_score': 'Composite Discrepancy Score'},
+        color='composite_discrepancy_score',
+        color_continuous_scale='Cividis'
+    )
+    fig_composite.update_layout(
+        yaxis={'categoryorder':'total ascending'},
+        coloraxis_colorbar=dict(
+            orientation='h',
+            yanchor='top',
+            y=-0.2,
+            xanchor='center',
+            x=0.5,
+            title='Composite Discrepancy Score'
+        )
+    )
+    plots['composite_discrepancy_plot'] = fig_composite.to_json()
     
     return {
         'grouped_discrepancy_scores': results,
