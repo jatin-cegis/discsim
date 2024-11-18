@@ -155,7 +155,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         labels={'L0_name': 'L0 Name', 'average_height_discrepancy_cm': 'Average Height Discrepancy (cm)'},
         color='average_height_discrepancy_cm',
         color_continuous_scale='Viridis',
-        text='average_height_discrepancy_cm'  # Add text labels
+        text='average_height_discrepancy_cm'  
     )
     fig_height.update_traces(
         texttemplate='%{text:.2f}',
@@ -185,7 +185,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         labels={'L0_name': 'L0 Name', 'average_weight_discrepancy_kg': 'Average Weight Discrepancy (kg)'},
         color='average_weight_discrepancy_kg',
         color_continuous_scale='Magma',
-        text='average_weight_discrepancy_kg'  # Add text labels
+        text='average_weight_discrepancy_kg'  
     )
     fig_weight.update_traces(
         texttemplate='%{text:.2f}',
@@ -215,7 +215,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         labels={'L0_name': 'L0 Name', 'height_accuracy_percent': 'Height Measurement Accuracy (%)'},
         color='height_accuracy_percent',
         color_continuous_scale='RdBu',
-        text='height_accuracy_percent'  # Add text labels
+        text='height_accuracy_percent'  
     )
     fig_height_acc.update_traces(
         texttemplate='%{text:.2f}%',
@@ -245,7 +245,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         labels={'L0_name': 'L0 Name', 'weight_accuracy_percent': 'Weight Measurement Accuracy (%)'},
         color='weight_accuracy_percent',
         color_continuous_scale='Plasma',
-        text='weight_accuracy_percent'  # Add text labels
+        text='weight_accuracy_percent'  
     )
     fig_weight_acc.update_traces(
         texttemplate='%{text:.2f}%',
@@ -295,7 +295,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         title='Classification Accuracy - Wasting vs L0',
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
         color_discrete_sequence=px.colors.qualitative.Set2,
-        text='Percentage'  # Add text labels
+        text='Percentage'  
     )
     fig_class_wasting.update_traces(
         texttemplate='%{text:.2f}%',
@@ -345,7 +345,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         title='Classification Accuracy - Stunting vs L0',
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
         color_discrete_sequence=px.colors.qualitative.Set3,
-        text='Percentage'  # Add text labels
+        text='Percentage'  
     )
     fig_class_stunting.update_traces(
         texttemplate='%{text:.2f}%',
@@ -395,7 +395,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         title='Classification Accuracy - Underweight vs L0',
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
         color_discrete_sequence=px.colors.qualitative.Set1,
-        text='Percentage'  # Add text labels
+        text='Percentage'  
     )
     fig_class_underweight.update_traces(
         texttemplate='%{text:.2f}%',
@@ -425,7 +425,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         labels={'L0_name': 'L0 Name', 'composite_discrepancy_score': 'Composite Discrepancy Score'},
         color='composite_discrepancy_score',
         color_continuous_scale='Cividis',
-        text='composite_discrepancy_score'  # Add text labels
+        text='composite_discrepancy_score'  
     )
     fig_composite.update_traces(
         texttemplate='%{text:.2f}',
