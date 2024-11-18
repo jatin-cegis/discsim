@@ -154,7 +154,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         title='Average Height Discrepancy (cm) per L0',
         labels={'L0_name': 'L0 Name', 'average_height_discrepancy_cm': 'Average Height Discrepancy (cm)'},
         color='average_height_discrepancy_cm',
-        color_continuous_scale='Viridis'
+        color_continuous_scale='Viridis',
+        text='average_height_discrepancy_cm'  # Add text labels
+    )
+    fig_height.update_traces(
+        texttemplate='%{text:.2f}',
+        textposition='inside'
     )
     fig_height.update_layout(
         yaxis={'categoryorder':'total ascending'},
@@ -179,7 +184,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         title='Average Weight Discrepancy (kg) per L0',
         labels={'L0_name': 'L0 Name', 'average_weight_discrepancy_kg': 'Average Weight Discrepancy (kg)'},
         color='average_weight_discrepancy_kg',
-        color_continuous_scale='Magma'
+        color_continuous_scale='Magma',
+        text='average_weight_discrepancy_kg'  # Add text labels
+    )
+    fig_weight.update_traces(
+        texttemplate='%{text:.2f}',
+        textposition='inside'
     )
     fig_weight.update_layout(
         yaxis={'categoryorder':'total ascending'},
@@ -204,7 +214,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         title='Height Measurement Accuracy (%) per L0',
         labels={'L0_name': 'L0 Name', 'height_accuracy_percent': 'Height Measurement Accuracy (%)'},
         color='height_accuracy_percent',
-        color_continuous_scale='RdBu'
+        color_continuous_scale='RdBu',
+        text='height_accuracy_percent'  # Add text labels
+    )
+    fig_height_acc.update_traces(
+        texttemplate='%{text:.2f}%',
+        textposition='inside'
     )
     fig_height_acc.update_layout(
         yaxis={'categoryorder':'total ascending'},
@@ -229,7 +244,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         title='Weight Measurement Accuracy (%) per L0',
         labels={'L0_name': 'L0 Name', 'weight_accuracy_percent': 'Weight Measurement Accuracy (%)'},
         color='weight_accuracy_percent',
-        color_continuous_scale='Plasma'
+        color_continuous_scale='Plasma',
+        text='weight_accuracy_percent'  # Add text labels
+    )
+    fig_weight_acc.update_traces(
+        texttemplate='%{text:.2f}%',
+        textposition='inside'
     )
     fig_weight_acc.update_layout(
         yaxis={'categoryorder':'total ascending'},
@@ -252,6 +272,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         'classification_sam_as_mam_percent', 
         'classification_other_wasting_misclassification_percent'
     ]]
+    classification_wasting_df.rename(columns={
+        'classification_accuracy_wasting_percent': 'Accurate',
+        'classification_mam_as_normal_percent': 'MAM as Normal',
+        'classification_sam_as_mam_percent': 'SAM as MAM',
+        'classification_other_wasting_misclassification_percent': 'Other Misclassifications'
+    }, inplace=True)
     classification_wasting_melted = classification_wasting_df.melt(
         id_vars='L0_name', 
         var_name='Classification',
@@ -268,7 +294,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         orientation='h',
         title='Classification Accuracy - Wasting vs L0',
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
-        color_discrete_sequence=px.colors.qualitative.Set2
+        color_discrete_sequence=px.colors.qualitative.Set2,
+        text='Percentage'  # Add text labels
+    )
+    fig_class_wasting.update_traces(
+        texttemplate='%{text:.2f}%',
+        textposition='inside'
     )
     fig_class_wasting.update_layout(
         barmode='stack',
@@ -291,6 +322,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         'classification_sam_as_mam_stunting_percent', 
         'classification_other_stunting_misclassification_percent'
     ]]
+    classification_stunting_df.rename(columns={
+        'classification_accuracy_stunting_percent': 'Accurate',
+        'classification_mam_as_normal_stunting_percent': 'MAM as Normal',
+        'classification_sam_as_mam_stunting_percent': 'SAM as MAM',
+        'classification_other_stunting_misclassification_percent': 'Other Misclassifications'
+    }, inplace=True)
     classification_stunting_melted = classification_stunting_df.melt(
         id_vars='L0_name', 
         var_name='Classification',
@@ -307,7 +344,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         orientation='h',
         title='Classification Accuracy - Stunting vs L0',
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
-        color_discrete_sequence=px.colors.qualitative.Set3
+        color_discrete_sequence=px.colors.qualitative.Set3,
+        text='Percentage'  # Add text labels
+    )
+    fig_class_stunting.update_traces(
+        texttemplate='%{text:.2f}%',
+        textposition='inside'
     )
     fig_class_stunting.update_layout(
         barmode='stack',
@@ -330,6 +372,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         'classification_sam_as_mam_underweight_percent', 
         'classification_other_underweight_misclassification_percent'
     ]]
+    classification_underweight_df.rename(columns={
+        'classification_accuracy_underweight_percent': 'Accurate',
+        'classification_mam_as_normal_underweight_percent': 'MAM as Normal',
+        'classification_sam_as_mam_underweight_percent': 'SAM as MAM',
+        'classification_other_underweight_misclassification_percent': 'Other Misclassifications'
+    }, inplace=True)
     classification_underweight_melted = classification_underweight_df.melt(
         id_vars='L0_name', 
         var_name='Classification',
@@ -346,7 +394,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         orientation='h',
         title='Classification Accuracy - Underweight vs L0',
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
-        color_discrete_sequence=px.colors.qualitative.Set1
+        color_discrete_sequence=px.colors.qualitative.Set1,
+        text='Percentage'  # Add text labels
+    )
+    fig_class_underweight.update_traces(
+        texttemplate='%{text:.2f}%',
+        textposition='inside'
     )
     fig_class_underweight.update_layout(
         barmode='stack',
@@ -371,7 +424,12 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         title='Composite Discrepancy Score per L0',
         labels={'L0_name': 'L0 Name', 'composite_discrepancy_score': 'Composite Discrepancy Score'},
         color='composite_discrepancy_score',
-        color_continuous_scale='Cividis'
+        color_continuous_scale='Cividis',
+        text='composite_discrepancy_score'  # Add text labels
+    )
+    fig_composite.update_traces(
+        texttemplate='%{text:.2f}',
+        textposition='inside'
     )
     fig_composite.update_layout(
         yaxis={'categoryorder':'total ascending'},
