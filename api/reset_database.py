@@ -1,4 +1,4 @@
-from api.database import engine, Base, UploadedFile
+from database import engine, Base, UploadedFile
 
 # Drop the specific table
 print("Dropping the 'uploaded_files' table...")
