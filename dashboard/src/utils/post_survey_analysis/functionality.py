@@ -35,7 +35,7 @@ def execute_post_survey_analysis(uploaded_file, df):
     col1, col2 = st.columns(2)
     with col1:
         margin_of_error_height = st.number_input(
-            "Margin of Error for Height (cm)", 
+            "Acceptable Margin for Height (cm)", 
             min_value=0.0, 
             value=0.0, 
             step=0.1,
@@ -43,7 +43,7 @@ def execute_post_survey_analysis(uploaded_file, df):
         )
     with col2:
         margin_of_error_weight = st.number_input(
-            "Margin of Error for Weight (kg)", 
+            "Acceptable Margin for Weight (kg)", 
             min_value=0.0, 
             value=0.0, 
             step=0.1,
