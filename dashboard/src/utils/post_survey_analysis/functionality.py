@@ -116,6 +116,13 @@ def execute_post_survey_analysis(uploaded_file, df):
                 display_plot(plots['weight_discrepancy_plot'], "Average Weight Discrepancy (kg) per L0")
             else:
                 st.warning("Weight Discrepancy Plot not available.")
+                
+        # Combined average discrepancy plot
+        st.subheader("Combined Average Height and Weight Discrepancy per L0")
+        if 'combined_discrepancy_plot' in plots:
+            display_plot(plots['combined_discrepancy_plot'], "Combined Average Discrepancy per L0")
+        else:
+            st.warning("Combined Discrepancy Plot not available.")
 
         # Arrange the height and weight measurement accuracy plots side by side
         col5, col6 = st.columns(2)

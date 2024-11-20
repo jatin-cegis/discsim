@@ -144,6 +144,9 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
     
     plots = {}
     
+    # Fix SettingWithCopyWarning by making copies
+    discrepancy_df = discrepancy_df.copy()
+    
     # Plot 1: Average Height Discrepancy (cm) per L0 (Horizontal Bar)
     discrepancy_df_sorted = discrepancy_df.sort_values('average_height_discrepancy_cm', ascending=False)
     fig_height = px.bar(
@@ -203,6 +206,50 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         )
     )
     plots['weight_discrepancy_plot'] = fig_weight.to_json()
+    
+    # Plot: Combined Average Height and Weight Discrepancy per L0
+    # Melt the data to long format
+    discrepancy_melted = discrepancy_df[['L0_name', 'average_height_discrepancy_cm', 'average_weight_discrepancy_kg']].copy()
+    discrepancy_melted = discrepancy_melted.melt(
+        id_vars='L0_name',
+        value_vars=['average_height_discrepancy_cm', 'average_weight_discrepancy_kg'],
+        var_name='Measurement',
+        value_name='Average Discrepancy'
+    )
+    # Rename Measurement values for better labels
+    discrepancy_melted['Measurement'] = discrepancy_melted['Measurement'].replace({
+        'average_height_discrepancy_cm': 'Height (cm)',
+        'average_weight_discrepancy_kg': 'Weight (kg)'
+    })
+    # Sort the data
+    discrepancy_melted.sort_values('Average Discrepancy', ascending=False, inplace=True)
+    
+    fig_combined_discrepancy = px.bar(
+        discrepancy_melted,
+        x='Average Discrepancy',
+        y='L0_name',
+        orientation='h',
+        color='Measurement',
+        barmode='group',
+        title='Combined Average Height and Weight Discrepancy per L0',
+        labels={'L0_name': 'L0 Name', 'Average Discrepancy': 'Average Discrepancy'},
+        text='Average Discrepancy'
+    )
+    fig_combined_discrepancy.update_traces(
+        texttemplate='%{text:.2f}',
+        textposition='inside'
+    )
+    fig_combined_discrepancy.update_layout(
+        yaxis={'categoryorder':'total ascending'},
+        legend=dict(
+            orientation='h',
+            yanchor='top',
+            y=-0.25,
+            xanchor='center',
+            x=0.5
+        )
+    )
+    plots['combined_discrepancy_plot'] = fig_combined_discrepancy.to_json()
     
     # Plot 3: Height Measurement Accuracy (%) per L0 (Horizontal Bar)
     discrepancy_df_sorted = discrepancy_df.sort_values('height_accuracy_percent', ascending=False)
@@ -271,7 +318,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         'classification_mam_as_normal_percent', 
         'classification_sam_as_mam_percent', 
         'classification_other_wasting_misclassification_percent'
-    ]]
+    ]].copy()
     classification_wasting_df.rename(columns={
         'classification_accuracy_wasting_percent': 'Accurate',
         'classification_mam_as_normal_percent': 'MAM as Normal',
@@ -321,7 +368,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         'classification_mam_as_normal_stunting_percent', 
         'classification_sam_as_mam_stunting_percent', 
         'classification_other_stunting_misclassification_percent'
-    ]]
+    ]].copy()
     classification_stunting_df.rename(columns={
         'classification_accuracy_stunting_percent': 'Accurate',
         'classification_mam_as_normal_stunting_percent': 'MAM as Normal',
@@ -371,7 +418,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         'classification_mam_as_normal_underweight_percent', 
         'classification_sam_as_mam_underweight_percent', 
         'classification_other_underweight_misclassification_percent'
-    ]]
+    ]].copy()
     classification_underweight_df.rename(columns={
         'classification_accuracy_underweight_percent': 'Accurate',
         'classification_mam_as_normal_underweight_percent': 'MAM as Normal',
