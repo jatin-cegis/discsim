@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libatlas-base-dev \
     liblapack-dev \
     libblas-dev \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory

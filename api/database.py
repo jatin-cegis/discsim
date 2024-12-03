@@ -36,6 +36,10 @@ class UploadedFile(Base):
     __table_args__ = (UniqueConstraint('filename', 'category', name='_filename_category_uc'),)
 
 
+# Create all tables if they don't exist
+Base.metadata.create_all(bind=engine)
+
+
 def get_engine(retries=5, delay=2):
     for attempt in range(retries):
         try:
@@ -46,6 +50,7 @@ def get_engine(retries=5, delay=2):
         except Exception as e:
             if attempt < retries - 1:
                 time.sleep(delay)
+                continue
             else:
                 raise e
 

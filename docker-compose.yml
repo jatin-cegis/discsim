@@ -7,10 +7,13 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+      - ./db/init:/docker-entrypoint-initdb.d/
     ports:
       - "5432:5432"
     networks:
       - app-network
+    entrypoint: ["/docker-entrypoint-initdb.d/entrypoint.sh"]
+
 
   api:
     build:

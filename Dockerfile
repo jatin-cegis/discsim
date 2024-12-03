@@ -17,9 +17,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire project directory
 COPY . /app
-# Expose ports 8000 (API) and 8501 (Streamlit) to the outside world
+# Expose ports 8000 (API) and 8501 (Streamlit)
 EXPOSE 8000 8501
 # Set the entrypoint to use wait-for-it script
 ENTRYPOINT ["wait-for-it", "db:5432", "--"]
-# Default command (can be overridden in docker-compose.yml)
+# Default command
 CMD ["python", "api/run.py"]
