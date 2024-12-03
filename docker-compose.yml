@@ -14,11 +14,10 @@ services:
       - app-network
     entrypoint: ["/docker-entrypoint-initdb.d/entrypoint.sh"]
 
-
   api:
     build:
       context: .
-      dockerfile: api/Dockerfile
+      dockerfile: Dockerfile
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - LOG_LEVEL=${LOG_LEVEL}
@@ -28,11 +27,12 @@ services:
       - "8000:8000"
     networks:
       - app-network
+    command: ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
   dashboard:
     build:
       context: .
-      dockerfile: dashboard/Dockerfile
+      dockerfile: Dockerfile
     environment:
       - API_BASE_URL=${API_BASE_URL}
     depends_on:
@@ -41,6 +41,7 @@ services:
       - "8501:8501"
     networks:
       - app-network
+    command: ["streamlit", "run", "dashboard/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
 
 volumes:
   postgres_data:
