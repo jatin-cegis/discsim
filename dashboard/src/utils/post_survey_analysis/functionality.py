@@ -12,7 +12,7 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 POST_SURVEY_ANALYSIS_ENDPOINT = f"{API_BASE_URL}/post_survey_analysis"
 
 def execute_post_survey_analysis(uploaded_file, df):
-    st.header("Composite Discrepancy Score Calculation")
+    st.header("ECD Discrepancy Analysis")
 
     # Display the dataframe
     with st.expander("Uploaded Data Head:"):
@@ -92,7 +92,7 @@ def execute_post_survey_analysis(uploaded_file, df):
                 st.error(f"Failed to load plot: {caption}. Error: {str(e)}")
 
         # Display Plots
-        st.subheader("Discrepancy Plots")
+        st.subheader("Discrepancy in Measurement")
 
         # Arrange the average height and weight discrepancy plots side by side
         col3, col4 = st.columns(2)
@@ -110,7 +110,6 @@ def execute_post_survey_analysis(uploaded_file, df):
                 st.warning("Weight Discrepancy Plot not available.")
                 
         # Combined average discrepancy plot
-        st.subheader("Combined Average Height and Weight Discrepancy per L0")
         if 'combined_discrepancy_plot' in plots:
             display_plot(plots['combined_discrepancy_plot'], "Combined Average Discrepancy per L0")
         else:
@@ -118,6 +117,7 @@ def execute_post_survey_analysis(uploaded_file, df):
 
         # Arrange the height and weight measurement accuracy plots side by side
         col5, col6 = st.columns(2)
+        st.subheader("Discrepancy in Percentage")
         with col5:
             # Plot 3: Height Measurement Accuracy (%) vs L0
             if 'height_accuracy_plot' in plots:
@@ -132,7 +132,7 @@ def execute_post_survey_analysis(uploaded_file, df):
                 st.warning("Weight Measurement Accuracy Plot not available.")
 
         # Arrange the three classification accuracy plots side by side
-        col7, col8, col9 = st.columns(3)
+        col7, col8 = st.columns(2)
         with col7:
             # Plot 5: Classification Accuracy - Wasting vs L0
             if 'classification_wasting_plot' in plots:
@@ -145,20 +145,20 @@ def execute_post_survey_analysis(uploaded_file, df):
                 display_plot(plots['classification_stunting_plot'], "Classification Accuracy - Stunting vs L0")
             else:
                 st.warning("Classification Accuracy - Stunting Plot not available.")
-        with col9:
-            # Plot 7: Classification Accuracy - Underweight vs L0
-            if 'classification_underweight_plot' in plots:
-                display_plot(plots['classification_underweight_plot'], "Classification Accuracy - Underweight vs L0")
-            else:
-                st.warning("Classification Accuracy - Underweight Plot not available.")
+        # with col9:
+        #     # Plot 7: Classification Accuracy - Underweight vs L0
+        #     if 'classification_underweight_plot' in plots:
+        #         display_plot(plots['classification_underweight_plot'], "Classification Accuracy - Underweight vs L0")
+        #     else:
+        #         st.warning("Classification Accuracy - Underweight Plot not available.")
         
-        # Plot the composite discrepancy scores
-        st.subheader("Composite Discrepancy Score Plot")
+        # # Plot the composite discrepancy scores
+        # st.subheader("Composite Discrepancy Score Plot")
 
-        if 'composite_discrepancy_plot' in plots:
-            display_plot(plots['composite_discrepancy_plot'], "Composite Discrepancy Score per L0")
-        else:
-            st.warning("Composite Discrepancy Score Plot not available.")
+        # if 'composite_discrepancy_plot' in plots:
+        #     display_plot(plots['composite_discrepancy_plot'], "Composite Discrepancy Score per L0")
+        # else:
+        #     st.warning("Composite Discrepancy Score Plot not available.")
 
         # Optionally, provide download link for discrepancy scores
         st.subheader("Download Discrepancy Scores")
