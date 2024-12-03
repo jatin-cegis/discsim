@@ -161,11 +161,11 @@ def execute_post_survey_analysis(uploaded_file, df):
         #     st.warning("Composite Discrepancy Score Plot not available.")
 
         # Optionally, provide download link for discrepancy scores
-        st.subheader("Download Discrepancy Scores")
-        csv = scores_df.to_csv(index=False)
-        b64 = base64.b64encode(csv.encode()).decode()  # some strings
-        href = f'<a href="data:file/csv;base64,{b64}" download="discrepancy_scores.csv">Download CSV File</a>'
-        st.markdown(href, unsafe_allow_html=True)
+        # st.subheader("Download Discrepancy Scores")
+        # csv = scores_df.to_csv(index=False)
+        # b64 = base64.b64encode(csv.encode()).decode()  # some strings
+        # href = f'<a href="data:file/csv;base64,{b64}" download="discrepancy_scores.csv">Download CSV File</a>'
+        # st.markdown(href, unsafe_allow_html=True)
 
     else:
         # Attempt to extract error message from response
