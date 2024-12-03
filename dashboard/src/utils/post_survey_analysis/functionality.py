@@ -84,20 +84,12 @@ def execute_post_survey_analysis(uploaded_file, df):
         with st.expander("Composite Discrepancy Scores:"):
             st.dataframe(composite_scores, use_container_width=True, hide_index=True)
 
-        # Plot the composite discrepancy scores
-        st.subheader("Composite Discrepancy Score Plot")
-
         def display_plot(plot_json, caption):
             try:
                 fig = pio.from_json(plot_json)
                 st.plotly_chart(fig, use_container_width=True)
             except Exception as e:
                 st.error(f"Failed to load plot: {caption}. Error: {str(e)}")
-
-        if 'composite_discrepancy_plot' in plots:
-            display_plot(plots['composite_discrepancy_plot'], "Composite Discrepancy Score per L0")
-        else:
-            st.warning("Composite Discrepancy Score Plot not available.")
 
         # Display Plots
         st.subheader("Discrepancy Plots")
@@ -159,6 +151,14 @@ def execute_post_survey_analysis(uploaded_file, df):
                 display_plot(plots['classification_underweight_plot'], "Classification Accuracy - Underweight vs L0")
             else:
                 st.warning("Classification Accuracy - Underweight Plot not available.")
+        
+        # Plot the composite discrepancy scores
+        st.subheader("Composite Discrepancy Score Plot")
+
+        if 'composite_discrepancy_plot' in plots:
+            display_plot(plots['composite_discrepancy_plot'], "Composite Discrepancy Score per L0")
+        else:
+            st.warning("Composite Discrepancy Score Plot not available.")
 
         # Optionally, provide download link for discrepancy scores
         st.subheader("Download Discrepancy Scores")

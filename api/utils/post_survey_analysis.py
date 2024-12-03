@@ -330,9 +330,15 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         var_name='Classification',
         value_name='Percentage'
     )
-    
-    classification_wasting_melted = classification_wasting_melted.sort_values('Percentage', ascending=False)
-    
+
+    # Define color mapping
+    color_map_wasting = {
+        'Accurate': 'green',
+        'MAM as Normal': 'darkred',
+        'SAM as MAM': 'indigo',
+        'Other Misclassifications': 'darkblue'
+    }
+
     fig_class_wasting = px.bar(
         classification_wasting_melted,
         x='Percentage',
@@ -341,8 +347,8 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         orientation='h',
         title='Classification Accuracy - Wasting vs L0',
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
-        color_discrete_sequence=px.colors.qualitative.Set2,
-        text='Percentage'  
+        text='Percentage',
+        color_discrete_map=color_map_wasting
     )
     fig_class_wasting.update_traces(
         texttemplate='%{text:.2f}%',
@@ -350,7 +356,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
     )
     fig_class_wasting.update_layout(
         barmode='stack',
-        yaxis={'categoryorder':'total ascending'},
+        yaxis={'categoryorder': 'total ascending'},
         legend=dict(
             orientation="h",
             yanchor="top",
@@ -360,6 +366,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         )
     )
     plots['classification_wasting_plot'] = fig_class_wasting.to_json()
+
     
     # Plot 6: Classification Accuracy - Stunting vs L0 (Stacked Horizontal Bar)
     classification_stunting_df = discrepancy_df[[
@@ -380,9 +387,15 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         var_name='Classification',
         value_name='Percentage'
     )
-    
-    classification_stunting_melted = classification_stunting_melted.sort_values('Percentage', ascending=False)
-    
+
+    # Define color mapping
+    color_map_stunting = {
+        'Accurate': 'green',
+        'MAM as Normal': 'darkred',
+        'SAM as MAM': 'darkmagenta',
+        'Other Misclassifications': 'navy'
+    }
+
     fig_class_stunting = px.bar(
         classification_stunting_melted,
         x='Percentage',
@@ -391,8 +404,8 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         orientation='h',
         title='Classification Accuracy - Stunting vs L0',
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
-        color_discrete_sequence=px.colors.qualitative.Set3,
-        text='Percentage'  
+        text='Percentage',
+        color_discrete_map=color_map_stunting
     )
     fig_class_stunting.update_traces(
         texttemplate='%{text:.2f}%',
@@ -400,7 +413,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
     )
     fig_class_stunting.update_layout(
         barmode='stack',
-        yaxis={'categoryorder':'total ascending'},
+        yaxis={'categoryorder': 'total ascending'},
         legend=dict(
             orientation="h",
             yanchor="top",
@@ -410,6 +423,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         )
     )
     plots['classification_stunting_plot'] = fig_class_stunting.to_json()
+
     
     # Plot 7: Classification Accuracy - Underweight vs L0 (Stacked Horizontal Bar)
     classification_underweight_df = discrepancy_df[[
@@ -430,9 +444,15 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         var_name='Classification',
         value_name='Percentage'
     )
-    
-    classification_underweight_melted = classification_underweight_melted.sort_values('Percentage', ascending=False)
-    
+
+    # Define color mapping
+    color_map_underweight = {
+        'Accurate': 'green',
+        'MAM as Normal': 'darkred',
+        'SAM as MAM': 'purple',
+        'Other Misclassifications': 'brown'
+    }
+
     fig_class_underweight = px.bar(
         classification_underweight_melted,
         x='Percentage',
@@ -441,8 +461,8 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         orientation='h',
         title='Classification Accuracy - Underweight vs L0',
         labels={'L0_name': 'L0 Name', 'Percentage': 'Percentage (%)'},
-        color_discrete_sequence=px.colors.qualitative.Set1,
-        text='Percentage'  
+        text='Percentage',
+        color_discrete_map=color_map_underweight
     )
     fig_class_underweight.update_traces(
         texttemplate='%{text:.2f}%',
@@ -450,7 +470,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
     )
     fig_class_underweight.update_layout(
         barmode='stack',
-        yaxis={'categoryorder':'total ascending'},
+        yaxis={'categoryorder': 'total ascending'},
         legend=dict(
             orientation="h",
             yanchor="top",
@@ -460,6 +480,7 @@ def calculate_discrepancy_scores(df: pd.DataFrame, margin_of_error_height: float
         )
     )
     plots['classification_underweight_plot'] = fig_class_underweight.to_json()
+
     
     # Plot 8: Composite Discrepancy Score per L0 (Horizontal Bar)
     discrepancy_df_sorted = discrepancy_df.sort_values('composite_discrepancy_score', ascending=False)
