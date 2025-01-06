@@ -1,0 +1,6 @@
+[client]
+toolbarMode = "minimal"
+showSidebarNav = false
+
+[browser]
+gatherUsageStats = false

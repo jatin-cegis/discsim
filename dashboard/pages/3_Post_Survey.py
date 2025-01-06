@@ -7,6 +7,9 @@ from src.utils.state_management import (
 )
 from src.utils.post_survey_analysis.helpers.file_upload import handle_file_upload
 from src.utils.post_survey_analysis.functionality import execute_post_survey_analysis
+from src.utils.utility_functions import set_page_config
+
+set_page_config()
 
 def post_survey_analysis():
 
@@ -55,3 +58,6 @@ def post_survey_analysis():
     if st.session_state.get(reset_upload_key, False):
         reset_upload()
         st.rerun()
+
+if __name__ == "__main__":
+    post_survey_analysis()

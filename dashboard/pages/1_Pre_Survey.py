@@ -1,5 +1,8 @@
 import streamlit as st
 from src.utils.pre_survey_analysis.third_party_sampling_strategy import third_party_sampling_strategy
+from src.utils.utility_functions import set_page_config
+
+set_page_config()
 
 def pre_survey_analysis():
     title_info_markdown = '''
@@ -18,3 +21,7 @@ def pre_survey_analysis():
             
     if pre_survey_option == "Third-Party Sampling Strategy Predictor":
         third_party_sampling_strategy()
+
+
+if __name__ == "__main__":
+    pre_survey_analysis()

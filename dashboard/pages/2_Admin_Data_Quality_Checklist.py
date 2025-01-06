@@ -4,6 +4,9 @@ from src.utils.state_management import initialize_states, reset_session_states, 
 from src.utils.admin_data_quality_checklist.helpers.file_upload import handle_file_upload
 from src.utils.admin_data_quality_checklist.helpers.preliminary_tests import run_preliminary_tests
 from src.utils.admin_data_quality_checklist.helpers.functionality_map import execute_functionality, sidebar_functionality_select
+from src.utils.utility_functions import set_page_config
+
+set_page_config()
 
 def admin_data_quality_check():
     # File selection
@@ -47,3 +50,6 @@ def admin_data_quality_check():
 if st.session_state.get('reset_upload', False):
     reset_upload()
     st.rerun()
+
+if __name__ == "__main__":
+    admin_data_quality_check()
