@@ -5,6 +5,7 @@ from src.utils.admin_data_quality_checklist.helpers.file_upload import handle_fi
 from src.utils.admin_data_quality_checklist.helpers.preliminary_tests import run_preliminary_tests
 from src.utils.admin_data_quality_checklist.helpers.functionality_map import execute_functionality, sidebar_functionality_select
 from src.utils.utility_functions import set_page_config
+from streamlit_navigation_bar import st_navbar
 
 set_page_config()
 
@@ -52,4 +53,29 @@ if st.session_state.get('reset_upload', False):
     st.rerun()
 
 if __name__ == "__main__":
+    navStyles = {
+        "nav": {
+            "background-color": "#fff5e6",
+            "justify-content": "right",
+        },
+        "div": {
+            "max-width": "30rem",
+        },
+        "span": {
+            "color": "#006897",
+            "font-weight": "700",
+        },
+        "active": {
+            "color": "#D3A518",
+            "font-weight": "800",
+        }
+     }
+    navOptions = {
+        "fix_shadow":False
+    }
+    page = st_navbar(["Pre Survey", "Admin Data Quality", "Post Survey"],selected="Admin Data Quality",styles=navStyles,options=navOptions)
+    if page == "Pre Survey":
+          st.switch_page("pages/1_Pre_Survey.py")
+    if page == "Post Survey":
+          st.switch_page("pages/3_Post_Survey.py")
     admin_data_quality_check()

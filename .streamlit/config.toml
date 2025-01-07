@@ -3,3 +3,7 @@ toolbarMode = "minimal"
 
 [browser]
 gatherUsageStats = false
+
+[theme]
+backgroundColor = "#fff"
+secondaryBackgroundColor = "#fff5e6"

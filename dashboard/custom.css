@@ -1,12 +1,17 @@
 header {
-  background: rgb(240, 242, 246) !important;
+  background: #fff5e6 !important;
+}
+
+section[data-testid="stSidebar"] {
+  /* background-color: #fff5e6; */
+}
+section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] {
+  padding: 0.6rem 1.5rem 1.5rem;
 }
 
 section[data-testid="stSidebar"] img {
-  height: 4rem !important;
+  height: 2rem !important;
   margin: auto;
-  margin-top: 3rem;
-  margin-bottom: 2rem;
 }
 
 section[data-testid="stSidebar"] div[data-testid="stSidebarCollapseButton"] {
@@ -24,6 +29,7 @@ div[data-testid="stChatMessage"] {
   position: fixed;
   top: 0;
   right: 0;
+  padding: 0.5rem 2rem;
 }
 
 div[data-testid="stChatMessage"] button[data-testid="baseButton-secondary"] {
@@ -31,4 +37,9 @@ div[data-testid="stChatMessage"] button[data-testid="baseButton-secondary"] {
   min-height: auto;
   background-color: transparent;
   border: none;
+}
+
+iframe[title="streamlit_navigation_bar.st_navbar"] {
+  margin-top: calc(-6rem + -4rem) !important;
+  width: 74% !important;
 }

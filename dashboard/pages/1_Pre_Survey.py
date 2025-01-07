@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_navigation_bar import st_navbar
 from src.utils.pre_survey_analysis.third_party_sampling_strategy import third_party_sampling_strategy
 from src.utils.utility_functions import set_page_config
 
@@ -24,4 +25,29 @@ def pre_survey_analysis():
 
 
 if __name__ == "__main__":
+    navStyles = {
+        "nav": {
+            "background-color": "#fff5e6",
+            "justify-content": "right",
+        },
+        "div": {
+            "max-width": "30rem",
+        },
+        "span": {
+            "color": "#006897",
+            "font-weight": "700",
+        },
+        "active": {
+            "color": "#D3A518",
+            "font-weight": "800",
+        }
+     }
+    navOptions = {
+        "fix_shadow":False
+    }
+    page = st_navbar(["Pre Survey", "Admin Data Quality", "Post Survey"],styles=navStyles,options=navOptions)
+    if page == "Admin Data Quality":
+          st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
+    if page == "Post Survey":
+          st.switch_page("pages/3_Post_Survey.py")
     pre_survey_analysis()

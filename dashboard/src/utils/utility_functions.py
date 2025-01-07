@@ -40,7 +40,7 @@ def userAvatar():
           st.session_state['user_name'] = "CEGIS"
      @st.dialog("Update Username")
      def userDialog():
-          userInput= st.text_input("Enter your name")
+          userInput= st.text_input("Enter your name",st.session_state['user_name'])
           if st.button("Save"):
                st.session_state['user_name']=userInput
                st.write(st.session_state['user_name'])

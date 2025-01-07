@@ -8,6 +8,7 @@ from src.utils.state_management import (
 from src.utils.post_survey_analysis.helpers.file_upload import handle_file_upload
 from src.utils.post_survey_analysis.functionality import execute_post_survey_analysis
 from src.utils.utility_functions import set_page_config
+from streamlit_navigation_bar import st_navbar
 
 set_page_config()
 
@@ -60,4 +61,30 @@ def post_survey_analysis():
         st.rerun()
 
 if __name__ == "__main__":
+    navStyles = {
+        "nav": {
+            "background-color": "#fff5e6",
+            "justify-content": "right",
+        },
+        "div": {
+            "max-width": "30rem",
+        },
+        "span": {
+            "color": "#006897",
+            "font-weight": "700",
+        },
+        "active": {
+            "color": "#D3A518",
+            "font-weight": "800",
+        }
+     }
+    navOptions = {
+        "fix_shadow":False
+    }
+    page = st_navbar(["Pre Survey", "Admin Data Quality", "Post Survey"],selected="Post Survey",styles=navStyles,options=navOptions)
+
+    if page == "Pre Survey":
+          st.switch_page("pages/1_Pre_Survey.py")
+    if page == "Admin Data Quality":
+          st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
     post_survey_analysis()
