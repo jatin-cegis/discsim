@@ -23,6 +23,7 @@ def set_page_config():
         initial_sidebar_state="expanded",
     )
     loadcss(os.path.join(root_dir, "custom.css"))
+    userAvatar()
 
 def loadcss(file_path: str):
     try:
@@ -33,3 +34,18 @@ def loadcss(file_path: str):
         st.error(f"File not found: {file_path}")
     except Exception as e:
         st.error(f"An error occurred while loading CSS: {e}")
+
+def userAvatar():
+     if 'user_name' not in st.session_state:
+          st.session_state['user_name'] = "CEGIS"
+     @st.dialog("Update Username")
+     def userDialog():
+          userInput= st.text_input("Enter your name")
+          if st.button("Save"):
+               st.session_state['user_name']=userInput
+               st.write(st.session_state['user_name'])
+               st.rerun()
+
+     with st.chat_message("human",avatar="https://avatar.iran.liara.run/public"):
+          if st.button(st.session_state['user_name'] +  ':material/expand_more:'):
+               userDialog()

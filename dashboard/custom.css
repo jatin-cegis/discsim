@@ -13,3 +13,22 @@ section[data-testid="stSidebar"] div[data-testid="stSidebarCollapseButton"] {
   position: absolute;
   right: 1.3rem;
 }
+
+header div[data-testid="stToolbar"] {
+  display: none;
+}
+
+div[data-testid="stChatMessage"] {
+  background-color: transparent;
+  z-index: 999999;
+  position: fixed;
+  top: 0;
+  right: 0;
+}
+
+div[data-testid="stChatMessage"] button[data-testid="baseButton-secondary"] {
+  padding: 0;
+  min-height: auto;
+  background-color: transparent;
+  border: none;
+}
