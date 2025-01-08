@@ -11,7 +11,7 @@ root_dir = os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir))
 logo_path = os.path.join(root_dir, "logo.jpg")
 im = Image.open(logo_path)
 
-logo_page_path = os.path.join(root_dir, "logo_page.png")
+logo_page_path = os.path.join(root_dir, "logo_white.png")
 im_page = Image.open(logo_page_path)
 
 def set_page_config():
@@ -69,7 +69,8 @@ def setheader(SelectedNav: str):
         }
      }
     navOptions = {
-        "fix_shadow":False
+        "fix_shadow":False,
+        "hide_nav":False
     }
     return st_navbar(["Pre Survey", "Admin Data Quality", "Post Survey"],selected=SelectedNav,styles=navStyles,options=navOptions) # type: ignore
 
