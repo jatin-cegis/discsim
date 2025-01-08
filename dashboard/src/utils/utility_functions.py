@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 from PIL import Image
+from streamlit_navigation_bar import st_navbar
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -49,3 +50,52 @@ def userAvatar():
      with st.chat_message("human",avatar="https://avatar.iran.liara.run/public"):
           if st.button(st.session_state['user_name'] +  ':material/expand_more:'):
                userDialog()
+
+def setheader(SelectedNav: str):
+    navStyles = {
+        "nav": {
+            "background-color": "#136a9a",
+            "justify-content": "right",
+        },
+        "div": {
+            "max-width": "30rem",
+        },
+        "span": {
+            "color": "#fff",
+            "font-weight": "700",
+        },
+        "active": {
+            "color": "#7fff67",
+        }
+     }
+    navOptions = {
+        "fix_shadow":False
+    }
+    return st_navbar(["Pre Survey", "Admin Data Quality", "Post Survey"],selected=SelectedNav,styles=navStyles,options=navOptions) # type: ignore
+
+def setFooter():
+         # Footer using markdown with custom HTML
+    footer = """
+        <style>
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #136a9a;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            color: white;
+            left:0;
+            z-index:99999999;
+        }
+        .footer p{
+            margin:0;
+            font-size:14px;
+        }
+        </style>
+        <div class="footer">
+            <p> CEGIS © 2025 | All Rights Reserved.</p>
+        </div>
+    """
+    st.markdown(footer, unsafe_allow_html=True)
