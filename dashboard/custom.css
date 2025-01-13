@@ -27,17 +27,12 @@ div[data-testid="stChatMessage"] {
   padding: 0.5rem 2rem;
 }
 
-div[data-testid="stChatMessage"] button[data-testid="baseButton-secondary"] {
+div[data-testid="stChatMessage"] button[data-testid="stBaseButton-secondary"] {
   padding: 0;
   min-height: auto;
   background-color: transparent;
   border: none;
   color: #fff;
-}
-
-iframe[title="streamlit_navigation_bar.st_navbar"] {
-  margin-top: calc(-6rem + -4rem) !important;
-  width: 74% !important;
 }
 
 div[data-testid="stSidebarNav"] {

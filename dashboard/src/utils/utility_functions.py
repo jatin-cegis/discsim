@@ -44,7 +44,6 @@ def userAvatar():
           userInput= st.text_input("Enter your name",st.session_state['user_name'])
           if st.button("Save"):
                st.session_state['user_name']=userInput
-               st.write(st.session_state['user_name'])
                st.rerun()
 
      with st.chat_message("human",avatar="https://avatar.iran.liara.run/public"):
@@ -55,7 +54,7 @@ def setheader(SelectedNav: str):
     navStyles = {
         "nav": {
             "background-color": "#136a9a",
-            "justify-content": "right",
+            "justify-content": "center",
         },
         "div": {
             "max-width": "30rem",
