@@ -60,10 +60,10 @@ def get_relevant_functionality(warning):
 
 def sidebar_functionality_select():
     st.sidebar.header("Select Functionality")
-    functionality = st.sidebar.selectbox(
+    functionality = st.sidebar.pills(
         "Choose a functionality",
         list(FUNCTIONALITY_MAP.keys()),
-        index=list(FUNCTIONALITY_MAP.keys()).index(st.session_state.navbar_selection)  # Use current state as default
+        default=list(FUNCTIONALITY_MAP.keys())[0]
     )
     st.session_state.navbar_selection = functionality
     return functionality
