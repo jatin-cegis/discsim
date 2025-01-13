@@ -56,4 +56,10 @@ div[data-testid="stSidebarNav"] {
   div[data-testid="stSidebarNav"] ul li:first-child {
     display: none;
   }
+  div[data-testid="stSidebarNavSeparator"] {
+    display: none;
+  }
+  div[data-testid="stSidebarUserContent"] {
+    padding-top: 10px;
+  }
 }

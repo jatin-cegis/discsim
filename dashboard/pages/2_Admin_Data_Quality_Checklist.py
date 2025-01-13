@@ -30,7 +30,7 @@ def admin_data_quality_check():
         if uploaded_file != st.session_state.previous_uploaded_file:
             reset_session_states()
             st.session_state.previous_uploaded_file = uploaded_file
-            
+        st.sidebar.divider()
         # Run preliminary tests
         if run_preliminary_tests(uploaded_file):
             
