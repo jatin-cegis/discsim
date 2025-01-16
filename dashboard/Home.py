@@ -6,7 +6,7 @@ set_page_config()
 
 if __name__ == "__main__":
     st.markdown("<h1 style='text-align: center;'>CEGIS Discsim Project", unsafe_allow_html=True)
-    selectedNav = setheader("Pre Survey")
+    selectedNav = setheader()
     if selectedNav == "Pre Survey":
           st.switch_page("pages/1_Pre_Survey.py")
     if selectedNav == "Admin Data Quality":

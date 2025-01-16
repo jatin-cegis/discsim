@@ -61,9 +61,11 @@ def get_relevant_functionality(warning):
 def sidebar_functionality_select():
     st.sidebar.header("Select Functionality")
     functionality = st.sidebar.pills(
-        "Choose a functionality",
-        list(FUNCTIONALITY_MAP.keys()),
-        default=list(FUNCTIONALITY_MAP.keys())[0]
+        label="Choose a functionality",
+        options=list(FUNCTIONALITY_MAP.keys()),
+        default=list(FUNCTIONALITY_MAP.keys())[0],
+        key="functionSelectAdmin",
+        label_visibility="collapsed"
     )
     st.session_state.navbar_selection = functionality
     return functionality

@@ -50,7 +50,7 @@ def userAvatar():
           if st.button(st.session_state['user_name'] +  ':material/expand_more:'):
                userDialog()
 
-def setheader(SelectedNav: str):
+def setheader(SelectedNav = None):
     navStyles = {
         "nav": {
             "background-color": "#136a9a",
@@ -64,8 +64,10 @@ def setheader(SelectedNav: str):
             "font-weight": "700",
         },
         "active": {
-            "color": "#7fff67",
-        }
+            "color": "#136a9a",
+            "background-color":"#fff",
+            "padding": "14px",
+        },
      }
     navOptions = {
         "fix_shadow":False,
