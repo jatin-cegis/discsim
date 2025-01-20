@@ -72,11 +72,11 @@ def third_party_sampling_strategy():
 
             fig1 = base64.b64decode(result['value']['figureImg'])
             image1 = Image.open(BytesIO(fig1))
-            st.image(image1, caption="Third-Party Sampling Strategy Plot", use_column_width=True)
+            st.image(image1, caption="Third-Party Sampling Strategy Plot", use_container_width=True)
             
             fig2 = base64.b64decode(result['value']['figure2'])
             image2 = Image.open(BytesIO(fig2))
-            st.image(image2, caption="Third-Party Sampling Strategy Plot", use_column_width=True)
+            st.image(image2, caption="Third-Party Sampling Strategy Plot", use_container_width=True)
         else:
             st.error(f"Error: {response.json()['detail']}")
     
