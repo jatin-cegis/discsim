@@ -69,10 +69,10 @@ def number_of_subs(level_test, n_subs_per_block, n_blocks_per_district, n_distri
         print('\'level test\' should be either \'Block\' or \'District\' or \'State\'')
         return None, None
 
-def get_real_ts(n_blocks, average_truth_score, variance_across_blocks, n_sub_per_block, variance_within_block):
-    block_mean_ts = generate_true_disc(n_blocks, 0, 1, average_truth_score, variance_across_blocks, 'normal')
+def get_real_ts(n_blocks, average_truth_score, sd_across_blocks, n_sub_per_block, sd_within_block):
+    block_mean_ts = generate_true_disc(n_blocks, 0, 1, average_truth_score, sd_across_blocks, 'normal')
     real_order = list(np.argsort(block_mean_ts))
-    real_ts = [generate_true_disc(n_sub_per_block, 0, 1, block_mean_ts[block], variance_within_block, 'normal') for block in range(n_blocks)]
+    real_ts = [generate_true_disc(n_sub_per_block, 0, 1, block_mean_ts[block], sd_within_block, 'normal') for block in range(n_blocks)]
     return real_order, real_ts
 
 def get_list_n_sub(n_sub_per_block, min_sub_per_block):
@@ -342,7 +342,7 @@ def l2_sample_size_calculator(params):
         0,
         1,
         params["average_truth_score"],
-        params["variance_across_blocks"],
+        params["sd_across_blocks"],
         "normal",
     )
     meas_disc = generate_meas_disc(true_disc, params["total_samples"] // n_blocks)
@@ -372,9 +372,9 @@ def third_party_sampling_strategy(params):
     real_order, real_ts = get_real_ts(
         n_blocks,
         params["average_truth_score"],
-        params["variance_across_blocks"],
+        params["sd_across_blocks"],
         n_sub_per_block,
-        params["variance_within_block"]
+        params["sd_within_block"]
     )
 
     list_n_sub = get_list_n_sub(n_sub_per_block, params["min_sub_per_block"])

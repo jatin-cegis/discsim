@@ -22,11 +22,11 @@ def third_party_sampling_strategy():
     with col2:
         avg_score = st.slider("Avg truth score", 0.0, 1.0, 0.5, help="Expected avg truth score (0.2-0.5). Higher is worse. 0 < Range < 1")
     with col3:
-        var_across = st.slider("Variance across blocks", 0.0, 1.0, 0.1, help="Expected std dev of mean truth score across blocks (0.1-0.5). Range > 0")
+        sd_across = st.slider("Standard Deviation across blocks", 0.0, 1.0, 0.1, help="Expected std dev of mean truth score across blocks (0.1-0.5). Range > 0")
     
     col4, col5, col6 = st.columns(3)
     with col4:
-        var_within = st.slider("Variance within block", 0.0, 1.0, 0.1, help="Expected std dev within a block (0.1-0.5). Range > 0")
+        sd_within = st.slider("Standard Deviation within block", 0.0, 1.0, 0.1, help="Expected std dev within a block (0.1-0.5). Range > 0")
     with col5:
         level_test = st.selectbox("Level of test", ["Block", "District", "State"], help="Aggregation level for 3P testing")
     with col6:
@@ -51,7 +51,7 @@ def third_party_sampling_strategy():
     if st.button("Predict Third-Party Sampling Strategy"):
         input_data = {
             "total_samples": total_samples, "average_truth_score": avg_score,
-            "variance_across_blocks": var_across, "variance_within_block": var_within,
+            "sd_across_blocks": sd_across, "sd_within_block": sd_within,
             "level_test": level_test, "n_subs_per_block": subs_per_block,
             "n_blocks_per_district": blocks_per_district, "n_district": districts,
             "n_simulations": n_simulations, "min_sub_per_block": min_sub_per_block,

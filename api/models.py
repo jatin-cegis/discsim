@@ -74,8 +74,8 @@ class L1SampleSizeInput(BaseModel):
 class L2SampleSizeInput(BaseModel):
     total_samples: int
     average_truth_score: float
-    variance_across_blocks: float
-    variance_within_block: float
+    sd_across_blocks: float
+    sd_within_block: float
     level_test: str
     n_subs_per_block: int
     n_blocks_per_district: int
@@ -87,8 +87,8 @@ class L2SampleSizeInput(BaseModel):
 class ThirdPartySamplingInput(BaseModel):
     total_samples: int
     average_truth_score: float
-    variance_across_blocks: float
-    variance_within_block: float
+    sd_across_blocks: float
+    sd_within_block: float
     level_test: str
     n_subs_per_block: int
     n_blocks_per_district: int
