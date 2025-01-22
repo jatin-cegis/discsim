@@ -62,6 +62,7 @@ def setheader(SelectedNav = None):
         "span": {
             "color": "#fff",
             "font-weight": "700",
+            "padding": "14px",
         },
         "active": {
             "color": "#136a9a",
