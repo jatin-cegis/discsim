@@ -43,6 +43,20 @@ def error_handling(params):
     if "distribution" in params and params["distribution"] not in ["uniform", "normal"]:
         return (0, "ERROR: distribution must be 'uniform' or 'normal'")
 
+    if "n_blocks_reward" in params : 
+        n_sub_per_block, n_blocks = number_of_subs(
+        params["level_test"],
+        params["n_subs_per_block"],
+        params["n_blocks_per_district"],
+        params["n_district"]
+        )
+        if n_blocks is None:
+            return (0, "ERROR: \'level test\' should be either \'Block\' or \'District\' or \'State\''")
+        else:
+            n_blocks = int(n_blocks)
+            if(n_blocks > int(params['n_blocks_reward'])):
+                return (0, "ERROR: Number of block rewarded cannot be greater than the number of subjects")
+
     return (1, "Success")
 
 
@@ -81,11 +95,11 @@ def get_list_n_sub(n_sub_per_block, min_sub_per_block):
 def get_list_n_samples(total_samples, n_blocks, list_n_sub):
     return [int(total_samples/(n_blocks*n_sub)) for n_sub in list_n_sub]
 
-def get_meas_ts(n_blocks, n_sub_per_block, n_sub_test, n_samples, real_ts, random_state):
+def get_meas_ts(n_blocks, n_sub_per_block, n_sub_test, n_samples, real_ts):
     meas_ts = np.zeros(n_blocks)
     for block in range(n_blocks):
         subs_test = np.random.choice(list(range(n_sub_per_block)), size=n_sub_test)
-        meas_ts[block] = np.mean([binom.rvs(n_samples, real_ts[block][sub], random_state=random_state)/n_samples for sub in subs_test])
+        meas_ts[block] = np.mean([binom.rvs(n_samples, real_ts[block][sub])/n_samples for sub in subs_test])
     return meas_ts
 
 def get_ranks(meas_order, real_order, n_blocks, percent_blocks_plot, list_n_sub, n_simulations, errorbar_type):
@@ -114,16 +128,18 @@ def get_n_blocks_plot(list_n_sub, n_blocks, percent_blocks_plot):
     n_blocks_plot = max(1, int(n_blocks*percent_blocks_plot/100))
     return n_cond, n_blocks_plot
 
-def get_num_real_units(n_cond, n_simulations, n_blocks_plot, real_order, meas_order, n_blocks, errorbar_type):
+def get_num_real_units(n_cond, n_simulations, n_blocks_reward, real_order, meas_order, n_blocks, errorbar_type):
     mean_n_real = np.zeros(n_cond)
     errorbars_n_real = np.zeros(n_cond)
     
     for i in range(n_cond):
         n_real = np.zeros(n_simulations)
         for sim in range(n_simulations):
-            for block in range(n_blocks_plot):
+            for block in range(n_blocks_reward):
+                # Get real rank of the block with measured rank = n_blocks - block - 1
                 real_rank = real_order.index(meas_order[i][n_blocks - block - 1, sim])
-                if real_rank >= n_blocks - n_blocks_plot:
+                # This block is counted as a 'real' green zone block if its real rank is within the top n_blocks_plot
+                if real_rank >= n_blocks - n_blocks_reward:
                     n_real[sim] += 1
         
         mean_n_real[i] = np.mean(n_real)
@@ -167,7 +183,7 @@ def make_plot(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, percen
 
     return fig
 
-def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_plot, errorbar_type,
+def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_reward, errorbar_type,
                         figsize=(8, 6), x_label_fontsize=14, y_label_fontsize=14, linecolor='k', markerstyle='o',
                         elinewidth=0.5, errorbar_capsize=2, legend_fontsize=14):
     """
@@ -178,7 +194,7 @@ def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_
     list_n_samples: List of numbers of samples per subordinate
     mean_n_real: Mean number of real best units found
     errorbars_n_real: Error bars for the number of real best units
-    n_blocks_plot: Number of blocks to plot
+    n_blocks_reward: Number of blocks to plot (user input)
     errorbar_type: Type of error bars to display
     
     Returns:
@@ -193,7 +209,7 @@ def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_
                 capsize=errorbar_capsize)
 
     # Plot dashed line to show the maximum possible number of real green zone units
-    ax1.plot(list_n_sub, np.ones(len(list_n_sub))*n_blocks_plot, color='b', linestyle='--', 
+    ax1.plot(list_n_sub, np.ones(len(list_n_sub))*n_blocks_reward, color='b', linestyle='--', 
              linewidth=1.5, label='Number of units rewarded (b)')
     ax1.legend(fontsize=legend_fontsize, title=f'Errorbars: {errorbar_type}')
 
@@ -219,7 +235,7 @@ def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_
 
     # Hide the y-axis for the secondary x-axis
     ax2.yaxis.set_visible(False)
-    ax1.set_ylim([0, n_blocks_plot + 1])
+    ax1.set_ylim([0, n_blocks_reward + 1])
 
     ax1.set_ylabel("Number of 'real' best units found (c)", fontsize=y_label_fontsize)
     
@@ -386,7 +402,7 @@ def third_party_sampling_strategy(params):
         meas_order[i] = np.zeros([n_blocks, params["n_simulations"]])
         
         for sim in range(params["n_simulations"]):
-            meas_order[i][:, sim] = np.argsort(get_meas_ts(n_blocks, n_sub_per_block, n_sub, n_samples, real_ts, sim))
+            meas_order[i][:, sim] = np.argsort(get_meas_ts(n_blocks, n_sub_per_block, n_sub, n_samples, real_ts))
 
     mean_rank, errorbars = get_ranks(meas_order, real_order, n_blocks, params["percent_blocks_plot"], list_n_sub, params["n_simulations"], params["errorbar_type"])
 
@@ -394,7 +410,7 @@ def third_party_sampling_strategy(params):
     mean_n_real, errorbars_n_real = get_num_real_units(
         len(list_n_sub), 
         params["n_simulations"], 
-        max(1, int(n_blocks*params["percent_blocks_plot"]/100)), 
+        params["n_blocks_reward"], 
         real_order, 
         meas_order, 
         n_blocks, 
@@ -410,7 +426,7 @@ def third_party_sampling_strategy(params):
         list_n_samples, 
         mean_n_real, 
         errorbars_n_real,
-        max(1, int(n_blocks*params["percent_blocks_plot"]/100)),
+        params['n_blocks_reward'],
         params["errorbar_type"]
     )
     

@@ -47,6 +47,11 @@ def third_party_sampling_strategy():
         percent_blocks_plot = st.slider("% blocks to plot", 0.0, 100.0, 10.0)
     with col12:
         errorbar_type = st.selectbox("Errorbar Type", ["standard deviation", "standard error of the mean", "95% confidence interval"], help="Errorbar Type")
+
+    col13, col14, col15 = st.columns(3)
+    with col13:
+        n_blocks_reward = st.number_input("Number of Unit Rewarded", min_value=1, value=1, help="The number of units to be rewarded. Depends on level_test and other inputs")
+    
     
     if st.button("Predict Third-Party Sampling Strategy"):
         input_data = {
@@ -55,7 +60,8 @@ def third_party_sampling_strategy():
             "level_test": level_test, "n_subs_per_block": subs_per_block,
             "n_blocks_per_district": blocks_per_district, "n_district": districts,
             "n_simulations": n_simulations, "min_sub_per_block": min_sub_per_block,
-            "percent_blocks_plot": percent_blocks_plot, "errorbar_type": errorbar_type
+            "percent_blocks_plot": percent_blocks_plot, "errorbar_type": errorbar_type,
+            "n_blocks_reward": n_blocks_reward
         }
         
         error_status, error_message = check_errors(input_data)

@@ -97,3 +97,4 @@ class ThirdPartySamplingInput(BaseModel):
     min_sub_per_block: int
     percent_blocks_plot: float
     errorbar_type: str
+    n_blocks_reward: int
