@@ -54,7 +54,7 @@ def error_handling(params):
             return (0, "ERROR: \'level test\' should be either \'Block\' or \'District\' or \'State\''")
         else:
             n_blocks = int(n_blocks)
-            if(n_blocks > int(params['n_blocks_reward'])):
+            if(n_blocks < int(params['n_blocks_reward'])):
                 return (0, "ERROR: Number of block rewarded cannot be greater than the number of subjects")
 
     return (1, "Success")
