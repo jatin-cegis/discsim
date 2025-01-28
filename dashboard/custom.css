@@ -56,6 +56,10 @@ section[data-testid="stSidebar"]
   row-gap: 0;
 }
 
+p:has(.downloadLink) {
+  text-align: center;
+}
+
 section[data-testid="stSidebar"]
   .st-key-functionSelectAdmin
   div[data-testid="stButtonGroup"]
