@@ -13,6 +13,12 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 
 THIRD_PARTY_SAMPLING_ENDPOINT = f"{API_BASE_URL}/third-party-sampling"
 
+def image_to_downloadable_bytes(image: Image) -> bytes: # type: ignore
+    with BytesIO() as byte_io:
+        image.save(byte_io, format='PNG') # type: ignore
+        byte_io.seek(0) 
+        return byte_io.read()
+
 def third_party_sampling_strategy():
     st.markdown("<h2 style='text-align: center;'>Third-Party Sampling Strategy Predictor", unsafe_allow_html=True)
     
@@ -79,10 +85,15 @@ def third_party_sampling_strategy():
             fig1 = base64.b64decode(result['value']['figureImg'])
             image1 = Image.open(BytesIO(fig1))
             st.image(image1, caption="Third-Party Sampling Strategy Plot", use_container_width=True)
-            
+            image1_bytes = image_to_downloadable_bytes(image1) # type: ignore
+            st.download_button(label="Download Image", data=image1_bytes,  file_name="third_party_sampling_plot.png",mime="image/png")
+
             fig2 = base64.b64decode(result['value']['figure2'])
             image2 = Image.open(BytesIO(fig2))
             st.image(image2, caption="Third-Party Sampling Strategy Plot", use_container_width=True)
+            image2_bytes = image_to_downloadable_bytes(image2) # type: ignore
+            st.download_button(label="Download Image", data=image2_bytes,  file_name="third_party_sampling_plot2.png",mime="image/png")
+
         else:
             st.error(f"Error: {response.json()['detail']}")
     
