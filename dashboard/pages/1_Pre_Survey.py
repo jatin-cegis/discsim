@@ -1,5 +1,8 @@
 import streamlit as st
 from src.utils.pre_survey_analysis.third_party_sampling_strategy import third_party_sampling_strategy
+from src.utils.utility_functions import set_page_config,setFooter,setheader
+
+set_page_config()
 
 def pre_survey_analysis():
     title_info_markdown = '''
@@ -18,3 +21,13 @@ def pre_survey_analysis():
             
     if pre_survey_option == "Third-Party Sampling Strategy Predictor":
         third_party_sampling_strategy()
+
+
+if __name__ == "__main__":
+    selectedNav = setheader("Pre Survey")
+    if selectedNav == "Admin Data Quality":
+          st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
+    if selectedNav == "Post Survey":
+          st.switch_page("pages/3_Post_Survey.py")
+    pre_survey_analysis()
+    setFooter()

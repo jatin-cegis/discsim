@@ -1,0 +1,117 @@
+section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] {
+  padding: 7px;
+  background-color: #136a9a;
+  margin-bottom: 20px;
+}
+
+section[data-testid="stSidebar"] img,
+section[data-testid="stSidebar"] a:has(img) {
+  height: 2rem !important;
+  margin: auto;
+}
+
+section[data-testid="stSidebar"] div[data-testid="stSidebarCollapseButton"] {
+  position: absolute;
+  right: 1.3rem;
+  color: #ececec !important;
+  display: block;
+}
+
+header div[data-testid="stToolbar"] {
+  display: none;
+}
+
+div[data-testid="stChatMessage"] {
+  background-color: transparent;
+  z-index: 999999;
+  position: fixed;
+  top: 0;
+  right: 0;
+  padding: 0.5rem 2rem;
+}
+
+div[data-testid="stChatMessage"] button[data-testid="stBaseButton-secondary"] {
+  padding: 0;
+  min-height: auto;
+  background-color: transparent;
+  border: none;
+  color: #fff;
+}
+
+section[data-testid="stSidebar"]
+  .st-key-functionSelectAdmin
+  div[data-testid="stButtonGroup"]
+  button {
+  width: 100%;
+  justify-content: start;
+  border-radius: 10px;
+  border: none;
+  position: relative;
+}
+
+section[data-testid="stSidebar"]
+  .st-key-functionSelectAdmin
+  div[data-testid="stButtonGroup"]
+  button::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 1px;
+  background-color: #31333f33;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+section[data-testid="stSidebar"]
+  .st-key-functionSelectAdmin
+  div[data-testid="stButtonGroup"]
+  button:last-child::after {
+  content: none;
+}
+
+div[data-testid="stSidebarNav"] div[data-testid="stElementContainer"] hr {
+  margin: 0;
+}
+
+div[data-testid="stSidebarNav"] {
+  display: none;
+}
+
+div[data-testid="stMainBlockContainer"] {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+iframe[title="streamlit_navigation_bar.st_navbar"] {
+  margin-left: 10rem !important;
+}
+
+div[data-testid="stSidebarContent"] div[data-testid="stSidebarUserContent"] hr {
+  margin: 0;
+}
+
+div[data-testid="stSidebarContent"] div[data-testid="stSidebarUserContent"] h2 {
+  padding: 0.2rem 0px 1rem;
+}
+
+@media only screen and (max-width: 1100px) {
+  div[data-testid="stSidebarNav"] {
+    display: block;
+  }
+  iframe[title="streamlit_navigation_bar.st_navbar"] {
+    display: none !important;
+  }
+  div[data-testid="stChatMessage"] {
+    z-index: 9999;
+  }
+  div[data-testid="stSidebarNav"] ul li:first-child {
+    display: none;
+  }
+  div[data-testid="stSidebarNavSeparator"] {
+    display: none;
+  }
+  div[data-testid="stSidebarUserContent"] {
+    padding-top: 10px;
+  }
+}

@@ -22,11 +22,11 @@ def third_party_sampling_strategy():
     with col2:
         avg_score = st.slider("Avg truth score", 0.0, 1.0, 0.5, help="Expected avg truth score (0.2-0.5). Higher is worse. 0 < Range < 1")
     with col3:
-        var_across = st.slider("Variance across blocks", 0.0, 1.0, 0.1, help="Expected std dev of mean truth score across blocks (0.1-0.5). Range > 0")
+        sd_across = st.slider("Standard Deviation across blocks", 0.0, 1.0, 0.1, help="Expected std dev of mean truth score across blocks (0.1-0.5). Range > 0")
     
     col4, col5, col6 = st.columns(3)
     with col4:
-        var_within = st.slider("Variance within block", 0.0, 1.0, 0.1, help="Expected std dev within a block (0.1-0.5). Range > 0")
+        sd_within = st.slider("Standard Deviation within block", 0.0, 1.0, 0.1, help="Expected std dev within a block (0.1-0.5). Range > 0")
     with col5:
         level_test = st.selectbox("Level of test", ["Block", "District", "State"], help="Aggregation level for 3P testing")
     with col6:
@@ -47,15 +47,21 @@ def third_party_sampling_strategy():
         percent_blocks_plot = st.slider("% blocks to plot", 0.0, 100.0, 10.0)
     with col12:
         errorbar_type = st.selectbox("Errorbar Type", ["standard deviation", "standard error of the mean", "95% confidence interval"], help="Errorbar Type")
+
+    col13, col14, col15 = st.columns(3)
+    with col13:
+        n_blocks_reward = st.number_input("Number of Unit Rewarded", min_value=1, value=1, help="The number of units to be rewarded. Depends on level_test and other inputs")
+    
     
     if st.button("Predict Third-Party Sampling Strategy"):
         input_data = {
             "total_samples": total_samples, "average_truth_score": avg_score,
-            "variance_across_blocks": var_across, "variance_within_block": var_within,
+            "sd_across_blocks": sd_across, "sd_within_block": sd_within,
             "level_test": level_test, "n_subs_per_block": subs_per_block,
             "n_blocks_per_district": blocks_per_district, "n_district": districts,
             "n_simulations": n_simulations, "min_sub_per_block": min_sub_per_block,
-            "percent_blocks_plot": percent_blocks_plot, "errorbar_type": errorbar_type
+            "percent_blocks_plot": percent_blocks_plot, "errorbar_type": errorbar_type,
+            "n_blocks_reward": n_blocks_reward
         }
         
         error_status, error_message = check_errors(input_data)
@@ -72,11 +78,11 @@ def third_party_sampling_strategy():
 
             fig1 = base64.b64decode(result['value']['figureImg'])
             image1 = Image.open(BytesIO(fig1))
-            st.image(image1, caption="Third-Party Sampling Strategy Plot", use_column_width=True)
+            st.image(image1, caption="Third-Party Sampling Strategy Plot", use_container_width=True)
             
             fig2 = base64.b64decode(result['value']['figure2'])
             image2 = Image.open(BytesIO(fig2))
-            st.image(image2, caption="Third-Party Sampling Strategy Plot", use_column_width=True)
+            st.image(image2, caption="Third-Party Sampling Strategy Plot", use_container_width=True)
         else:
             st.error(f"Error: {response.json()['detail']}")
     
