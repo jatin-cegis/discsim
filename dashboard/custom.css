@@ -44,9 +44,16 @@ section[data-testid="stSidebar"]
   button {
   width: 100%;
   justify-content: start;
-  border-radius: 10px;
+  border-radius: 0px;
   border: none;
   position: relative;
+}
+
+section[data-testid="stSidebar"]
+  .st-key-functionSelectAdmin
+  div[data-testid="stButtonGroup"]
+  .st-ef {
+  row-gap: 0;
 }
 
 section[data-testid="stSidebar"]
