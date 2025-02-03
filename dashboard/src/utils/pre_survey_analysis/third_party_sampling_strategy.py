@@ -22,11 +22,11 @@ def third_party_sampling_strategy():
     with col2:
         avg_score = st.slider("Avg truth score", 0.0, 1.0, 0.5, help="Expected avg truth score (0.2-0.5). Higher is worse. 0 < Range < 1")
     with col3:
-        sd_across = st.slider("Standard Deviation across blocks", 0.0, 1.0, 0.1, help="Expected std dev of mean truth score across blocks (0.1-0.5). Range > 0")
+        sd_across = st.number_input("Standard Deviation across blocks", min_value=0.1,  step=0.1, help="Expected std dev of mean truth score across blocks (0.1-0.5). Range > 0")
     
     col4, col5, col6 = st.columns(3)
     with col4:
-        sd_within = st.slider("Standard Deviation within block", 0.0, 1.0, 0.1, help="Expected std dev within a block (0.1-0.5). Range > 0")
+        sd_within = st.number_input("Standard Deviation within block", min_value=0.1, step= 0.1, help="Expected std dev within a block (0.1-0.5). Range > 0")
     with col5:
         level_test = st.selectbox("Level of test", ["Block", "District", "State"], help="Aggregation level for 3P testing")
     with col6:
