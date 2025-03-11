@@ -166,12 +166,12 @@ def make_plot(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, percen
     ax2.yaxis.set_visible(False)
     
     # Chart title
-    ax1.set_title('This chart shows the expected outcome for {0} out of {1} top-scoring units\n selected for reward, using a variety of sampling strategies.\nThe sampling strategy is indicated on the X-axis in terms of the number of L0s\nin each unit tested by a supervisor, and the number of samples tested per L0.\nThe solid lines show the expected ranks of the {0} top-scoring units.\nFor example, if {2} L0s are tested per unit and {3} samples per L0,\nthen the real rank of the unit with the best truth score is expected to be between {4} and {5},\nwith an average expected value of {6}. The dashed blue line shows the best possible rank\nfor any unit (determined by the number of units in the population).\n'.format(n_blocks_plot, n_blocks_reward, list_n_sub[0],
+    ax1.set_title('This chart shows the expected outcome for {0} top-scoring units\n selected for reward, using a variety of sampling strategies.\nThe sampling strategy is indicated on the X-axis in terms of the number of L0s\nin each unit tested by a supervisor, and the number of samples tested per L0.\nThe solid lines show the expected ranks of the {0} top-scoring units.\nFor example, if {1} L0s are tested per unit and {2} samples per L0,\nthen the real rank of the unit with the best truth score is expected to be between {3} and {4},\nwith an average expected value of {5}. The dashed blue line shows the best possible rank\nfor any unit (determined by the number of units in the population).\n'.format(n_blocks_plot, list_n_sub[0],
     list_n_samples[0], np.round(mean_rank[0, 0] - errorbars[0, 0], 2), np.round(mean_rank[0, 0] + errorbars[0, 0], 2), np.round(mean_rank[0, 0], 2)))
 
     return fig
 
-def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_plot, errorbar_type,
+def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_plot, errorbar_type, 
                         figsize=(8, 6), x_label_fontsize=14, y_label_fontsize=14, linecolor='k', markerstyle='o',
                         elinewidth=0.5, errorbar_capsize=2, legend_fontsize=14):
     """
@@ -228,7 +228,7 @@ def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_
     ax1.set_ylabel("Number of 'real' best units found (c)", fontsize=y_label_fontsize)
     
     # Chart title
-    ax1.set_title('This chart shows the expected outcome when {0} out of {1} top-scoring units\nare selected for reward, using a variety of sampling strategies.\nThe sampling strategy is indicated on the X-axis in terms of the number of L0s\nin each unit tested by a supervisor, and the number of samples tested per L0.\nThe solid black line shows how many of the {0} top-scoring units are expected to be\n\'real\' top-scoring units. For example, if {2} L0s are tested per unit\nand {3} samples per L0, then we can be confident that\naround {4} of the {0} rewarded units were deserving of the reward.\nThe dashed blue line shows the number of rewarded units.\n'.format(n_blocks_reward, n_blocks, list_n_sub[0], list_n_samples[0], np.round(mean_n_real[0], 1)))
+    ax1.set_title('This chart shows the expected outcome when {0} out of {1} top-scoring units\nare selected for reward, using a variety of sampling strategies.\nThe sampling strategy is indicated on the X-axis in terms of the number of L0s\nin each unit tested by a supervisor, and the number of samples tested per L0.\nThe solid black line shows how many of the {0} top-scoring units are expected to be\n\'real\' top-scoring units. For example, if {2} L0s are tested per unit\nand {3} samples per L0, then we can be confident that\naround {4} of the {0} rewarded units were deserving of the reward.\nThe dashed blue line shows the number of rewarded units.\n'.format(n_blocks_plot, n_blocks, list_n_sub[0], list_n_samples[0], np.round(mean_n_real[0], 1)))
     
     
     
@@ -420,7 +420,8 @@ def third_party_sampling_strategy(params):
         mean_n_real, 
         errorbars_n_real,
         max(1, int(n_blocks*params["percent_blocks_plot"]/100)),
-        params["errorbar_type"]
+        params["errorbar_type"],
+        
     )
     
     # Save both figures to base64
