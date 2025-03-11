@@ -131,3 +131,12 @@ section[data-testid="stMain"] div[data-testid="stForm"] {
     padding-top: 10px;
   }
 }
+div[data-testid="stSidebarCollapsedControl"] {
+  width: 378px;
+  gap: 50px;
+}
+div[data-testid="stSidebarCollapsedControl"] img.stLogo {
+  margin: 0;
+  margin-top: -5px;
+  height: 2rem;
+}
