@@ -195,6 +195,24 @@ def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_
     ax1.errorbar(list_n_sub, mean_n_real, errorbars_n_real, 
                 color=linecolor, marker=markerstyle, elinewidth=elinewidth, 
                 capsize=errorbar_capsize)
+    
+    # Add text to indicate number of real units on the chart itself, for readability
+    plot_height = ax1.get_ylim()[1] - ax1.get_ylim()[0]
+    for i in range(len(list_n_sub)):
+        
+        if i == len(list_n_sub) - 1:
+            y_shift = 0
+        elif mean_n_real[i + 1] > mean_n_real[i]:
+            y_shift = - 0.02*plot_height*0.2/(mean_n_real[i + 1] - mean_n_real[i])
+        elif mean_n_real[i + 1] < mean_n_real[i]:
+            y_shift = + 0.02*plot_height*0.2/(mean_n_real[i] - mean_n_real[i + 1])
+        elif mean_n_real[i + 1] == mean_n_real[i]:
+            y_shift = -0.05*plot_height
+        ax1.text(list_n_sub[i] + 0.2*(list_n_sub[1] - list_n_sub[0]), # X axis location of text - slightly to right of plotted point
+                 mean_n_real[i] + y_shift, # Y axis location of text - slightly below plotted point
+                 np.round(mean_n_real[i], 1), # Text 
+                 size = 10
+                                     )
 
     # Plot dashed line to show the maximum possible number of real green zone units
     ax1.plot(list_n_sub, np.ones(len(list_n_sub))*n_blocks_plot, color='b', linestyle='--', 
