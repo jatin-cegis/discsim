@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import binom
 import matplotlib
+import pandas as pd
 
 matplotlib.use('Agg')
 
@@ -170,6 +171,15 @@ def make_plot(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, percen
     list_n_samples[0], np.round(mean_rank[0, 0] - errorbars[0, 0], 2), np.round(mean_rank[0, 0] + errorbars[0, 0], 2), np.round(mean_rank[0, 0], 2)))
 
     return fig
+
+def get_num_real_units_table(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, errorbar_type):
+    
+    num_real_units_table = pd.DataFrame({'Number of L0s per unit': list_n_sub,
+                                 'Number of samples per L0': list_n_samples,
+                                 'Number of real units': mean_n_real,
+                                 'Errorbar ({0})'.format(errorbar_type): errorbars_n_real
+                               })
+    return num_real_units_table
 
 def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_plot, errorbar_type, 
                         figsize=(8, 6), x_label_fontsize=14, y_label_fontsize=14, linecolor='k', markerstyle='o',
@@ -452,6 +462,9 @@ def third_party_sampling_strategy(params):
     fig2.savefig(buf2, format="png")
     plt.close(fig2)
     plot_data2 = base64.b64encode(buf2.getbuffer()).decode("ascii")
+    
+    # Get values of second figure in a pandas dataframe
+    second_fig_values = get_num_real_units_table(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, params["errorbar_type"])
 
     return {
         "status": 1,
@@ -466,6 +479,7 @@ def third_party_sampling_strategy(params):
             "mean_n_real": mean_n_real.tolist(),
             "errorbars_n_real": errorbars_n_real.tolist(),
             "figureImg": plot_data1,
-            "figure2": plot_data2
+            "figure2": plot_data2,
+            "table": second_fig_values
         },
     }
