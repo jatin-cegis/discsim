@@ -477,6 +477,7 @@ def third_party_sampling_strategy(params):
         params['n_blocks_reward'],
         params["errorbar_type"],
         n_blocks
+        n_blocks
     )
     
     # Save both figures to base64
