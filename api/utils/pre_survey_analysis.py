@@ -181,7 +181,7 @@ def get_num_real_units_table(list_n_sub, list_n_samples, mean_n_real, errorbars_
                                })
     return num_real_units_table
 
-def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_plot, errorbar_type, 
+def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_plot, errorbar_type, n_blocks,
                         figsize=(8, 6), x_label_fontsize=14, y_label_fontsize=14, linecolor='k', markerstyle='o',
                         elinewidth=0.5, errorbar_capsize=2, legend_fontsize=14):
     """
@@ -449,7 +449,7 @@ def third_party_sampling_strategy(params):
         errorbars_n_real,
         max(1, int(n_blocks*params["percent_blocks_plot"]/100)),
         params["errorbar_type"],
-        
+        n_blocks
     )
     
     # Save both figures to base64
