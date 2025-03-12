@@ -6,6 +6,7 @@ import os
 from PIL import Image
 from dotenv import load_dotenv
 from src.utils.pre_survey_analysis.error_handling import check_errors
+import pandas as pd
 
 load_dotenv()
 
@@ -95,6 +96,10 @@ def third_party_sampling_strategy():
                 encoded_image2 = base64.b64encode(image_bytes2.getvalue()).decode("utf-8")
                 download_link2 = f'<a href="data:image/png;base64,{encoded_image2}" class="downloadLink" download="third_party_sampling_plot2.png">Click here to download</a>'
                 st.markdown(download_link2, unsafe_allow_html=True)
+
+                with st.container(key="samplingtable"):
+                    thirdSampling = pd.DataFrame(result['value']['table'])
+                    st.dataframe(thirdSampling)
 
             else:
                 st.error(f"Error: {response.json()['detail']}")

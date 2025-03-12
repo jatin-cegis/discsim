@@ -44,6 +44,20 @@ def error_handling(params):
     if "distribution" in params and params["distribution"] not in ["uniform", "normal"]:
         return (0, "ERROR: distribution must be 'uniform' or 'normal'")
 
+    if "n_blocks_reward" in params : 
+        n_sub_per_block, n_blocks = number_of_subs(
+        params["level_test"],
+        params["n_subs_per_block"],
+        params["n_blocks_per_district"],
+        params["n_district"]
+        )
+        if n_blocks is None:
+            return (0, "ERROR: \'level test\' should be either \'Block\' or \'District\' or \'State\''")
+        else:
+            n_blocks = int(n_blocks)
+            if(n_blocks < int(params['n_blocks_reward'])):
+                return (0, "ERROR: Number of block rewarded cannot be greater than the number of subjects")
+
     return (1, "Success")
 
 
@@ -70,10 +84,10 @@ def number_of_subs(level_test, n_subs_per_block, n_blocks_per_district, n_distri
         print('\'level test\' should be either \'Block\' or \'District\' or \'State\'')
         return None, None
 
-def get_real_ts(n_blocks, average_truth_score, variance_across_blocks, n_sub_per_block, variance_within_block):
-    block_mean_ts = generate_true_disc(n_blocks, 0, 1, average_truth_score, variance_across_blocks, 'normal')
+def get_real_ts(n_blocks, average_truth_score, sd_across_blocks, n_sub_per_block, sd_within_block):
+    block_mean_ts = generate_true_disc(n_blocks, 0, 1, average_truth_score, sd_across_blocks, 'normal')
     real_order = list(np.argsort(block_mean_ts))
-    real_ts = [generate_true_disc(n_sub_per_block, 0, 1, block_mean_ts[block], variance_within_block, 'normal') for block in range(n_blocks)]
+    real_ts = [generate_true_disc(n_sub_per_block, 0, 1, block_mean_ts[block], sd_within_block, 'normal') for block in range(n_blocks)]
     return real_order, real_ts
 
 def get_list_n_sub(n_sub_per_block, min_sub_per_block):
@@ -82,11 +96,11 @@ def get_list_n_sub(n_sub_per_block, min_sub_per_block):
 def get_list_n_samples(total_samples, n_blocks, list_n_sub):
     return [int(total_samples/(n_blocks*n_sub)) for n_sub in list_n_sub]
 
-def get_meas_ts(n_blocks, n_sub_per_block, n_sub_test, n_samples, real_ts, random_state):
+def get_meas_ts(n_blocks, n_sub_per_block, n_sub_test, n_samples, real_ts):
     meas_ts = np.zeros(n_blocks)
     for block in range(n_blocks):
         subs_test = np.random.choice(list(range(n_sub_per_block)), size=n_sub_test)
-        meas_ts[block] = np.mean([binom.rvs(n_samples, real_ts[block][sub], random_state=random_state)/n_samples for sub in subs_test])
+        meas_ts[block] = np.mean([binom.rvs(n_samples, real_ts[block][sub])/n_samples for sub in subs_test])
     return meas_ts
 
 def get_ranks(meas_order, real_order, n_blocks, percent_blocks_plot, list_n_sub, n_simulations, errorbar_type):
@@ -115,16 +129,18 @@ def get_n_blocks_plot(list_n_sub, n_blocks, percent_blocks_plot):
     n_blocks_plot = max(1, int(n_blocks*percent_blocks_plot/100))
     return n_cond, n_blocks_plot
 
-def get_num_real_units(n_cond, n_simulations, n_blocks_plot, real_order, meas_order, n_blocks, errorbar_type):
+def get_num_real_units(n_cond, n_simulations, n_blocks_reward, real_order, meas_order, n_blocks, errorbar_type):
     mean_n_real = np.zeros(n_cond)
     errorbars_n_real = np.zeros(n_cond)
     
     for i in range(n_cond):
         n_real = np.zeros(n_simulations)
         for sim in range(n_simulations):
-            for block in range(n_blocks_plot):
+            for block in range(n_blocks_reward):
+                # Get real rank of the block with measured rank = n_blocks - block - 1
                 real_rank = real_order.index(meas_order[i][n_blocks - block - 1, sim])
-                if real_rank >= n_blocks - n_blocks_plot:
+                # This block is counted as a 'real' green zone block if its real rank is within the top n_blocks_plot
+                if real_rank >= n_blocks - n_blocks_reward:
                     n_real[sim] += 1
         
         mean_n_real[i] = np.mean(n_real)
@@ -138,7 +154,7 @@ def get_num_real_units(n_cond, n_simulations, n_blocks_plot, real_order, meas_or
     return mean_n_real, errorbars_n_real
 
 def make_plot(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, percent_blocks_plot, errorbar_type):
-    fig, ax1 = plt.subplots(figsize=[10, 8])
+    fig, ax1 = plt.subplots(figsize=[8, 10])
     n_cond = len(list_n_sub)
     n_blocks_plot = max(1, int(n_blocks * percent_blocks_plot / 100))
     colors = plt.cm.Reds(np.linspace(0.3, 1, n_blocks_plot))
@@ -165,15 +181,23 @@ def make_plot(mean_rank, errorbars, list_n_sub, list_n_samples, n_blocks, percen
     ax2.set_xlim(ax1.get_xlim())
     ax2.set_xlabel('Number of samples (n) per L0', fontsize=14)
     ax2.yaxis.set_visible(False)
-    
-    # Chart title
-    ax1.set_title('This chart shows the expected outcome for {0} top-scoring units\n selected for reward, using a variety of sampling strategies.\nThe sampling strategy is indicated on the X-axis in terms of the number of L0s\nin each unit tested by a supervisor, and the number of samples tested per L0.\nThe solid lines show the expected ranks of the {0} top-scoring units.\nFor example, if {1} L0s are tested per unit and {2} samples per L0,\nthen the real rank of the unit with the best truth score is expected to be between {3} and {4},\nwith an average expected value of {5}. The dashed blue line shows the best possible rank\nfor any unit (determined by the number of units in the population).\n'.format(n_blocks_plot, list_n_sub[0],
-    list_n_samples[0], np.round(mean_rank[0, 0] - errorbars[0, 0], 2), np.round(mean_rank[0, 0] + errorbars[0, 0], 2), np.round(mean_rank[0, 0], 2)))
 
+    # Chart title
+    ax1.set_title('This chart shows the expected outcome for {0} top-scoring units\n selected for reward, using a variety of sampling strategies.\nThe sampling strategy is indicated on the X-axis in terms of the number of L0s\nin each unit tested by a supervisor, and the number of samples tested per L0.\nThe solid lines show the expected ranks of the {0} top-scoring units.\nFor example, if {1} L0s are tested per unit and {2} samples per L0,\nthen the real rank of the unit with the best truth score is expected to be between {3} and {4},\nwith an average expected value of {5}. The dashed blue line shows the best possible rank\nfor any unit (determined by the number of units in the population).\n'.format(
+        n_blocks_plot, 
+        list_n_sub[0],
+        list_n_samples[0], 
+        np.round(mean_rank[0, 0] - errorbars[0, 0], 2), 
+        np.round(mean_rank[0, 0] + errorbars[0, 0], 2), 
+        np.round(mean_rank[0, 0], 2)
+        ),
+        fontsize=10
+    )
+    fig.tight_layout(pad=1.0)
     return fig
 
 def get_num_real_units_table(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, errorbar_type):
-    
+
     num_real_units_table = pd.DataFrame({'Number of L0s per unit': list_n_sub,
                                  'Number of samples per L0': list_n_samples,
                                  'Number of real units': mean_n_real,
@@ -181,9 +205,7 @@ def get_num_real_units_table(list_n_sub, list_n_samples, mean_n_real, errorbars_
                                })
     return num_real_units_table
 
-def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_plot, errorbar_type, 
-                        figsize=(8, 6), x_label_fontsize=14, y_label_fontsize=14, linecolor='k', markerstyle='o',
-                        elinewidth=0.5, errorbar_capsize=2, legend_fontsize=14):
+def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_plot, errorbar_type,       n_blocks, figsize=(8, 11), x_label_fontsize=14, y_label_fontsize=14, linecolor='k', markerstyle='o', elinewidth=0.5, errorbar_capsize=2, legend_fontsize=14):
     """
     Create a matplotlib figure showing the number of 'real' best units found.
     
@@ -192,7 +214,7 @@ def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_
     list_n_samples: List of numbers of samples per subordinate
     mean_n_real: Mean number of real best units found
     errorbars_n_real: Error bars for the number of real best units
-    n_blocks_plot: Number of blocks to plot
+    n_blocks_reward: Number of blocks to plot (user input)
     errorbar_type: Type of error bars to display
     
     Returns:
@@ -201,15 +223,10 @@ def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_
     # Create figure and axis handles
     fig, ax1 = plt.subplots(nrows=1, ncols=1, figsize=figsize)
 
-    # Plot mean and error bars of number of real green zone units
-    ax1.errorbar(list_n_sub, mean_n_real, errorbars_n_real, 
-                color=linecolor, marker=markerstyle, elinewidth=elinewidth, 
-                capsize=errorbar_capsize)
-    
     # Add text to indicate number of real units on the chart itself, for readability
     plot_height = ax1.get_ylim()[1] - ax1.get_ylim()[0]
     for i in range(len(list_n_sub)):
-        
+
         if i == len(list_n_sub) - 1:
             y_shift = 0
         elif mean_n_real[i + 1] > mean_n_real[i]:
@@ -221,8 +238,12 @@ def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_
         ax1.text(list_n_sub[i] + 0.2*(list_n_sub[1] - list_n_sub[0]), # X axis location of text - slightly to right of plotted point
                  mean_n_real[i] + y_shift, # Y axis location of text - slightly below plotted point
                  np.round(mean_n_real[i], 1), # Text 
-                 size = 10
-                                     )
+                 size = 10)
+
+    # Plot mean and error bars of number of real green zone units
+    ax1.errorbar(list_n_sub, mean_n_real, errorbars_n_real, 
+                color=linecolor, marker=markerstyle, elinewidth=elinewidth, 
+                capsize=errorbar_capsize)
 
     # Plot dashed line to show the maximum possible number of real green zone units
     ax1.plot(list_n_sub, np.ones(len(list_n_sub))*n_blocks_plot, color='b', linestyle='--', 
@@ -256,10 +277,16 @@ def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_
     ax1.set_ylabel("Number of 'real' best units found (c)", fontsize=y_label_fontsize)
     
     # Chart title
-    ax1.set_title('This chart shows the expected outcome when {0} out of {1} top-scoring units\nare selected for reward, using a variety of sampling strategies.\nThe sampling strategy is indicated on the X-axis in terms of the number of L0s\nin each unit tested by a supervisor, and the number of samples tested per L0.\nThe solid black line shows how many of the {0} top-scoring units are expected to be\n\'real\' top-scoring units. For example, if {2} L0s are tested per unit\nand {3} samples per L0, then we can be confident that\naround {4} of the {0} rewarded units were deserving of the reward.\nThe dashed blue line shows the number of rewarded units.\n'.format(n_blocks_plot, n_blocks, list_n_sub[0], list_n_samples[0], np.round(mean_n_real[0], 1)))
-    
-    
-    
+    ax1.set_title('This chart shows the expected outcome when {0} out of {1} top-scoring units\nare selected for reward, using a variety of sampling strategies.\nThe sampling strategy is indicated on the X-axis in terms of the number of L0s\nin each unit tested by a supervisor, and the number of samples tested per L0.\nThe solid black line shows how many of the {0} top-scoring units are expected to be\n\'real\' top-scoring units. For example, if {2} L0s are tested per unit\nand {3} samples per L0, then we can be confident that\naround {4} of the {0} rewarded units were deserving of the reward.\nThe dashed blue line shows the number of rewarded units.\n'.format(
+        n_blocks_plot, 
+        n_blocks, 
+        list_n_sub[0], 
+        list_n_samples[0], 
+        np.round(mean_n_real[0], 1)
+        ),
+        fontsize=10
+    )
+    fig.tight_layout(pad=1.0)
     return fig
 
 
@@ -379,7 +406,7 @@ def l2_sample_size_calculator(params):
         0,
         1,
         params["average_truth_score"],
-        params["variance_across_blocks"],
+        params["sd_across_blocks"],
         "normal",
     )
     meas_disc = generate_meas_disc(true_disc, params["total_samples"] // n_blocks)
@@ -409,9 +436,9 @@ def third_party_sampling_strategy(params):
     real_order, real_ts = get_real_ts(
         n_blocks,
         params["average_truth_score"],
-        params["variance_across_blocks"],
+        params["sd_across_blocks"],
         n_sub_per_block,
-        params["variance_within_block"]
+        params["sd_within_block"]
     )
 
     list_n_sub = get_list_n_sub(n_sub_per_block, params["min_sub_per_block"])
@@ -423,7 +450,7 @@ def third_party_sampling_strategy(params):
         meas_order[i] = np.zeros([n_blocks, params["n_simulations"]])
         
         for sim in range(params["n_simulations"]):
-            meas_order[i][:, sim] = np.argsort(get_meas_ts(n_blocks, n_sub_per_block, n_sub, n_samples, real_ts, sim))
+            meas_order[i][:, sim] = np.argsort(get_meas_ts(n_blocks, n_sub_per_block, n_sub, n_samples, real_ts))
 
     mean_rank, errorbars = get_ranks(meas_order, real_order, n_blocks, params["percent_blocks_plot"], list_n_sub, params["n_simulations"], params["errorbar_type"])
 
@@ -431,7 +458,7 @@ def third_party_sampling_strategy(params):
     mean_n_real, errorbars_n_real = get_num_real_units(
         len(list_n_sub), 
         params["n_simulations"], 
-        max(1, int(n_blocks*params["percent_blocks_plot"]/100)), 
+        params["n_blocks_reward"], 
         real_order, 
         meas_order, 
         n_blocks, 
@@ -447,9 +474,9 @@ def third_party_sampling_strategy(params):
         list_n_samples, 
         mean_n_real, 
         errorbars_n_real,
-        max(1, int(n_blocks*params["percent_blocks_plot"]/100)),
+        params['n_blocks_reward'],
         params["errorbar_type"],
-        
+        n_blocks
     )
     
     # Save both figures to base64
@@ -462,9 +489,10 @@ def third_party_sampling_strategy(params):
     fig2.savefig(buf2, format="png")
     plt.close(fig2)
     plot_data2 = base64.b64encode(buf2.getbuffer()).decode("ascii")
-    
+
     # Get values of second figure in a pandas dataframe
     second_fig_values = get_num_real_units_table(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, params["errorbar_type"])
+    json_response = second_fig_values.to_dict(orient='records')
 
     return {
         "status": 1,
@@ -480,6 +508,6 @@ def third_party_sampling_strategy(params):
             "errorbars_n_real": errorbars_n_real.tolist(),
             "figureImg": plot_data1,
             "figure2": plot_data2,
-            "table": second_fig_values
+            "table": json_response
         },
     }
