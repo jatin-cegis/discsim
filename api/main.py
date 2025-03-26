@@ -43,6 +43,7 @@ from api.utils.pre_survey_analysis import (
     third_party_sampling_strategy,
 )
 from api.utils.post_survey_analysis import calculate_discrepancy_scores
+from api.utils.pseudo_code import anganwadi_center_data_anaylsis
 from api.database import get_db, UploadedFile
 from api.database import engine, Base
 
@@ -738,4 +739,24 @@ async def post_survey_analysis(
         return JSONResponse(content=result)
     except Exception as e:
         print(f"Error in post_survey_analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/pseudo_code")
+async def pseudo_code(
+    file: UploadFile = File(...),
+    agg_level: str = Form('agg_level'),
+    discrepancy_method: str = Form('discrepancy_method'),
+    red_threshold: int = Form('red_threshold'),
+    green_threshold: int = Form('green_threshold'),
+    case_threshold: int = Form('case_threshold')
+):
+    try:
+        if file.content_type != "text/csv":
+            raise HTTPException(status_code=400, detail="Please upload a CSV file.")
+        contents = await file.read()
+        df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+        result = anganwadi_center_data_anaylsis(df, agg_level, discrepancy_method,red_threshold,green_threshold,case_threshold)
+        return JSONResponse(content=result)
+    except Exception as e:
+        print(f"Error in pseudo_code_analysis: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
