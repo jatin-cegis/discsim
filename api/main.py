@@ -743,19 +743,14 @@ async def post_survey_analysis(
     
 @app.post("/pseudo_code")
 async def pseudo_code(
-    file: UploadFile = File(...),
-    agg_level: str = Form('agg_level'),
-    discrepancy_method: str = Form('discrepancy_method'),
-    red_threshold: int = Form('red_threshold'),
-    green_threshold: int = Form('green_threshold'),
-    case_threshold: int = Form('case_threshold')
+    file: UploadFile = File(...)
 ):
     try:
         if file.content_type != "text/csv":
             raise HTTPException(status_code=400, detail="Please upload a CSV file.")
         contents = await file.read()
         df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
-        result = anganwadi_center_data_anaylsis(df, agg_level, discrepancy_method,red_threshold,green_threshold,case_threshold)
+        result = anganwadi_center_data_anaylsis(df)
         return JSONResponse(content=result)
     except Exception as e:
         print(f"Error in pseudo_code_analysis: {str(e)}")

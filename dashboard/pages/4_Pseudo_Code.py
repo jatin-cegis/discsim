@@ -255,9 +255,354 @@ def pseudo_code_analysis():
 
 
             with project:
-                st.warning("Project Level")
+                col1,col2 = st.columns(2)
+                with col1:
+                    if 'sameHeight' in data['projectLevelInsights']:
+                        container = st.container(border=True)
+                        projectSameHeight = pd.DataFrame(data['projectLevelInsights']['sameHeight'])
+                        container.markdown("<h6 style='text-align:center;padding-bottom:0'>Remeasurements with Exact Same AWT and Supervisor Height Measurements", unsafe_allow_html=True)
+                        container.markdown("<p style='text-align:center;color:grey;font-size:12px'>Top 10 Projects", unsafe_allow_html=True)
+                        top_12_projectSameHeight = projectSameHeight.nlargest(10, 'Exact_Same_Height_%')
+                        top_12_projectSameHeight = top_12_projectSameHeight.sort_values(by='Exact_Same_Height_%', ascending=True)
+                        fig_top_12_projectSameHeight = px.bar(
+                            top_12_projectSameHeight,
+                            x='Exact_Same_Height_%', 
+                            y='Proj_Name',
+                            orientation='h',
+                            text=top_12_projectSameHeight["Exact_Same_Height_%"].astype(str) + " %",
+                        )
+                        fig_top_12_projectSameHeight.update_layout(
+                            barcornerradius=5,
+                            showlegend=False,
+                            height=300,
+                            margin=dict(t=0, b=0,l=0,r=0),
+                            xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
+                            yaxis=dict(title=None,showgrid=False,showticklabels=True)
+                        )
+                        container.plotly_chart(fig_top_12_projectSameHeight)
+                        with container.expander("Show Data"):
+                            st.dataframe(projectSameHeight,hide_index=True,use_container_width=True)
+                    
+                with col2:
+                    if 'sameWeight' in data['projectLevelInsights']:
+                        container = st.container(border=True)
+                        projectSameWeight = pd.DataFrame(data['projectLevelInsights']['sameWeight'])
+                        container.markdown("<h6 style='text-align:center;padding-bottom:0'>Remeasurements with Exact Same AWT and Supervisor Weight Measurements", unsafe_allow_html=True)
+                        container.markdown("<p style='text-align:center;color:grey;font-size:12px'>Top 10 Projects", unsafe_allow_html=True)
+                        top_12_projectSameWeight = projectSameWeight.nlargest(10, 'Exact_Same_Weight_%')
+                        top_12_projectSameWeight = top_12_projectSameWeight.sort_values(by='Exact_Same_Weight_%', ascending=True)
+                        fig_top_12_projectSameWeight = px.bar(
+                            top_12_projectSameWeight,
+                            x='Exact_Same_Weight_%', 
+                            y='Proj_Name',
+                            orientation='h',
+                            text=top_12_projectSameWeight["Exact_Same_Weight_%"].astype(str) + " %",
+                        )
+                        fig_top_12_projectSameWeight.update_layout(
+                            barcornerradius=5,
+                            showlegend=False,
+                            height=300,
+                            margin=dict(t=0, b=0,l=0,r=0),
+                            xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
+                            yaxis=dict(title=None,showgrid=False,showticklabels=True)
+                        )
+                        container.plotly_chart(fig_top_12_projectSameWeight)
+                        with container.expander("Show Data"):
+                            st.dataframe(projectSameWeight,hide_index=True,use_container_width=True)
+
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>WASTING [WEIGHT-FOR-HEIGHT]", unsafe_allow_html=True)
+
+                if 'wastingLevels' in data['projectLevelInsights']:
+                    container = st.container(border=True)
+                    projectWastingLevels = pd.DataFrame(data['projectLevelInsights']['wastingLevels'])
+                    container.markdown("<h6 style='text-align:center;'>Difference in Wasting levels between AWTs and Supervisors", unsafe_allow_html=True)
+                    categories = ['AWT_SAM_%', 'AWT_Wasting_%','Supervisor_SAM_%', 'Supervisor_Wasting_%']
+                    colors = ['skyblue', 'blue', 'red', 'darkred']
+                    wasting_table_melted = projectWastingLevels.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    fig_wasting_levels = px.bar(
+                        wasting_table_melted,
+                        x='Proj_Name',
+                        y='Percentage',
+                        color='Category',
+                        text=wasting_table_melted['Percentage'].astype(str) + '%',
+                        barmode='group',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_wasting_levels.update_layout(
+                        barcornerradius=2,
+                        margin=dict(t=0, b=0),
+                        xaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=False),
+                        legend=dict(title=None,orientation='h'),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_wasting_levels)
+                    with container.expander("Show Data"):
+                        st.dataframe(projectWastingLevels,hide_index=True,use_container_width=True)
+
+
+                if 'wastingClassification' in data['projectLevelInsights']:
+                    container = st.container(border=True)
+                    projectWastingClassification = pd.DataFrame(data['projectLevelInsights']['wastingClassification'])
+                    container.markdown("<h6 style='text-align:center;'>Difference between AWT and Supervisor in Wasting Classification", unsafe_allow_html=True)
+                    categories = ['AWT_Normal_Sup_SAM_%', 'AWT_Normal_Sup_MAM_%', 'AWT_MAM_Sup_SAM_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
+                    colors = ['darkred', 'red', 'lightcoral', 'gold', 'green']
+                    project_analysis_melted = projectWastingClassification.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    fig_projectWastingClassification = px.bar(
+                        project_analysis_melted,
+                        x='Percentage',
+                        y='Proj_Name',
+                        color='Category',
+                        text=project_analysis_melted['Percentage'].astype(str) + '%',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_projectWastingClassification.update_layout(
+                        barcornerradius=5,
+                        margin=dict(t=0, b=0),
+                        height=400,
+                        xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        legend=dict(title=None,orientation='h'),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_projectWastingClassification)
+                    with container.expander("Show Data"):
+                        st.dataframe(projectWastingClassification,hide_index=True,use_container_width=True)
+
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>UNDERWEIGHT [WEIGHT-FOR-AGE]", unsafe_allow_html=True)
+
+                if 'underweightLevels' in data['projectLevelInsights']:
+                    container = st.container(border=True)
+                    projectUnderweightLevels = pd.DataFrame(data['projectLevelInsights']['underweightLevels'])
+                    container.markdown("<h6 style='text-align:center;'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
+                    categories = ['AWT_SUW_%', 'Sup_SUW_%', 'AWT_Underweight_%', 'Sup_Underweight_%']
+                    colors = ['skyblue', 'blue', 'red', 'darkred']
+                    project_analysis_melted = projectUnderweightLevels.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    fig_uw_levels = px.bar(
+                        project_analysis_melted,
+                        x='Proj_Name',
+                        y='Percentage',
+                        color='Category',
+                        text=project_analysis_melted['Percentage'].astype(str) + '%',
+                        barmode='group',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_uw_levels.update_layout(
+                        barcornerradius=2,
+                        margin=dict(t=0, b=0),
+                        xaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=False),
+                        legend=dict(title=None,orientation='h'),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_uw_levels)
+                    with container.expander("Show Data"):
+                        st.dataframe(projectUnderweightLevels,hide_index=True,use_container_width=True)
+                            
+                if 'underweightClassification' in data['projectLevelInsights']:
+                    container = st.container(border=True)
+                    projectUnderweightClassification = pd.DataFrame(data['projectLevelInsights']['underweightClassification'])
+                    container.markdown("<h6 style='text-align:center;'>Difference between AWT and Supervisor in Underweight Classification", unsafe_allow_html=True)
+                    categories = ['AWT_Normal_Sup_SUW_%', 'AWT_Normal_Sup_MUW_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
+                    colors = ['darkred', 'red', 'gold', 'green']
+                    project_analysis_melted = projectUnderweightClassification.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    fig_projectUnderweightClassification = px.bar(
+                        project_analysis_melted,
+                        x='Percentage',
+                        y='Proj_Name',
+                        color='Category',
+                        orientation='h',
+                        text=project_analysis_melted['Percentage'].astype(str) + '%',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_projectUnderweightClassification.update_layout(
+                        barcornerradius=5,
+                        margin=dict(t=0, b=0),
+                        height=400,
+                        xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        legend=dict(title=None,orientation='h'),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_projectUnderweightClassification)
+                    with container.expander("Show Data"):
+                        st.dataframe(projectUnderweightClassification,hide_index=True,use_container_width=True)
+                    
             with sector:
-                st.warning("Sector Level")
+                col1,col2 = st.columns(2)
+                with col1:
+                    if 'sameHeight' in data['sectorLevelInsights']:
+                        container = st.container(border=True)
+                        sectorSameHeight = pd.DataFrame(data['sectorLevelInsights']['sameHeight'])
+                        container.markdown("<h6 style='text-align:center;padding-bottom:0'>Remeasurements with Exact Same AWT and Supervisor Height Measurements", unsafe_allow_html=True)
+                        container.markdown("<p style='text-align:center;color:grey;font-size:12px'>Top 10 Sectors", unsafe_allow_html=True)
+                        top_12_sectorSameHeight = sectorSameHeight.nlargest(10, 'Exact_Same_Height_%')
+                        top_12_sectorSameHeight = top_12_sectorSameHeight.sort_values(by='Exact_Same_Height_%', ascending=True)
+                        fig_top_12_sectorSameHeight = px.bar(
+                            top_12_sectorSameHeight,
+                            x='Exact_Same_Height_%', 
+                            y='Sec_Name',
+                            orientation='h',
+                            text=top_12_sectorSameHeight["Exact_Same_Height_%"].astype(str) + " %",
+                        )
+                        fig_top_12_sectorSameHeight.update_layout(
+                            barcornerradius=5,
+                            showlegend=False,
+                            height=300,
+                            margin=dict(t=0, b=0,l=0,r=0),
+                            xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
+                            yaxis=dict(title=None,showgrid=False,showticklabels=True)
+                        )
+                        container.plotly_chart(fig_top_12_sectorSameHeight)
+                        with container.expander("Show Data"):
+                            st.dataframe(sectorSameHeight,hide_index=True,use_container_width=True)
+                with col2:
+                    if 'sameWeight' in data['sectorLevelInsights']:
+                        container = st.container(border=True)
+                        sectorSameWeight = pd.DataFrame(data['sectorLevelInsights']['sameWeight'])
+                        container.markdown("<h6 style='text-align:center;padding-bottom:0'>Remeasurements with Exact Same AWT and Supervisor Weight Measurements", unsafe_allow_html=True)
+                        container.markdown("<p style='text-align:center;color:grey;font-size:12px'>Top 10 Sectors", unsafe_allow_html=True)
+                        top_12_sectorSameWeight = sectorSameWeight.nlargest(10, 'Exact_Same_Weight_%')
+                        top_12_sectorSameWeight = top_12_sectorSameWeight.sort_values(by='Exact_Same_Weight_%', ascending=True)
+                        fig_top_12_sectorSameWeight = px.bar(
+                            top_12_sectorSameWeight,
+                            x='Exact_Same_Weight_%', 
+                            y='Sec_Name',
+                            orientation='h',
+                            text=top_12_sectorSameWeight["Exact_Same_Weight_%"].astype(str) + " %",
+                        )
+                        fig_top_12_sectorSameWeight.update_layout(
+                            barcornerradius=5,
+                            showlegend=False,
+                            height=300,
+                            margin=dict(t=0, b=0,l=0,r=0),
+                            xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
+                            yaxis=dict(title=None,showgrid=False,showticklabels=True)
+                        )
+                        container.plotly_chart(fig_top_12_sectorSameWeight)
+                        with container.expander("Show Data"):
+                            st.dataframe(sectorSameWeight,hide_index=True,use_container_width=True)
+
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>WASTING [WEIGHT-FOR-HEIGHT]", unsafe_allow_html=True)
+
+                if 'wastingLevels' in data['sectorLevelInsights']:
+                    container = st.container(border=True)
+                    sectorWastingLevels = pd.DataFrame(data['sectorLevelInsights']['wastingLevels'])
+                    container.markdown("<h6 style='text-align:center;'>Difference in Wasting levels between AWTs and Supervisors", unsafe_allow_html=True)
+                    categories = ['AWT_SAM_%', 'AWT_Wasting_%','Supervisor_SAM_%', 'Supervisor_Wasting_%']
+                    colors = ['skyblue', 'blue', 'red', 'darkred']
+                    wasting_table_melted = sectorWastingLevels.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    fig_wasting_levels = px.bar(
+                        wasting_table_melted,
+                        x='Sec_Name',
+                        y='Percentage',
+                        color='Category',
+                        text=wasting_table_melted['Percentage'].astype(str) + '%',
+                        barmode='group',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_wasting_levels.update_layout(
+                        barcornerradius=2,
+                        margin=dict(t=0, b=0),
+                        xaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=False),
+                        legend=dict(title=None,orientation='h'),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_wasting_levels)
+                    with container.expander("Show Data"):
+                        st.dataframe(sectorWastingLevels,hide_index=True,use_container_width=True)
+
+                if 'wastingClassification' in data['sectorLevelInsights']:
+                    container = st.container(border=True)
+                    sectorWastingClassification = pd.DataFrame(data['sectorLevelInsights']['wastingClassification'])
+                    container.markdown("<h6 style='text-align:center;'>Difference between AWT and Supervisor in Wasting Classification", unsafe_allow_html=True)
+                    categories = ['AWT_Normal_Sup_SAM_%', 'AWT_Normal_Sup_MAM_%', 'AWT_MAM_Sup_SAM_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
+                    colors = ['darkred', 'red', 'lightcoral', 'gold', 'green']
+                    sector_analysis_melted = sectorWastingClassification.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    fig_sectorWastingClassification = px.bar(
+                        sector_analysis_melted,
+                        x='Percentage',
+                        y='Sec_Name',
+                        color='Category',
+                        text=sector_analysis_melted['Percentage'].astype(str) + '%',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_sectorWastingClassification.update_layout(
+                        barcornerradius=5,
+                        margin=dict(t=0, b=0),
+                        height=400,
+                        xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        legend=dict(title=None,orientation='h'),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_sectorWastingClassification)
+                    with container.expander("Show Data"):
+                        st.dataframe(sectorWastingClassification,hide_index=True,use_container_width=True)
+
+                
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>UNDERWEIGHT [WEIGHT-FOR-AGE]", unsafe_allow_html=True)
+
+                if 'underweightLevels' in data['sectorLevelInsights']:
+                    container = st.container(border=True)
+                    sectorUnderweightLevels = pd.DataFrame(data['sectorLevelInsights']['underweightLevels'])
+                    container.markdown("<h6 style='text-align:center;'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
+                    categories = ['AWT_SUW_%', 'Sup_SUW_%', 'AWT_Underweight_%', 'Sup_Underweight_%']
+                    colors = ['skyblue', 'blue', 'red', 'darkred']
+                    sector_analysis_melted = sectorUnderweightLevels.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    #sector_analysis_melted = sector_analysis_melted.nlargest(10, 'Percentage')
+                    fig_uw_levels = px.bar(
+                        sector_analysis_melted,
+                        x='Sec_Name',
+                        y='Percentage',
+                        color='Category',
+                        text=sector_analysis_melted['Percentage'].astype(str) + '%',
+                        barmode='group',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_uw_levels.update_layout(
+                        barcornerradius=2,
+                        margin=dict(t=0, b=0),
+                        xaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=False),
+                        legend=dict(title=None,orientation='h'),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_uw_levels)
+                    with container.expander("Show Data"):
+                        st.dataframe(sectorUnderweightLevels,hide_index=True,use_container_width=True)
+                            
+                if 'underweightClassification' in data['sectorLevelInsights']:
+                    container = st.container(border=True)
+                    sectorUnderweightClassification = pd.DataFrame(data['sectorLevelInsights']['underweightClassification'])
+                    container.markdown("<h6 style='text-align:center;'>Difference between AWT and Supervisor in Underweight Classification", unsafe_allow_html=True)
+                    categories = ['AWT_Normal_Sup_SUW_%', 'AWT_Normal_Sup_MUW_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
+                    colors = ['darkred', 'red', 'gold', 'green']
+                    project_analysis_melted = sectorUnderweightClassification.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    fig_sectorUnderweightClassification = px.bar(
+                        project_analysis_melted,
+                        x='Percentage',
+                        y='Sec_Name',
+                        color='Category',
+                        orientation='h',
+                        text=project_analysis_melted['Percentage'].astype(str) + '%',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_sectorUnderweightClassification.update_layout(
+                        barcornerradius=5,
+                        margin=dict(t=0, b=0),
+                        height=400,
+                        xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        legend=dict(title=None,orientation='h'),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_sectorUnderweightClassification)
+                    with container.expander("Show Data"):
+                        st.dataframe(sectorUnderweightClassification,hide_index=True,use_container_width=True)
+                    
+
             with awc:
                 st.warning("AWC Level")
                         
