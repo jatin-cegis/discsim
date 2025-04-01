@@ -3,10 +3,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import plotly.express as px
 import base64
+from scipy.stats import percentileofscore
 
 def error_handling(params):
     return (1, "Success")
     
+def excel_percentrank_inc(series, value):
+        if pd.isna(value) or value not in series.values:
+            return 0  # Handle missing/irrelevant values (like Excel)
+        ranked = series.rank(method="min")  # Match Excel's tie behavior
+        count = len(series)
+        return round((ranked[series == value].iloc[0] - 1) / (count - 1) * 100,1)
 
 def anganwadi_center_data_anaylsis(file: pd.DataFrame):
     df = file
@@ -17,7 +24,7 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
         'Height', 'Sup_Height', 
         'Weight', 'Sup_Weight', 
         'Muac', 'Sup_Muac', 
-        'AWC_ID', 'Sec_ID', 'Proj_Name', 'D_Name'
+        'AWC_ID', 'Sec_ID', 'Proj_Name', 'D_Name','AWC_Name'
     ]
     
     for col in required_columns:
@@ -271,6 +278,25 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
     project_analysis_uw_levels['Sup_Underweight_%'] = round((project_analysis_uw_levels['Sup_Underweight'] / project_analysis_uw_levels['Total_Remeasurements']) * 100, 0)
     project_analysis_uw_levels['Sup-AWT_Difference_%'] = round(((project_analysis_uw_levels['Sup_Underweight'] - project_analysis_uw_levels['AWT_Underweight']) / project_analysis_uw_levels['Total_Remeasurements']) * 100, 0)
 
+    #Project Level Discrepancy
+    project_level_disc = df.groupby('Proj_Name').agg(
+        Total_Remeasurements=('Proj_Name', 'count'),
+        Discrepancy_remeasurements=('Discrepancy', 'sum'),
+    ).reset_index()
+    project_level_disc['Discrepancy Rate (%)'] = np.where(project_level_disc['Total_Remeasurements'] > 15,round((project_level_disc['Discrepancy_remeasurements'] / project_level_disc['Total_Remeasurements']) * 100,1),0)
+    project_level_disc['Non-Discrepancy Rate (%)'] = np.where(project_level_disc['Total_Remeasurements'] > 15,round(100 - project_level_disc['Discrepancy Rate (%)'],1),0)
+    valid_disc_rates = project_level_disc[project_level_disc['Discrepancy Rate (%)'] > 0]['Non-Discrepancy Rate (%)']
+    project_level_disc["Percentile_Rank (%)"] = project_level_disc["Non-Discrepancy Rate (%)"].apply(
+        lambda x: excel_percentrank_inc(valid_disc_rates, x) if x > 0 else 0
+    )
+    project_level_disc['Zone'] = np.where(
+    project_level_disc['Discrepancy Rate (%)'] > 0,
+    np.select(
+        [
+            project_level_disc['Percentile_Rank (%)'] >= 80, #green threshold
+            project_level_disc['Percentile_Rank (%)'] <= 30 #red threshold
+        ], ['Green', 'Red'],default='Yellow'),'')
+
     # Sector Level Analysis
     # Equal Same Height
     sector_analysis_eq_height = df.groupby('Sec_Name').agg(
@@ -343,6 +369,45 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
     sector_analysis_underweight_classification['Other_Misclassifications_%'] = round((sector_analysis_underweight_classification['Other_Misclassifications'] / sector_analysis_underweight_classification['Total_Remeasurements']) * 100, 0)
     sector_analysis_underweight_classification['Same_Classifications_%'] = round((sector_analysis_underweight_classification['Same_Classifications'] / sector_analysis_underweight_classification['Total_Remeasurements']) * 100, 0)
 
+    #Sector Level Discrepancy
+    sector_level_disc = df.groupby('Sec_Name').agg(
+        Total_Remeasurements=('Sec_Name', 'count'),
+        Discrepancy_remeasurements=('Discrepancy', 'sum'),
+    ).reset_index()
+    sector_level_disc['Discrepancy Rate (%)'] = np.where(sector_level_disc['Total_Remeasurements'] > 15,round((sector_level_disc['Discrepancy_remeasurements'] / sector_level_disc['Total_Remeasurements']) * 100,1),0)
+    sector_level_disc['Non-Discrepancy Rate (%)'] = np.where(sector_level_disc['Total_Remeasurements'] > 15,round(100 - sector_level_disc['Discrepancy Rate (%)'],1),0)
+    valid_disc_rates = sector_level_disc[sector_level_disc['Discrepancy Rate (%)'] > 0]['Non-Discrepancy Rate (%)']
+    sector_level_disc["Percentile_Rank (%)"] = sector_level_disc["Non-Discrepancy Rate (%)"].apply(
+        lambda x: excel_percentrank_inc(valid_disc_rates, x) if x > 0 else 0
+    )
+    sector_level_disc['Zone'] = np.where(
+    sector_level_disc['Discrepancy Rate (%)'] > 0,
+    np.select(
+        [
+            sector_level_disc['Percentile_Rank (%)'] >= 80, #green threshold
+            sector_level_disc['Percentile_Rank (%)'] <= 30 #red threshold
+        ], ['Green', 'Red'],default='Yellow'),'')
+    
+
+    #AWC Level Discrepancy
+    awc_level_disc = df.groupby('AWC_Name').agg(
+        Total_Remeasurements=('AWC_Name', 'count'),
+        Discrepancy_remeasurements=('Discrepancy', 'sum'),
+    ).reset_index()
+    awc_level_disc['Discrepancy Rate (%)'] = np.where(awc_level_disc['Total_Remeasurements'] > 5,round((awc_level_disc['Discrepancy_remeasurements'] / awc_level_disc['Total_Remeasurements']) * 100,1),0)
+    awc_level_disc['Non-Discrepancy Rate (%)'] = np.where(awc_level_disc['Total_Remeasurements'] > 5,round(100 - awc_level_disc['Discrepancy Rate (%)'],1),0)
+    valid_disc_rates = awc_level_disc[awc_level_disc['Discrepancy Rate (%)'] > 0]['Non-Discrepancy Rate (%)']
+    awc_level_disc["Percentile_Rank (%)"] = awc_level_disc["Non-Discrepancy Rate (%)"].apply(
+        lambda x: excel_percentrank_inc(valid_disc_rates, x) if x > 0 else 0
+    )
+    awc_level_disc['Zone'] = np.where(
+    awc_level_disc['Discrepancy Rate (%)'] > 0,
+    np.select(
+        [
+            awc_level_disc['Percentile_Rank (%)'] >= 80, #green threshold
+            awc_level_disc['Percentile_Rank (%)'] <= 30 #red threshold
+        ], ['Green', 'Red'],default='Yellow'),'')
+
     response_data = {
         "summary":{
             "totalSampleSize":num_remeasurements,
@@ -368,6 +433,7 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             "wastingClassification":project_analysis_wasting_classification.to_dict(orient="records"),
             "underweightLevels":project_analysis_uw_levels.to_dict(orient="records"),
             "underweightClassification":project_analysis_underweight_classification.to_dict(orient="records"),
+            "discrepancy":project_level_disc.to_dict(orient="records"),
         },
         "sectorLevelInsights":{
             "sameHeight":sector_analysis_eq_height.to_dict(orient="records"),
@@ -376,6 +442,10 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             "wastingClassification":sector_analysis_wasting_classification.to_dict(orient="records"),
             "underweightLevels":sector_analysis_uw_levels.to_dict(orient="records"),
             "underweightClassification":sector_analysis_underweight_classification.to_dict(orient="records"),
+            "discrepancy":sector_level_disc.to_dict(orient="records"),
+        },
+        "awcLevelInsights":{
+            "discrepancy":awc_level_disc.to_dict(orient="records"),
         }
     }
     

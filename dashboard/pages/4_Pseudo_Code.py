@@ -427,6 +427,40 @@ def pseudo_code_analysis():
                     container.plotly_chart(fig_projectUnderweightClassification)
                     with container.expander("Show Data"):
                         st.dataframe(projectUnderweightClassification,hide_index=True,use_container_width=True)
+
+                if 'discrepancy' in data['projectLevelInsights']:
+                    container = st.container(border=True)
+                    container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
+                    projectDisc = pd.DataFrame(data['projectLevelInsights']['discrepancy'])
+                    fig_treemap = px.treemap(
+                        projectDisc, 
+                        path=['Proj_Name'], 
+                        values='Discrepancy Rate (%)', 
+                        color='Zone',
+                        color_discrete_map={'Green': 'green', 'Yellow': 'yellow', 'Red': 'red'},
+                        hover_data={
+                            'Total_Remeasurements': True,
+                            'Discrepancy Rate (%)': True,
+                            'Percentile_Rank (%)': True,
+                            'Zone': True
+                        }
+                    )
+                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0))
+                    fig_treemap.update_traces(
+                        marker=dict(
+                            cornerradius=5,
+                            line=dict(width=1, color='black')
+                        ),
+                        hovertemplate=(
+                            "<b>%{label}</b><br>"
+                            "Total Measurements: %{customdata[0]}<br>"
+                            "Discp. Rate: %{customdata[1]:.1f}%<br>"
+                            "Percentile Rank: %{customdata[2]:.1f}%"
+                        )
+                    )
+                    container.plotly_chart(fig_treemap)
+                    with container.expander("Show Data"):
+                            st.dataframe(projectDisc,hide_index=True,use_container_width=True)
                     
             with sector:
                 col1,col2 = st.columns(2)
@@ -601,10 +635,75 @@ def pseudo_code_analysis():
                     container.plotly_chart(fig_sectorUnderweightClassification)
                     with container.expander("Show Data"):
                         st.dataframe(sectorUnderweightClassification,hide_index=True,use_container_width=True)
-                    
+
+                if 'discrepancy' in data['sectorLevelInsights']:
+                    container = st.container(border=True)
+                    container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
+                    sectorDisc = pd.DataFrame(data['sectorLevelInsights']['discrepancy'])
+                    fig_treemap = px.treemap(
+                        sectorDisc, 
+                        path=['Sec_Name'], 
+                        values='Discrepancy Rate (%)', 
+                        color='Zone',
+                        color_discrete_map={'Green': 'green', 'Yellow': 'yellow', 'Red': 'red'},
+                        hover_data={
+                            'Total_Remeasurements': True,
+                            'Discrepancy Rate (%)': True,
+                            'Percentile_Rank (%)': True,
+                            'Zone': True
+                        }
+                    )
+                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0))
+                    fig_treemap.update_traces(
+                        marker=dict(
+                            cornerradius=5,
+                            line=dict(width=1, color='black')
+                        ),
+                        hovertemplate=(
+                            "<b>%{label}</b><br>"
+                            "Total Measurements: %{customdata[0]}<br>"
+                            "Discp. Rate: %{customdata[1]:.1f}%<br>"
+                            "Percentile Rank: %{customdata[2]:.1f}%"
+                        )
+                    )
+                    container.plotly_chart(fig_treemap)
+                    with container.expander("Show Data"):
+                            st.dataframe(sectorDisc,hide_index=True,use_container_width=True)    
 
             with awc:
-                st.warning("AWC Level")
+                if 'discrepancy' in data['awcLevelInsights']:
+                    container = st.container(border=True)
+                    container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
+                    awcDisc = pd.DataFrame(data['awcLevelInsights']['discrepancy'])
+                    fig_treemap = px.treemap(
+                        awcDisc, 
+                        path=['AWC_Name'], 
+                        values='Discrepancy Rate (%)', 
+                        color='Zone',
+                        color_discrete_map={'Green': 'green', 'Yellow': 'yellow', 'Red': 'red'},
+                        hover_data={
+                            'Total_Remeasurements': True,
+                            'Discrepancy Rate (%)': True,
+                            'Percentile_Rank (%)': True,
+                            'Zone': True
+                        }
+                    )
+                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0))
+                    fig_treemap.update_traces(
+                        marker=dict(
+                            cornerradius=5,
+                            line=dict(width=1, color='black')
+                        ),
+                        hovertemplate=(
+                            "<b>%{label}</b><br>"
+                            "Total Measurements: %{customdata[0]}<br>"
+                            "Discp. Rate: %{customdata[1]:.1f}%<br>"
+                            "Percentile Rank: %{customdata[2]:.1f}%"
+                        )
+                    )
+                    container.plotly_chart(fig_treemap)
+                    with container.expander("Show Data"):
+                            st.dataframe(awcDisc,hide_index=True,use_container_width=True)    
                         
         else:
             st.error(f"Error: {response.json()['detail']}")
