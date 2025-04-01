@@ -317,7 +317,7 @@ def pseudo_code_analysis():
                     projectWastingLevels = pd.DataFrame(data['projectLevelInsights']['wastingLevels'])
                     container.markdown("<h6 style='text-align:center;'>Difference in Wasting levels between AWTs and Supervisors", unsafe_allow_html=True)
                     categories = ['AWT_SAM_%', 'AWT_Wasting_%','Supervisor_SAM_%', 'Supervisor_Wasting_%']
-                    colors = ['skyblue', 'blue', 'red', 'darkred']
+                    colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
                     wasting_table_melted = projectWastingLevels.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
                     fig_wasting_levels = px.bar(
                         wasting_table_melted,
@@ -327,6 +327,14 @@ def pseudo_code_analysis():
                         text=wasting_table_melted['Percentage'].astype(str) + '%',
                         barmode='group',
                         color_discrete_sequence=colors,
+                    )
+                    fig_wasting_levels.update_traces(
+                        textposition='outside',
+                        textangle=0,
+                        textfont=dict(
+                            color='black',
+                            size=14,
+                        )
                     )
                     fig_wasting_levels.update_layout(
                         barcornerradius=2,
@@ -376,7 +384,7 @@ def pseudo_code_analysis():
                     projectUnderweightLevels = pd.DataFrame(data['projectLevelInsights']['underweightLevels'])
                     container.markdown("<h6 style='text-align:center;'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
                     categories = ['AWT_SUW_%', 'Sup_SUW_%', 'AWT_Underweight_%', 'Sup_Underweight_%']
-                    colors = ['skyblue', 'blue', 'red', 'darkred']
+                    colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
                     project_analysis_melted = projectUnderweightLevels.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
                     fig_uw_levels = px.bar(
                         project_analysis_melted,
@@ -386,6 +394,14 @@ def pseudo_code_analysis():
                         text=project_analysis_melted['Percentage'].astype(str) + '%',
                         barmode='group',
                         color_discrete_sequence=colors,
+                    )
+                    fig_uw_levels.update_traces(
+                        textposition='outside',
+                        textangle=0,
+                        textfont=dict(
+                            color='black',
+                            size=14,
+                        )
                     )
                     fig_uw_levels.update_layout(
                         barcornerradius=2,
@@ -524,7 +540,7 @@ def pseudo_code_analysis():
                     sectorWastingLevels = pd.DataFrame(data['sectorLevelInsights']['wastingLevels'])
                     container.markdown("<h6 style='text-align:center;'>Difference in Wasting levels between AWTs and Supervisors", unsafe_allow_html=True)
                     categories = ['AWT_SAM_%', 'AWT_Wasting_%','Supervisor_SAM_%', 'Supervisor_Wasting_%']
-                    colors = ['skyblue', 'blue', 'red', 'darkred']
+                    colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
                     wasting_table_melted = sectorWastingLevels.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
                     fig_wasting_levels = px.bar(
                         wasting_table_melted,
@@ -583,7 +599,7 @@ def pseudo_code_analysis():
                     sectorUnderweightLevels = pd.DataFrame(data['sectorLevelInsights']['underweightLevels'])
                     container.markdown("<h6 style='text-align:center;'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
                     categories = ['AWT_SUW_%', 'Sup_SUW_%', 'AWT_Underweight_%', 'Sup_Underweight_%']
-                    colors = ['skyblue', 'blue', 'red', 'darkred']
+                    colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
                     sector_analysis_melted = sectorUnderweightLevels.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
                     #sector_analysis_melted = sector_analysis_melted.nlargest(10, 'Percentage')
                     fig_uw_levels = px.bar(
