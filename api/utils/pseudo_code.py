@@ -71,6 +71,7 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
     df['Supervisor_Stunting'] = ((df['Sup_Status_Stunting'] == 'MAM') | (df['Sup_Status_Stunting'] == 'SAM')) * 1
     df['AWT_Normal_Sup_Stunt_SAM'] = ((df['Status_Stunting'] == 'Normal') & (df['Sup_Status_Stunting'] == 'SAM')) * 1
     df['AWT_Normal_Sup_Stunt_MAM'] = ((df['Status_Stunting'] == 'Normal') & (df['Sup_Status_Stunting'] == 'MAM')) * 1
+    df['AWT_MAM_Sup_Stunt_SAM'] = ((df['Status_Stunting'] == 'MAM') & (df['Sup_Status_Stunting'] == 'SAM')) * 1
     df['AWT_Sup_Same_Stunting'] = (df['Status_Stunting'] == df['Sup_Status_Stunting']) * 1
     df['AWT_Sup_Other_Misclassifications_Stunting'] =((df['AWT_Sup_Same_Stunting'] == 0) & (df['AWT_Normal_Sup_Stunt_MAM'] == 0) & (df['AWT_Normal_Sup_Stunt_SAM'] == 0)) * 1
     
@@ -139,7 +140,7 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
 
     #Wasting Classifications
     misclassification_wasting_data = {
-        "Metric": ["AWT Normal; Sup SAM", "AWT Normal; SUP MAM", "AWT MAM; SUP SAM", "Other Misclassifications", "Same Classification"],
+        "Metric": ["AWT Normal; Supervisor SAM", "AWT Normal; Supervisor MAM", "AWT MAM; Supervisor SAM", "Other Misclassifications", "Same Classification"],
         "Value": [
             df['AWT_Normal_Sup_SAM'].sum(),
             df['AWT_Normal_Sup_MAM'].sum(),
@@ -196,10 +197,11 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
     stunting_metrics_df['Percentage (%)'] = round((stunting_metrics_df['Value'] / num_remeasurements) * 100, 1)
     
     misclassification_stunting_data = {
-        "Metric": ["AWT Normal; Supervisor SAM", "AWT Normal; Supervisor MAM", "Other Misclassifications", "Same Classifications"],
+        "Metric": ["AWT Normal; Supervisor SS", "AWT Normal; Supervisor MS", "AWT MS; Supervisor SS", "Other Misclassifications", "Same Classifications"],
         "Value": [
             df['AWT_Normal_Sup_Stunt_SAM'].sum(),
             df['AWT_Normal_Sup_Stunt_MAM'].sum(),
+            df['AWT_MAM_Sup_Stunt_SAM'].sum(),
             df['AWT_Sup_Other_Misclassifications_Stunting'].sum(),
             df['AWT_Sup_Same_Stunting'].sum()
         ]

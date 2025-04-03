@@ -30,18 +30,19 @@ def pseudo_code_analysis():
             response = requests.post(PSEUDO_CODE_ENDPOINT,files=files)
 
         if response.status_code == 200:
+            st.markdown("<h3 style='text-align:center'>Nested Supervision :: Nutrition", unsafe_allow_html=True)
             status,message,data = response.json()
             if 'summary' in data:
-                a, b,c,d,e = st.columns(5)
-                a.metric("Total Sample Size", data['summary']['totalSampleSize'], border=True)
-                b.metric("Districts Covered", data['summary']['districts'], border=True)
+                a,c,d,e = st.columns(4)
+                a.metric("Total Number of Children Remeasured", data['summary']['totalSampleSize'], border=True)
                 c.metric("Projects Covered", data['summary']['projects'], border=True)
                 d.metric("Sectors Covered", data['summary']['sectors'], border=True)
-                e.metric("AWC Covered", data['summary']['AWC'], border=True)
+                e.metric("AWC Visited", data['summary']['AWC'], border=True)
 
             district, project, sector,awc = st.tabs(["District Level", "Project Level", "Sector Level", "AWC Level"])
 
             with district:
+                st.markdown("<h4 style='text-align:center'>District-level insights on Nested Supervision intervention", unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
                 with col1:
                     if 'districtLevelInsights' in data:
@@ -66,6 +67,7 @@ def pseudo_code_analysis():
                         )
                         container.plotly_chart(fig_same_values)
                         with container.expander("Show Data"):
+                            sameHeightWeight['Percentage (%)'] = sameHeightWeight['Percentage (%)'].apply(lambda x: f'{x} %')
                             st.dataframe(sameHeightWeight,hide_index=True,use_container_width=True)
                 with col2:
                     if 'childrenCategory' in data['districtLevelInsights']:
@@ -100,13 +102,13 @@ def pseudo_code_analysis():
                         with container.expander("Show Data"):
                             st.dataframe(childrenCategory,hide_index=True,use_container_width=True)
 
-                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>WASTING [WEIGHT-FOR-HEIGHT]", unsafe_allow_html=True)
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px;padding:0.3rem'>Wasting [Weight-For-Height]", unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
                 with col1:
                     if 'wastingLevels' in data['districtLevelInsights']:
                         container = st.container(border=True)
                         wastingLevel = pd.DataFrame(data['districtLevelInsights']['wastingLevels'])
-                        container.markdown("<h6 style='text-align:center'>Difference in Wasting levels between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<h6 style='text-align:center'>Difference in Wasting Level between AWTs and Supervisors", unsafe_allow_html=True)
                         fig_wasting_metrics = px.bar(
                             wastingLevel, 
                             x="Metric", y="Percentage (%)", 
@@ -124,19 +126,21 @@ def pseudo_code_analysis():
                         )
                         container.plotly_chart(fig_wasting_metrics)
                         with container.expander("Show Data"):
+                            wastingLevel['Percentage (%)'] = wastingLevel['Percentage (%)'].apply(lambda x: f'{x} %')
                             st.dataframe(wastingLevel,hide_index=True,use_container_width=True)
 
                 with col2:
                     if 'wastingClassification' in data['districtLevelInsights']:
                         container = st.container(border=True)
                         wastingClassification = pd.DataFrame(data['districtLevelInsights']['wastingClassification'])
-                        container.markdown("<h6 style='text-align:center'>Difference in Wasting Classification between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<h6 style='text-align:center;padding:0'>Difference in Wasting Classification between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>SAM - Severely acutely malnourished [>3 SD (Standard Deviation)],<br> MAM = Moderately acutely malnourished [2-3 SD]", unsafe_allow_html=True)
                         fig_wasting_metrics = px.bar(
                             wastingClassification, 
                             y="Metric", x="Percentage (%)", 
                             color="Metric", 
                             text=wastingClassification["Percentage (%)"].astype(str) + " %",
-                            color_discrete_map = {'AWT Normal; Sup SAM': '#990000', 'AWT Normal; SUP MAM': '#cc0000', 'AWT MAM; SUP SAM': '#e06666', 'Other Misclassifications': '#fbbc04', 'Same Classification': '#34a853'},
+                            color_discrete_map = {'AWT Normal; Supervisor SAM': '#990000', 'AWT Normal; Supervisor MAM': '#cc0000', 'AWT MAM; Supervisor SAM': '#e06666', 'Other Misclassifications': '#fbbc04', 'Same Classification': '#34a853'},
                             orientation='h'
                         )
                         fig_wasting_metrics.update_layout(
@@ -145,19 +149,21 @@ def pseudo_code_analysis():
                             margin=dict(t=0, b=0),
                             height=300,
                             xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
-                            yaxis=dict(title=None,showgrid=False,showticklabels=True)
+                            yaxis=dict(title=None,showgrid=False,showticklabels=True),
+                            bargap=0.5
                         )
                         container.plotly_chart(fig_wasting_metrics)
                         with container.expander("Show Data"):
+                            wastingClassification['Percentage (%)'] = wastingClassification['Percentage (%)'].apply(lambda x: f'{x} %')
                             st.dataframe(wastingClassification,hide_index=True,use_container_width=True)
 
-                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>UNDERWEIGHT [WEIGHT-FOR-AGE]", unsafe_allow_html=True)
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px;padding:0.3rem'>Underweight [Weight-For-Age]", unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
                 with col1:
                     if 'underweightLevels' in data['districtLevelInsights']:
                         container = st.container(border=True)
                         underweightLevels = pd.DataFrame(data['districtLevelInsights']['underweightLevels'])
-                        container.markdown("<h6 style='text-align:center'>Difference in Underweight levels between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<h6 style='text-align:center'>Difference in Underweight Level between AWTs and Supervisors", unsafe_allow_html=True)
                         fig_underweight_metrics = px.bar(
                             underweightLevels, 
                             x="Metric", y="Percentage (%)", 
@@ -175,13 +181,15 @@ def pseudo_code_analysis():
                         )
                         container.plotly_chart(fig_underweight_metrics)
                         with container.expander("Show Data"):
+                            underweightLevels['Percentage (%)'] = underweightLevels['Percentage (%)'].apply(lambda x: f'{x} %')
                             st.dataframe(underweightLevels,hide_index=True,use_container_width=True)
 
                 with col2:
                     if 'underweightClassification' in data['districtLevelInsights']:
                         container = st.container(border=True)
                         underweightClassification = pd.DataFrame(data['districtLevelInsights']['underweightClassification'])
-                        container.markdown("<h6 style='text-align:center'>Difference in Underweight Classification between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<h6 style='text-align:center;padding:0'>Difference in Underweight Classification between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>SUW - Severely underweight [>3 SD],<br> MUW = Moderately Underweight [2-3 SD]", unsafe_allow_html=True)
                         fig_underweight_metrics = px.bar(
                             underweightClassification, 
                             y="Metric", x="Percentage (%)", 
@@ -196,19 +204,21 @@ def pseudo_code_analysis():
                             margin=dict(t=0, b=0),
                             height=300,
                             xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
-                            yaxis=dict(title=None,showgrid=False,showticklabels=True)
+                            yaxis=dict(title=None,showgrid=False,showticklabels=True),
+                            bargap=0.5
                         )
                         container.plotly_chart(fig_underweight_metrics)
                         with container.expander("Show Data"):
+                            underweightClassification['Percentage (%)'] = underweightClassification['Percentage (%)'].apply(lambda x: f'{x} %')
                             st.dataframe(underweightClassification,hide_index=True,use_container_width=True)
 
-                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>STUNTING [HEIGHT FOR AGE]", unsafe_allow_html=True)
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px;padding:0.3rem'>Stunting [Height For Age]", unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
                 with col1:
                     if 'stuntingLevels' in data['districtLevelInsights']:
                         container = st.container(border=True)
                         stuntingLevels = pd.DataFrame(data['districtLevelInsights']['stuntingLevels'])
-                        container.markdown("<h6 style='text-align:center'>Difference in Stunting levels between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<h6 style='text-align:center'>Difference in Stunting Level between AWTs and Supervisors", unsafe_allow_html=True)
                         fig_underweight_metrics = px.bar(
                             stuntingLevels, 
                             x="Metric", y="Percentage (%)", 
@@ -226,19 +236,21 @@ def pseudo_code_analysis():
                         )
                         container.plotly_chart(fig_underweight_metrics)
                         with container.expander("Show Data"):
+                            stuntingLevels['Percentage (%)'] = stuntingLevels['Percentage (%)'].apply(lambda x: f'{x} %')
                             st.dataframe(stuntingLevels,hide_index=True,use_container_width=True)
 
                 with col2:
                     if 'stuntingClassification' in data['districtLevelInsights']:
                         container = st.container(border=True)
                         stuntingClassification = pd.DataFrame(data['districtLevelInsights']['stuntingClassification'])
-                        container.markdown("<h6 style='text-align:center'>Difference in Stunting classification between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<h6 style='text-align:center;padding:0'>Difference in Stunting classification between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>SS - Severely stunted [>3 SD],<br> MS = Moderately stunted [2-3 SD]", unsafe_allow_html=True)
                         fig_underweight_metrics = px.bar(
                             stuntingClassification, 
                             y="Metric", x="Percentage (%)", 
                             color="Metric", 
                             text=stuntingClassification["Percentage (%)"].astype(str) + " %",
-                            color_discrete_map = {'AWT Normal; Supervisor SAM': '#990000', 'AWT Normal; Supervisor MAM': '#e06666', 'Other Misclassifications': '#fbbc04', 'Same Classifications': '#34a853'},
+                            color_discrete_map = {'AWT Normal; Supervisor SS': '#990000', 'AWT Normal; Supervisor MS': '#cc0000', 'AWT MS; Supervisor SS': '#e06666', 'Other Misclassifications': '#fbbc04', 'Same Classifications': '#34a853'},
                             orientation='h'
                         )
                         fig_underweight_metrics.update_layout(
@@ -247,10 +259,12 @@ def pseudo_code_analysis():
                             margin=dict(t=0, b=0),
                             height=300,
                             xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
-                            yaxis=dict(title=None,showgrid=False,showticklabels=True)
+                            yaxis=dict(title=None,showgrid=False,showticklabels=True),
+                            bargap=0.5
                         )
                         container.plotly_chart(fig_underweight_metrics)
                         with container.expander("Show Data"):
+                            stuntingClassification['Percentage (%)'] = stuntingClassification['Percentage (%)'].apply(lambda x: f'{x} %')
                             st.dataframe(stuntingClassification,hide_index=True,use_container_width=True)
 
 
