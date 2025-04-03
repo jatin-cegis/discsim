@@ -18,7 +18,7 @@ def set_page_config(sideBar = 'expanded'):
     st.logo(im_page)
 
     st.set_page_config(
-        page_title="DiscSim | CEGIS",
+        page_title="VALIData | CEGIS",
         layout="wide",
         page_icon=im,
         initial_sidebar_state=sideBar,

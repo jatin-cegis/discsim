@@ -18,17 +18,17 @@ if __name__ == "__main__":
     setFooter()
 
     with st.container():
-      st.markdown("<h1 style='text-align: center;'>DiscSim | A CEGIS Project", unsafe_allow_html=True)
+      st.markdown("<h1 style='text-align: center;'>VALIData | A CEGIS Project", unsafe_allow_html=True)
 
       with st.container():
             left, middle, right = st.columns([1,3,1])
             with middle:
-                  st.write("DiscSim is a simulation tool developed for the Center for Effective Governance of Indian States (CEGIS), an organization dedicated to assisting state governments in India to achieve better development outcomes.")
+                  st.write("VALIData is a simulation tool developed for the Center for Effective Governance of Indian States (CEGIS), an organization dedicated to assisting state governments in India to achieve better development outcomes.")
                   
                   st.subheader("Overview")
                   st.write("An important goal of CEGIS is to improve the quality of administrative data collected by state governments. One approach is to re-sample a subset of the data and measure deviations from the original samples collected. These deviations are quantified as **discrepancy scores**, and significant scores are flagged for third-party intervention.")
                   st.write("Often, it's unclear which re-sampling strategy yields the most accurate and reliable discrepancy scores. The goal of this project is to create a simulator that predicts discrepancy scores and assesses their statistical accuracy across different re-sampling strategies.")
-                  st.write("DiscSim comprises a backend API built with FastAPI and a frontend interface developed using Streamlit. The project utilizes PostgreSQL for database management and is containerized with Docker for easy deployment.")
+                  st.write("VALIData comprises a backend API built with FastAPI and a frontend interface developed using Streamlit. The project utilizes PostgreSQL for database management and is containerized with Docker for easy deployment.")
 
                   st.subheader("About CEGIS")
                   desc, image = st.columns([3,1])
