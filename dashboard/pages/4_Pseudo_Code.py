@@ -743,13 +743,11 @@ def pseudo_code_analysis():
         st.info("Please upload a CSV file to begin.")
 
 if __name__ == "__main__":
-    selectedNav = setheader("Pseudo Code")
+    selectedNav = setheader("Post Survey Nutrition")
     if selectedNav == "Pre Survey":
           st.switch_page("pages/1_Pre_Survey.py")
     if selectedNav == "Admin Data Quality":
           st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
-    if selectedNav == "Post Survey":
-          st.switch_page("pages/3_Post_Survey.py")
     pseudo_code_analysis()
 
     setFooter()
