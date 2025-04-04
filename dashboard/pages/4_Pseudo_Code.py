@@ -10,7 +10,7 @@ set_page_config()
 API_BASE_URL = os.getenv("API_BASE_URL")
 PSEUDO_CODE_ENDPOINT = f"{API_BASE_URL}/pseudo_code"
 def pseudo_code_analysis():
-    st.sidebar.header("Anganwadi Center Discrepancy Analysis")
+    st.sidebar.header("Insights on Discrepancies in Growth Monitoring")
     # File selection
     file_option = st.sidebar.radio(
         "Choose an option:",
@@ -34,10 +34,10 @@ def pseudo_code_analysis():
             status,message,data = response.json()
             if 'summary' in data:
                 a,c,d,e = st.columns(4)
-                a.metric("Total Number of Children Remeasured", data['summary']['totalSampleSize'], border=True)
-                c.metric("Projects Covered", data['summary']['projects'], border=True)
-                d.metric("Sectors Covered", data['summary']['sectors'], border=True)
-                e.metric("AWC Visited", data['summary']['AWC'], border=True)
+                a.metric("Children remeasured", format(data['summary']['totalSampleSize'],',d'), border=True)
+                c.metric("Projects Covered", format(data['summary']['projects'],',d'), border=True)
+                d.metric("Sectors Covered", format(data['summary']['sectors'],',d'), border=True)
+                e.metric("AWCs Visited", format(data['summary']['AWC'],',d'), border=True)
 
             district, project, sector,awc = st.tabs(["District Level", "Project Level", "Sector Level", "AWC Level"])
 
@@ -108,7 +108,8 @@ def pseudo_code_analysis():
                     if 'wastingLevels' in data['districtLevelInsights']:
                         container = st.container(border=True)
                         wastingLevel = pd.DataFrame(data['districtLevelInsights']['wastingLevels'])
-                        container.markdown("<h6 style='text-align:center'>Difference in Wasting Level between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<h6 style='text-align:center;padding:0'>Difference in Wasting Level between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>Note: AWT SAM and AWT Wasting figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
                         fig_wasting_metrics = px.bar(
                             wastingLevel, 
                             x="Metric", y="Percentage (%)", 
@@ -163,7 +164,8 @@ def pseudo_code_analysis():
                     if 'underweightLevels' in data['districtLevelInsights']:
                         container = st.container(border=True)
                         underweightLevels = pd.DataFrame(data['districtLevelInsights']['underweightLevels'])
-                        container.markdown("<h6 style='text-align:center'>Difference in Underweight Level between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<h6 style='text-align:center;padding:0'>Difference in Underweight Level between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>Note: AWT SUW and AWT Underweight figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
                         fig_underweight_metrics = px.bar(
                             underweightLevels, 
                             x="Metric", y="Percentage (%)", 
@@ -218,13 +220,14 @@ def pseudo_code_analysis():
                     if 'stuntingLevels' in data['districtLevelInsights']:
                         container = st.container(border=True)
                         stuntingLevels = pd.DataFrame(data['districtLevelInsights']['stuntingLevels'])
-                        container.markdown("<h6 style='text-align:center'>Difference in Stunting Level between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<h6 style='text-align:center;padding:0'>Difference in Stunting Level between AWTs and Supervisors", unsafe_allow_html=True)
+                        container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>Note: AWT SS and AWT Stunting figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
                         fig_underweight_metrics = px.bar(
                             stuntingLevels, 
                             x="Metric", y="Percentage (%)", 
                             color="Metric", 
                             text=stuntingLevels["Percentage (%)"].astype(str) + " %",
-                            color_discrete_map = {'AWT SAM': '#1a73e8', 'Supervisor SAM': '#0b5394', 'AWT Stunting': '#e06666', 'Supervisor Stunting': '#cc0000'}
+                            color_discrete_map = {'AWT SS': '#1a73e8', 'Supervisor SS': '#0b5394', 'AWT Stunting': '#e06666', 'Supervisor Stunting': '#cc0000'}
                         )
                         fig_underweight_metrics.update_layout(
                             barcornerradius=5,

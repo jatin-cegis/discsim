@@ -143,3 +143,17 @@ div[data-testid="stSidebarCollapsedControl"] img.stLogo {
 div.st-key-samplingtable {
   text-align: center;
 }
+
+div.stMetric {
+  color: white;
+  font-weight: 700;
+  text-align: center;
+  justify-content: center;
+  background-color: #006898;
+}
+div.stMetric label {
+  display: block;
+}
+div.stMetric div div {
+  color: white !important;
+}

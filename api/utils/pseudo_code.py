@@ -185,7 +185,7 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
 
     #Stunting Levels
     stunting_metrics_data = {
-        "Metric": ["AWT SAM", "Supervisor SAM", "AWT Stunting", "Supervisor Stunting"],
+        "Metric": ["AWT SS", "Supervisor SS", "AWT Stunting", "Supervisor Stunting"],
         "Value": [
             df['Status_Stunting'].eq('SAM').sum(),
             df['Sup_Status_Stunting'].eq('SAM').sum(),
