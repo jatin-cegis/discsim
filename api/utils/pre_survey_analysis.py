@@ -205,7 +205,7 @@ def get_num_real_units_table(list_n_sub, list_n_samples, mean_n_real, errorbars_
                                })
     return num_real_units_table
 
-def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_plot, errorbar_type,       n_blocks, figsize=(8, 11), x_label_fontsize=14, y_label_fontsize=14, linecolor='k', markerstyle='o', elinewidth=0.5, errorbar_capsize=2, legend_fontsize=14):
+def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_n_real, n_blocks_plot, errorbar_type, n_blocks, figsize=(8, 11), x_label_fontsize=14, y_label_fontsize=14, linecolor='k', markerstyle='o', elinewidth=0.5, errorbar_capsize=2, legend_fontsize=14):
     """
     Create a matplotlib figure showing the number of 'real' best units found.
     
@@ -226,7 +226,6 @@ def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_
     # Add text to indicate number of real units on the chart itself, for readability
     plot_height = ax1.get_ylim()[1] - ax1.get_ylim()[0]
     for i in range(len(list_n_sub)):
-
         if i == len(list_n_sub) - 1:
             y_shift = 0
         elif mean_n_real[i + 1] > mean_n_real[i]:
@@ -282,8 +281,7 @@ def make_plot_num_real_units(list_n_sub, list_n_samples, mean_n_real, errorbars_
         n_blocks, 
         list_n_sub[0], 
         list_n_samples[0], 
-        np.round(mean_n_real[0], 1)
-        ),
+        np.round(mean_n_real[0], 1)),
         fontsize=10
     )
     fig.tight_layout(pad=1.0)
@@ -476,7 +474,6 @@ def third_party_sampling_strategy(params):
         errorbars_n_real,
         params['n_blocks_reward'],
         params["errorbar_type"],
-        n_blocks
         n_blocks
     )
     

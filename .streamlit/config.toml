@@ -9,3 +9,7 @@ gatherUsageStats = false
 #secondaryColor = #3b8e51
 [theme]
 primaryColor = "#136a9a"
+
+[server]
+runOnSave = true
+fileWatcherType = "auto"

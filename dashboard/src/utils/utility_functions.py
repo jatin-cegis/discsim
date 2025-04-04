@@ -18,7 +18,7 @@ def set_page_config(sideBar = 'expanded'):
     st.logo(im_page)
 
     st.set_page_config(
-        page_title="DiscSim | CEGIS",
+        page_title="VALIData | CEGIS",
         layout="wide",
         page_icon=im,
         initial_sidebar_state=sideBar,
@@ -57,7 +57,7 @@ def setheader(SelectedNav = None):
             "justify-content": "center",
         },
         "div": {
-            "max-width": "30rem",
+            "max-width": "38rem",
         },
         "span": {
             "color": "#fff",
@@ -74,7 +74,7 @@ def setheader(SelectedNav = None):
         "fix_shadow":False,
         "hide_nav":False
     }
-    return st_navbar(["Pre Survey", "Admin Data Quality", "Post Survey"],selected=SelectedNav,styles=navStyles,options=navOptions) # type: ignore
+    return st_navbar(["Pre Survey", "Admin Data Quality", "Post Survey Nutrition"],selected=SelectedNav,styles=navStyles,options=navOptions) # type: ignore
 
 def setFooter():
          # Footer using markdown with custom HTML

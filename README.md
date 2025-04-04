@@ -1,6 +1,6 @@
-# DiscSim
+# VALIData
 
-DiscSim is a simulation tool developed for the [Center for Effective Governance of Indian States (CEGIS)](https://www.cegis.org/), an organization dedicated to assisting state governments in India to achieve better development outcomes.
+VALIData is a simulation tool developed for the [Center for Effective Governance of Indian States (CEGIS)](https://www.cegis.org/), an organization dedicated to assisting state governments in India to achieve better development outcomes.
 
 ## Overview
 
@@ -8,7 +8,7 @@ An important goal of CEGIS is to improve the quality of administrative data coll
 
 Often, it's unclear which re-sampling strategy yields the most accurate and reliable discrepancy scores. The goal of this project is to create a simulator that predicts discrepancy scores and assesses their statistical accuracy across different re-sampling strategies.
 
-DiscSim comprises a backend API built with FastAPI and a frontend interface developed using Streamlit. The project utilizes PostgreSQL for database management and is containerized with Docker for easy deployment.
+VALIData comprises a backend API built with FastAPI and a frontend interface developed using Streamlit. The project utilizes PostgreSQL for database management and is containerized with Docker for easy deployment.
 
 ## Getting Started
 
@@ -271,4 +271,4 @@ MIT License.
 
 ## Acknowledgments
 
-Thank you for checking out DiscSim! We hope this tool aids in enhancing the quality of administrative data and contributes to better governance and development outcomes.
+Thank you for checking out VALIData! We hope this tool aids in enhancing the quality of administrative data and contributes to better governance and development outcomes.

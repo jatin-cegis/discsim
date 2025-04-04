@@ -65,6 +65,8 @@ if __name__ == "__main__":
           st.switch_page("pages/1_Pre_Survey.py")
     if selectedNav == "Admin Data Quality":
           st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
+    if selectedNav == "Pseudo Code":
+          st.switch_page("pages/4_Pseudo_Code.py")
     post_survey_analysis()
 
     setFooter()

@@ -106,7 +106,7 @@ def third_party_sampling_strategy():
 
                 with st.container(key="samplingtable"):
                     thirdSampling = pd.DataFrame(result['value']['table'])
-                    st.dataframe(thirdSampling)
+                    st.dataframe(thirdSampling,use_container_width=True,hide_index=True)
 
             else:
                 st.error(f"Error: {response.json()['detail']}")
