@@ -20,7 +20,8 @@ def fetch_file_from_api(file_id):
         uploaded_file.name = file_data["filename"]
         return uploaded_file
     else:
-        st.error(f"Failed to fetch file with ID {file_id}.")
+        file_data = file_response.json()
+        st.error(f"Failed to fetch file with ID {file_id}. {file_data.details}")
         return None
     
 def get_file(file_id):

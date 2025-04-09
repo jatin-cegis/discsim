@@ -139,8 +139,8 @@ async def get_file(file_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="File not found")
     
     encoding = chardet.detect(file.content)["encoding"]
-    if encoding not in ['UTF-8', 'UTF-8-SIG']:
-        raise HTTPException(400,f"File is not UTF-8 encoded. Encoding found: {encoding}")
+    if encoding not in ['UTF-8', 'UTF-8-SIG', 'ascii']:
+        raise HTTPException(status_code = 400, detail = f"File is not UTF-8 encoded. Encoding found: {encoding}")
 
     # Return file content and filename as JSON
     return {
