@@ -12,6 +12,32 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 FIND_UNIQUE_IDS_ENDPOINT = f"{API_BASE_URL}/find_unique_ids"
 
 def unique_id_verifier(uploaded_file):
+
+    customcss = """
+        <style>
+        div[data-testid="stExpander"] summary{
+            padding:0.4rem 1rem;
+        }
+        .stHorizontalBlock{
+            //margin-top:-30px;
+        }
+        .stHorizontalBlock .stColumn:nth-child(2){
+            display:flex;
+            align-items: flex-end;
+        }
+        .st-key-functioncall button{
+            background-color:#3b8e51;
+            color:#fff;
+            border:none;
+        }
+        .st-key-functioncall button:hover,.st-key-functioncall button:active,.st-key-functioncall button:focus,st-key-functioncall button:focus:not(:active){
+            color:#fff!important;
+            border:none;
+        }
+        </style>
+    """
+    st.markdown(customcss, unsafe_allow_html=True)
+
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
     title_info_markdown = """
@@ -22,9 +48,11 @@ def unique_id_verifier(uploaded_file):
         - A minimum of ONE column has to be selected
         - Max no. of selectable columns: As many as the number of column headers
     """
-    st.markdown("<h2 style='text-align: center;'>Unique ID Verifier</h2>", unsafe_allow_html=True, help=title_info_markdown)
+    col1,col2 = st.columns(2)
+    col1.markdown("<h2 style='text-align: center;font-weight:800;color:#136a9a;'>Identify Unique ID(s)</h2>", unsafe_allow_html=True, help=title_info_markdown)
+    st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>This function helps you identify all the column(s) that are unique in the uploaded dataset, alongside their datatypes. The function outputs a list of unique ID(s) as a table that is downloadable</p>", unsafe_allow_html=True)
 
-    if st.button("Find Unique IDs"):
+    if col2.button("Find Unique ID(s)",key="functioncall"):
         with st.spinner("Finding unique IDs..."):
             try:
                 uploaded_file.seek(0)
@@ -40,7 +68,7 @@ def unique_id_verifier(uploaded_file):
                         df = pd.DataFrame(unique_ids)
                         df['UniqueID'] = df['UniqueID'].apply(lambda x: ' + '.join(x))
                         df = df.rename(columns={'UniqueID': 'Unique ID (data type)', 'Numeric_DataTypes': 'Is Numeric'})
-                        st.dataframe(df['Unique ID (data type)'], use_container_width=True, hide_index=True)
+                        st.dataframe(df['Unique ID (data type)'], use_container_width=True,key="uniquedatatable")
                     else:
                         st.warning("No unique identifiers found. All columns or combinations have at least one duplicate.")
                 else:

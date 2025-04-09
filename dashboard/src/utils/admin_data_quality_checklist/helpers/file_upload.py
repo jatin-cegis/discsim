@@ -25,7 +25,7 @@ def fetch_files_from_api(category):
 def handle_file_upload(file_option, category):
     uploaded_file = None
 
-    if file_option == "Upload a new file":
+    if file_option == "Upload a file":
 
         if 'uploaded_file_id' in st.session_state:
             del st.session_state['uploaded_file_id']
@@ -37,9 +37,9 @@ def handle_file_upload(file_option, category):
             del st.session_state['current_file_name']
         
         uploaded_file = st.sidebar.file_uploader(
-            "Choose a CSV file to begin analysis",
+            "Choose a CSV (UTF-8 encoded) to begin analysis",
             type="csv",
-            help="**Please ensure the CSV is ready for analysis: such as data starting from the first row. If you have data in any other format, please convert to CSV to begin analysis",
+            help="**Please ensure the CSV is ready for analysis: such as data starting from the first row. If you have data in any other format, please convert to CSV (UTF-8 encoded) to begin analysis",
         )
 
         if uploaded_file is not None:

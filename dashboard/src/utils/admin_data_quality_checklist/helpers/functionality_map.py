@@ -9,7 +9,7 @@ from src.utils.admin_data_quality_checklist.functionalities.indicator_fill_rate_
 from src.utils.admin_data_quality_checklist.functionalities.frequency_table_analysis import frequency_table_analysis
 
 FUNCTIONALITY_MAP = {
-    "Unique ID Verifier": {
+    "Identify Unique ID(s)": {
         "function": unique_id_verifier,
         "keywords": [],
         "requires_df": False
@@ -59,7 +59,7 @@ def get_relevant_functionality(warning):
     return "Unique ID Verifier"  # Default functionality
 
 def sidebar_functionality_select():
-    st.sidebar.header("Select Functionality")
+    st.sidebar.header("Choose a Function")
     functionality = st.sidebar.pills(
         label="Choose a functionality",
         options=list(FUNCTIONALITY_MAP.keys()),
