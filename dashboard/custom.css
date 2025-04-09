@@ -52,7 +52,11 @@ section[data-testid="stSidebar"]
 section[data-testid="stSidebar"]
   .st-key-functionSelectAdmin
   div[data-testid="stButtonGroup"]
-  .st-ef {
+  .st-ef,
+section[data-testid="stSidebar"]
+  .st-key-functionSelectAdmin
+  div[data-testid="stButtonGroup"]
+  div {
   row-gap: 0;
 }
 
