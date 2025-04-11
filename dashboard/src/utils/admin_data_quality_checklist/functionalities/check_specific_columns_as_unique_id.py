@@ -75,8 +75,8 @@ def check_specific_columns_as_unique_id(df):
                     st.error("No, the select column(s) cannot work as a Unique ID")
 
                     paraField, colBtn = st.columns([2,1])
-                    paraField.write("In case you want to drop/export the duplicate entries from the column(s), you can use the Drop/Export Duplicate Entries function")
-                    dropentry = "Drop/Export Duplicate Entries"
+                    paraField.write("In case you want to drop/export the duplicate entries from the column(s), you can use the Inspect Duplicate Entries function")
+                    dropentry = "Inspect Duplicate Entries"
                     colBtn.button(dropentry, on_click=handle_click, args=[dropentry],key="dropentryBtn")
                     if dropentry:
                         st.session_state.option_selection = dropentry

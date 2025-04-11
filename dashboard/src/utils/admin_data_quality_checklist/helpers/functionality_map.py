@@ -19,7 +19,7 @@ FUNCTIONALITY_MAP = {
         "keywords": [],
         "requires_df": "only_df"
     },
-    "Drop/Export Duplicate Entries": {
+    "Inspect Duplicate Entries": {
         "function": drop_export_duplicate_entries,
         "keywords": ["duplicate"],
         "requires_df": True
