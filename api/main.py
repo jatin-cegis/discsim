@@ -348,13 +348,14 @@ async def get_dataframe(data_type: str = Query(...)):
 
 @app.post("/drop_export_duplicate_rows", response_model=DropExportDuplicatesResponse)
 async def drop_export_duplicate_rows(
-    file: UploadFile = File(...), input_data: str = Form(...)
+    file: UploadFile = File(...), 
+    # input_data: str = Form(...)
 ):
     global last_processed_data
     try:
-        input_params = json.loads(input_data)
-        kept_row = input_params.get("keptRow", "first")
-        export = input_params.get("export", True)
+        # input_params = json.loads(input_data)
+        # kept_row = input_params.get("keptRow", "first")
+        # export = input_params.get("export", True)
 
         contents = await file.read()
         df = pd.read_csv(
@@ -362,12 +363,12 @@ async def drop_export_duplicate_rows(
         )
 
         # Process duplicates
-        if kept_row == "none":
-            unique_rows = df.drop_duplicates(keep=False)
-            duplicate_rows = df[df.duplicated(keep=False)]
-        else:
-            unique_rows = df.drop_duplicates(keep=kept_row)
-            duplicate_rows = df[df.duplicated(keep=False)] if export else None
+        #if kept_row == "none":
+        unique_rows = df.drop_duplicates(keep=False)
+        duplicate_rows = df[df.duplicated(keep=False)]
+        # else:
+        #     unique_rows = df.drop_duplicates(keep=kept_row)
+        #     duplicate_rows = df[df.duplicated(keep=False)] if export else None
 
         unique_count = len(unique_rows)
         duplicate_count = len(duplicate_rows) if duplicate_rows is not None else 0

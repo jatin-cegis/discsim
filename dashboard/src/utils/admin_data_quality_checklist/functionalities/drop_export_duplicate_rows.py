@@ -24,6 +24,7 @@ def drop_export_duplicate_rows(uploaded_file):
             //margin-top:-30px;
         }
         .st-key-processBtn button{
+            margin-top:6px;
             background-color:#3b8e51;
             color:#fff;
             border:none;
@@ -46,24 +47,25 @@ def drop_export_duplicate_rows(uploaded_file):
         - Provides the count and percentage of duplicate rows in the dataset.
         - Valid input format: CSV file
     """
-    st.markdown("<h2 style='text-align: center;font-weight:800;color:#136a9a;margin-top:-15px;'>Inspect Duplicate Rows</h2>", unsafe_allow_html=True, help=title_info_markdown)
+    col1,col2 = st.columns(2)
+    col1.markdown("<h2 style='text-align: center;font-weight:800;color:#136a9a;margin-top:-15px;'>Inspect Duplicate Rows</h2>", unsafe_allow_html=True, help=title_info_markdown)
     st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>The function helps you to inspect if any duplicate exist in the dataset. You can get a modified dataset with unique rows only</p>", unsafe_allow_html=True)
 
-    kept_row = st.selectbox("Which duplicate to keep", ["first", "last", "none"], help="first(keeps the first occurrence), last(keeps the last occurrence), or none(removes all occurrences)")
+    # kept_row = st.selectbox("Which duplicate to keep", ["first", "last", "none"], help="first(keeps the first occurrence), last(keeps the last occurrence), or none(removes all occurrences)")
 
-    if st.button("Check for duplicate rows",key="processBtn"):
+    if col2.button("Check for duplicate rows",key="processBtn"):
         with st.spinner("Processing..."):
             try:
                 uploaded_file.seek(0)
                 files = {"file": ("uploaded_file.csv", uploaded_file, "text/csv")}
-                payload = {
-                    "keptRow": kept_row,
-                }
-                input_data = json.dumps(payload)
+                # payload = {
+                #     "keptRow": kept_row,
+                # }
+                # input_data = json.dumps(payload)
                 response = requests.post(
                     DROP_EXPORT_DUPLICATE_ROWS_ENDPOINT,
                     files=files,
-                    data={"input_data": input_data}
+                    # data={"input_data": input_data}
                 )
 
                 if response.status_code == 200:
