@@ -73,12 +73,16 @@ def frequency_table_analysis(uploaded_file, df):
                             top_n_df = pd.DataFrame(top_n_table)
                             top_n_df = top_n_df.sort_values("count", ascending=False)
                             top_n_df = top_n_df[[column_to_analyze, group_by, "count", "share %"]]
+                            top_n_df.index.name = 'SN'
+                            top_n_df.index = top_n_df.index + 1
                             st.dataframe(top_n_df, use_container_width=True, hide_index=True)
                         else:
                             st.write("All Frequency Values:")
                             full_df = pd.DataFrame(full_table)
                             full_df = full_df[[column_to_analyze, group_by, "count", "share %"]]
                             full_df = full_df.sort_values("count", ascending=False)
+                            full_df.index.name = 'SN'
+                            full_df.index = full_df.index + 1
                             st.dataframe(full_df, use_container_width=True, hide_index=True)
 
                     else:
@@ -88,11 +92,15 @@ def frequency_table_analysis(uploaded_file, df):
                             top_n_df = pd.DataFrame(top_n_table)
                             top_n_df = top_n_df.sort_values("count", ascending=False)
                             top_n_df.columns = [column_to_analyze, "count", "share %"]
+                            top_n_df.index.name = 'SN'
+                            top_n_df.index = top_n_df.index + 1
                             st.dataframe(top_n_df, use_container_width=True, hide_index=True)
                         else:
                             full_df = pd.DataFrame(full_table)
                             full_df.columns = [column_to_analyze, "count", "share %"]
                             full_df = full_df.sort_values("count", ascending=False)
+                            full_df.index.name = 'SN'
+                            full_df.index = full_df.index + 1
                             st.dataframe(full_df, use_container_width=True, hide_index=True)
 
                     if result["filtered"]:

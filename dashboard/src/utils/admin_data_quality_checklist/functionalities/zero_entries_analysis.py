@@ -71,6 +71,8 @@ def zero_entries_analysis(uploaded_file, df):
                                         for group, (count, percentage) in result["analysis"].items()]
                         grouped_df = pd.DataFrame(grouped_data)
                         grouped_df = grouped_df.sort_values("Zero Count", ascending=False)
+                        grouped_df.index.name = 'SN'
+                        grouped_df.index = grouped_df.index + 1
                         st.dataframe(grouped_df, use_container_width=True, hide_index=True)
                         
                         data = pd.DataFrame([(group, percentage, 100-percentage) for group, (count, percentage) in result["analysis"].items()],
@@ -86,6 +88,8 @@ def zero_entries_analysis(uploaded_file, df):
                     else:
                         count, percentage = result["analysis"]
                         analysis_df = pd.DataFrame([{"Zero Count": count, "Zero Percentage": f"{percentage:.2f}%"}])
+                        analysis_df.index.name = 'SN'
+                        analysis_df.index = analysis_df.index + 1
                         st.dataframe(analysis_df, use_container_width=True, hide_index=True)
                         
                         labels = ['Zero', 'Non-Zero']
@@ -104,6 +108,8 @@ def zero_entries_analysis(uploaded_file, df):
                         else:
                             st.warning(f"Zero entries not found.")
                         with st.expander("Rows with Zero Entries:"):
+                            zero_entries_df.index.name = 'SN'
+                            zero_entries_df.index = zero_entries_df.index + 1
                             st.dataframe(zero_entries_df, use_container_width=True, hide_index=True)
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")

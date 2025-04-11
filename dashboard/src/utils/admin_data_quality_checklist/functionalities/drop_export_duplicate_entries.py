@@ -104,6 +104,8 @@ def drop_export_duplicate_entries(uploaded_file, df):
                     with col5.expander("Show/export unique entries"):
                         try:
                             unique_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=unique").json())
+                            unique_df.index.name = 'SN'
+                            unique_df.index = unique_df.index + 1
                             st.dataframe(unique_df, hide_index=True)
                         except Exception as e:
                             st.error(f"Error displaying unique rows: {str(e)}")
@@ -113,6 +115,8 @@ def drop_export_duplicate_entries(uploaded_file, df):
                     with col4.expander("Show/export duplicate entries"):
                         try:
                             duplicate_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=duplicate").json())
+                            duplicate_df.index.name = 'SN'
+                            duplicate_df.index = unique_df.index + 1
                             st.dataframe(duplicate_df, hide_index=True)
                         except Exception as e:
                             st.error(f"Error displaying duplicate rows: {str(e)}")

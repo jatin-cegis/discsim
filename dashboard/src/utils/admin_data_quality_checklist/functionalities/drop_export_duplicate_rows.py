@@ -83,12 +83,16 @@ def drop_export_duplicate_rows(uploaded_file):
                     # Display dataframes
                     st.subheader("Unique Rows")
                     with st.expander("Unique Rows:"):
-                        st.dataframe(unique_df, hide_index=True)
+                        unique_df.index.name = 'SN'
+                        unique_df.index = unique_df.index + 1
+                        st.dataframe(unique_df, hide_index=False)
 
                     if len(duplicate_df)>0:
                         st.subheader("Duplicate Rows")
                         with st.expander("Duplicate Rows:"):
-                            st.dataframe(duplicate_df, hide_index=True)
+                            duplicate_df.index.name = 'SN'
+                            duplicate_df.index = duplicate_df.index + 1
+                            st.dataframe(duplicate_df, hide_index=False)
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:

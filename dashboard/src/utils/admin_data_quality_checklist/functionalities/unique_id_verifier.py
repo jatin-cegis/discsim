@@ -68,6 +68,8 @@ def unique_id_verifier(uploaded_file):
                         df = pd.DataFrame(unique_ids)
                         df['UniqueID'] = df['UniqueID'].apply(lambda x: ' + '.join(x))
                         df = df.rename(columns={'UniqueID': 'Unique ID (data type)', 'Numeric_DataTypes': 'Is Numeric'})
+                        df.index.name = 'SN'
+                        df.index = df.index + 1
                         st.dataframe(df['Unique ID (data type)'], use_container_width=True,key="uniquedatatable")
                     else:
                         st.warning("No unique identifiers found. All columns or combinations have at least one duplicate.")

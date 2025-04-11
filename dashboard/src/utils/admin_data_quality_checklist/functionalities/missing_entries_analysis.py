@@ -78,6 +78,8 @@ def missing_entries_analysis(uploaded_file, df):
                         grouped_df = grouped_df.sort_values("Missing Count", ascending=False)
                         
                         # Center-align just Missing Count and Missing Percentage
+                        grouped_df.index.name = 'SN'
+                        grouped_df.index = grouped_df.index + 1
                         st.dataframe(grouped_df.style.set_properties(**{
                             'text-align': 'center',
                             'text': 'center',
@@ -126,6 +128,8 @@ def missing_entries_analysis(uploaded_file, df):
                                 st.warning(f"Column '{column_to_analyze}' not found in the missing entries table. Displaying unsorted data.")
                             
                             with st.expander("Rows with Missing Entries:"):
+                                missing_entries_df.index.name = 'SN'
+                                missing_entries_df.index = missing_entries_df.index + 1
                                 st.dataframe(missing_entries_df, use_container_width=True, hide_index=True)
                     else:
                         st.error("The 'missing_entries_table' key is not present in the API response.")
