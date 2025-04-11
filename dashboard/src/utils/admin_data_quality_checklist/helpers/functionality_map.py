@@ -14,7 +14,7 @@ FUNCTIONALITY_MAP = {
         "keywords": [],
         "requires_df": False
     },
-    "Check Specific Columns as Unique ID": {
+    "Verify Unique ID(s)": {
         "function": check_specific_columns_as_unique_id,
         "keywords": [],
         "requires_df": "only_df"
@@ -56,7 +56,7 @@ def get_relevant_functionality(warning):
     for functionality, info in FUNCTIONALITY_MAP.items():
         if any(keyword in warning for keyword in info["keywords"]):
             return functionality
-    return "Unique ID Verifier"  # Default functionality
+    return "Identify Unique ID(s)"  # Default functionality
 
 def sidebar_functionality_select():
     st.sidebar.header("Choose a Function")
@@ -67,10 +67,26 @@ def sidebar_functionality_select():
         key="functionSelectAdmin",
         label_visibility="collapsed"
     )
+    if "option_selection" in st.session_state and st.session_state.option_selection is not None:
+        st.session_state.navbar_selection = st.session_state.option_selection
+        st.query_params.func = st.session_state.option_selection
+        st.session_state.option_selection = None
+    else:
+        st.session_state.navbar_selection = functionality
+        st.query_params.func = functionality
+
     st.session_state.navbar_selection = functionality
     return functionality
 
 def execute_functionality(functionality, uploaded_file, df=None):
+    #if func param exists in url -> execute the function
+    if "func" in st.query_params and st.query_params["func"] is not None:
+        functionality = st.query_params["func"]
+        st.session_state.navbar_selection = st.query_params["func"]
+    if "func" in st.query_params and st.query_params["func"] == "None":
+        st.write("Choose a function")
+        st.stop()
+
     if st.session_state.navbar_selection == functionality:
         func_info = FUNCTIONALITY_MAP[functionality]
         if func_info["function"] == check_specific_columns_as_unique_id:
