@@ -12,7 +12,7 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 UPLOAD_FILE_ENDPOINT = f"{API_BASE_URL}/upload_file"
 
 # Cache the file listing function to prevent redundant calls to the server
-@st.cache_data
+# @st.cache_data
 def fetch_files_from_api(category):
     params = {"category": category}
     response = requests.get(f"{API_BASE_URL}/list_files", params=params)
