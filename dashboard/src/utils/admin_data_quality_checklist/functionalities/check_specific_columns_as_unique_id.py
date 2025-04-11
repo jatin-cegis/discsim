@@ -24,6 +24,9 @@ def check_specific_columns_as_unique_id(df):
         .stHorizontalBlock{
             //margin-top:-30px;
         }
+        .st-key-functioncall button{
+        margin-top:28px;
+        }
         .st-key-functioncall button,.st-key-dropentryBtn button,.st-key-verifyIDBtn button{
             background-color:#3b8e51;
             color:#fff;
@@ -53,9 +56,10 @@ def check_specific_columns_as_unique_id(df):
     st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>This function helps you verify if the column(s) that you selected serve(s) as a unique ID for your dataset. If you expect some column(s) to be a unique ID in your dataset, this function helps you verify the same.</p>", unsafe_allow_html=True)
     
 
-    columns = st.multiselect("Select column(s) to verify [multiple selections are allowed - up to 4]", options=df.columns.tolist())
+    selectField, updateBtn = st.columns([2,1])
+    columns = selectField.multiselect("Select column(s) to verify [multiple selections are allowed - up to 4]", options=df.columns.tolist())
     
-    if columns and st.button("Check Unique ID",key="functioncall"):
+    if columns and updateBtn.button("Check Unique ID",key="functioncall"):
         with st.spinner("Checking unique ID..."):
             df_clean = df.replace([np.inf, -np.inf], np.nan).dropna()
             data = df_clean.where(pd.notnull(df_clean), None).to_dict('records')
@@ -70,15 +74,16 @@ def check_specific_columns_as_unique_id(df):
                 else:
                     st.error("No, the select column(s) cannot work as a Unique ID")
 
-                    st.write("In case you want to drop/export the duplicate entries from the column(s), you can use the Drop/Export Duplicate Entries function")
+                    paraField, colBtn = st.columns([2,1])
+                    paraField.write("In case you want to drop/export the duplicate entries from the column(s), you can use the Drop/Export Duplicate Entries function")
                     dropentry = "Drop/Export Duplicate Entries"
-                    st.button(dropentry, on_click=handle_click, args=[dropentry],key="dropentryBtn")
+                    colBtn.button(dropentry, on_click=handle_click, args=[dropentry],key="dropentryBtn")
                     if dropentry:
                         st.session_state.option_selection = dropentry
 
-                    st.write("In case you want to identify the Unique ID(s) in your file, you can use the Identify Unique ID(s) function")
+                    paraField.write("In case you want to identify the Unique ID(s) in your file, you can use the Identify Unique ID(s) function")
                     verifyID = "Identify Unique ID(s)"
-                    st.button(verifyID, on_click=handle_click, args=[verifyID],key="verifyIDBtn")
+                    colBtn.button(verifyID, on_click=handle_click, args=[verifyID],key="verifyIDBtn")
                     if verifyID:
                         st.session_state.option_selection = verifyID
 
