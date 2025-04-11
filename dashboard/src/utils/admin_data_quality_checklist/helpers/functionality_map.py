@@ -24,7 +24,7 @@ FUNCTIONALITY_MAP = {
         "keywords": ["duplicate"],
         "requires_df": True
     },
-    "Drop/Export Duplicate Rows": {
+    "Inspect Duplicate Rows": {
         "function": drop_export_duplicate_rows,
         "keywords": ["duplicate"],
         "requires_df": False
