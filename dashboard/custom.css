@@ -161,3 +161,9 @@ div.stMetric label {
 div.stMetric div div {
   color: white !important;
 }
+
+div[data-testid="stElementToolbar"] {
+  top: -38px;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
