@@ -15,6 +15,30 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 MISSING_ENTRIES_ENDPOINT = f"{API_BASE_URL}/missing_entries"
 
 def missing_entries_analysis(uploaded_file, df):
+    customcss = """
+        <style>
+        div[data-testid="stExpander"] summary{
+            padding:0.4rem 1rem;
+        }
+        .stHorizontalBlock{
+            //margin-top:-30px;
+        }
+        .st-key-processBtn button{
+            background-color:#3b8e51;
+            color:#fff;
+            border:none;
+        }
+        .st-key-processBtn button:hover,.st-key-processBtn button:active,.st-key-processBtn button:focus,st-key-processBtn button:focus:not(:active){
+            color:#fff!important;
+            border:none;
+        }
+        .st-key-uidCol label p::after,.st-key-duplicateKeep label p::after { 
+            content: " *";
+            color: red;
+        }
+        </style>
+    """
+    st.markdown(customcss, unsafe_allow_html=True)
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False    
     title_info_markdown = """
@@ -24,19 +48,21 @@ def missing_entries_analysis(uploaded_file, df):
         - Provides a table of rows with missing entries.
         - Valid input format: CSV file
     """
-    st.markdown("<h2 style='text-align: center;'>Missing Entries Analysis</h2>", unsafe_allow_html=True, help=title_info_markdown)
+    st.markdown("<h2 style='text-align: center;font-weight:800;color:#136a9a;margin-top:-15px'>Analyse Missing Entries</h2>", unsafe_allow_html=True, help=title_info_markdown)
+    st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>The function helps you analyse the missing entries present in your data. Furthermore, you can get a break down of the prevalence of missing entries among different groups of your data, or analyse the missing entries for only specific subset(s) of your data</p>", unsafe_allow_html=True)
+
     col1, col2, col3 = st.columns(3)
     with col1:
-        column_to_analyze = st.selectbox("Select column to analyze for missing entries:", options=df.columns.tolist(), index=0)
+        column_to_analyze = st.selectbox("Select a column you want to analyse for missing entries", options=df.columns.tolist(), index=0,key="uidCol")
     with col2:
-        group_by = st.selectbox("Group by (optional)", options=["None"] + df.columns.tolist(), index=0, help="Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.")
+        group_by = st.selectbox("Do you want to break this down for particular groups of data? Please choose a (cateogorical) variable from your dataset (optional)", options=["None"] + df.columns.tolist(), index=0, help="Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.")
     with col3:
-        filter_by_col = st.selectbox("Filter by column (optional)", options=["None"] + df.columns.tolist(), index=0, help="Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze missing entries for a specific condition.")
+        filter_by_col = st.selectbox("Do you want to restrict this analysis to a particular subset of data? Please choose the specific indicator and value for which you need this analysis (optional)", options=["None"] + df.columns.tolist(), index=0, help="Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze missing entries for a specific condition.")
     
     col4, col5, col6 = st.columns(3)
     if filter_by_col != "None":
         with col4:
-            filter_by_value = st.selectbox("Filter value", df[filter_by_col].unique().tolist())
+            filter_by_value = st.selectbox("Choose the any value for which you need the analysis", df[filter_by_col].unique().tolist(),key="duplicateKeep")
         with col5:
             st.write("")
         with col6:
@@ -45,7 +71,7 @@ def missing_entries_analysis(uploaded_file, df):
         filter_by_value = None
 
     # Analyze Missing Entries
-    if st.button("Analyze Missing Entries"):
+    if st.button("Analyze Missing Entries",key="processBtn"):
         with st.spinner("Analyzing missing entries..."):
             try:
                 uploaded_file.seek(0)  # Reset file pointer
@@ -65,48 +91,65 @@ def missing_entries_analysis(uploaded_file, df):
                     result = response.json()
                     
                     if result["grouped"]:
-                        st.write("Missing entries by group:")
                         grouped_data = []
-                        for group, (count, percentage) in result["analysis"].items():
+                        for group, (count, percentage, total) in result["analysis"].items():
                             grouped_data.append({
-                                group_by: group,  # Use the name of the group-by column
-                                "Missing Count": count,
+                                group_by: group, 
+                                "Total Rows": total,
+                                "Missing Entries": count,
                                 "Missing Percentage": f"{percentage:.2f}%" if percentage is not None else "N/A"
                             })
-                        
+                        if result["filtered"]:
+                            a,b = st.columns(2)
+                            a.metric(f"Total number of rows analysed",format(total,',d'),border=True)
+                            b.metric(f"Missing entries",format(count,',d')+f"({percentage:.2f}%)",border=True)
+
                         grouped_df = pd.DataFrame(grouped_data)
-                        grouped_df = grouped_df.sort_values("Missing Count", ascending=False)
-                        
-                        # Center-align just Missing Count and Missing Percentage
-                        grouped_df.index.name = 'SN'
-                        grouped_df.index = grouped_df.index + 1
-                        st.dataframe(grouped_df.style.set_properties(**{
-                            'text-align': 'center',
-                            'text': 'center',
-                            'align-items': 'center',
-                            'justify-content': 'center'
-                        }, subset=['Missing Count', 'Missing Percentage']), use_container_width=True, hide_index=True)
+                        grouped_df = grouped_df.sort_values("Missing Entries", ascending=False)
                         
                         # Create a 100% stacked column chart
                         data = pd.DataFrame([(group, percentage, 100-percentage if percentage is not None else 0) 
-                                            for group, (count, percentage) in result["analysis"].items()],
-                                            columns=[group_by, 'Missing', 'Present'])
+                                            for group, (count, percentage ,total) in result["analysis"].items()],
+                                            columns=[group_by, 'Missing', 'Recorded'])
                         data = data.sort_values('Missing', ascending=False)
-                        fig = px.bar(data, x=group_by, y=['Missing', 'Present'], 
-                                    title=f"Missing vs Present Entries by {group_by}",
+                        fig = px.bar(data, x=group_by, y=['Missing', 'Recorded'], 
+                                    title=f"Missing vs Recorded Entries by {group_by}",
                                     labels={'value': 'Percentage', 'variable': 'Status'},
-                                    color_discrete_map={'Missing': 'red', 'Present': 'green'},
+                                    color_discrete_map={'Missing': '#9e2f17', 'Recorded': '#3b8e51'},
                                     text='value')
-                        fig.update_layout(barmode='relative', yaxis_title='Percentage')
+                        fig.update_layout(barmode='relative', yaxis_title='Percentage',showlegend=False,margin=dict(l=0, r=0, t=30, b=0),title_x=0.4)
                         fig.update_traces(texttemplate='%{text:.1f}%', textposition='inside')
                         st.plotly_chart(fig)
+
+                        # Center-align just Missing Count and Missing Percentage
+                        with st.expander("Show tabular view"):
+                            grouped_df.index.name = 'SN'
+                            grouped_df.index = grouped_df.index + 1
+                            st.dataframe(grouped_df, use_container_width=True, hide_index=False)
+                        
                     else:
-                        count, percentage = result["analysis"]
+                        count, percentage, total = result["analysis"]
                         if percentage is not None:
-                            st.write(f"Missing entries: {count} ({percentage:.2f}%)")
-                            labels = ['Missing', 'Present']
+                            a,b = st.columns(2)
+                            a.metric(f"Total number of rows analysed",format(total,',d'),border=True)
+                            b.metric(f"Missing entries",format(count,',d')+f"({percentage:.2f}%)",border=True)
+                            labels = ['Missing Entries', 'Recorded Entries']
                             values = [percentage, 100-percentage]
-                            fig = plot_pie_chart(labels, values, "Missing vs Present Entries (%)")
+                            color_map = {
+                                label: "#3b8e51" if "Recorded Entries" in label else "#9e2f17"
+                                for label in labels
+                            }
+                            fig = px.pie(
+                                names=labels, 
+                                values=values, 
+                                color=labels,
+                                color_discrete_map=color_map)
+                            fig.update_layout(
+                                margin=dict(l=0, r=0, t=0, b=0),
+                                height=400,
+                                showlegend= False,
+                            )
+                            fig.update_traces(textposition='inside', textinfo='percent+label')
                             st.plotly_chart(fig)
                         else:
                             st.write(f"Missing entries: {count} (percentage unavailable)")
@@ -115,7 +158,7 @@ def missing_entries_analysis(uploaded_file, df):
                         st.info(f"Results are filtered by {filter_by_col} = {filter_by_value}")
                         
                     # Display the table of missing entries
-                    if "missing_entries_table" in result:
+                    if "missing_entries_table" in result:   
                         if not result["missing_entries_table"]:
                             st.warning("The missing entries table is empty.")
                         else:
@@ -123,14 +166,14 @@ def missing_entries_analysis(uploaded_file, df):
                                                                     
                             if column_to_analyze in missing_entries_df.columns:
                                 missing_entries_df = missing_entries_df.sort_values(column_to_analyze, ascending=False)
-                                st.success(f"Sorted by column: '{column_to_analyze}'")
+                                st.success(f"Missing entries analysed for column: '{column_to_analyze}'")
                             else:
                                 st.warning(f"Column '{column_to_analyze}' not found in the missing entries table. Displaying unsorted data.")
                             
-                            with st.expander("Rows with Missing Entries:"):
+                            with st.expander("Show/export rows with missing entries"):
                                 missing_entries_df.index.name = 'SN'
                                 missing_entries_df.index = missing_entries_df.index + 1
-                                st.dataframe(missing_entries_df, use_container_width=True, hide_index=True)
+                                st.dataframe(missing_entries_df, use_container_width=True, hide_index=False)
                     else:
                         st.error("The 'missing_entries_table' key is not present in the API response.")
 

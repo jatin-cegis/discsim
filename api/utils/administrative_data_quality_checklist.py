@@ -213,17 +213,15 @@ def process_in_chunks(
     return unique_rows, duplicate_rows if export else None
 
 
-def missingEntries(df: pd.DataFrame, colName: str) -> Tuple[int, float]:
+def missingEntries(df: pd.DataFrame, colName: str) -> Tuple[int, Optional[float], int]:
     missingCount = df[colName].isna().sum()
     totalCount = len(df)
     if totalCount == 0:
-        return missingCount, None
+        return missingCount, None, totalCount
     missingPercentage = 100 * missingCount / totalCount
-    return missingCount, (
-        float(missingPercentage)
-        if not np.isnan(missingPercentage) and not np.isinf(missingPercentage)
-        else None
-    )
+    if np.isnan(missingPercentage) or np.isinf(missingPercentage):
+        return missingCount, None, totalCount
+    return missingCount, float(missingPercentage), totalCount
 
 
 def missingEntriesGrouped(
@@ -267,7 +265,10 @@ def analyze_missing_entries(
     colName: str,
     groupBy: Optional[str] = None,
     filterBy: Optional[Dict[str, str]] = None,
-) -> Dict[str, Union[Tuple[int, float], Dict[str, Tuple[int, float]]]]:
+) -> Dict[str, Union[
+    Tuple[int, Optional[float], int],
+    Dict[str, Tuple[int, Optional[float], int]]
+]]:
     """
     Analyze missing entries in a dataframe column with optional grouping and filtering.
 

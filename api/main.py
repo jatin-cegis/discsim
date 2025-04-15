@@ -436,26 +436,18 @@ async def missing_entries(
 
         # Perform the analysis
         result = analyze_missing_entries(df, column_to_analyze, group_by, filter_by)
-
         # Convert numpy types to Python native types for JSON serialization
-        if isinstance(result["analysis"], dict):
-            result["analysis"] = {
-                k: (
-                    int(v[0]),
-                    float(v[1]) if not np.isnan(v[1]) and not np.isinf(v[1]) else None,
-                )
-                for k, v in result["analysis"].items()
-            }
-        else:
-            result["analysis"] = (
-                int(result["analysis"][0]),
-                (
-                    float(result["analysis"][1])
-                    if not np.isnan(result["analysis"][1])
-                    and not np.isinf(result["analysis"][1])
-                    else None
-                ),
+        def safe_convert(entry):
+            count = int(entry[0])
+            percent = (
+                float(entry[1]) if entry[1] is not None and not np.isnan(entry[1]) and not np.isinf(entry[1]) else None
             )
+            total = int(entry[2]) if entry[2] is not None else 0
+            return (count, percent, total)
+        if isinstance(result["analysis"], dict):
+            result["analysis"] = {k: safe_convert(v) for k, v in result["analysis"].items()}
+        else:
+            result["analysis"] = safe_convert(result["analysis"])
 
         # Include rows with missing entries
         missing_rows = df[df[column_to_analyze].isna()]

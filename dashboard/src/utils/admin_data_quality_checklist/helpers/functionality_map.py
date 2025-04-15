@@ -29,7 +29,7 @@ FUNCTIONALITY_MAP = {
         "keywords": ["duplicate"],
         "requires_df": False
     },
-    "Missing Entries Analysis": {
+    "Analyse Missing Entries": {
         "function": missing_entries_analysis,
         "keywords": ["missing"],
         "requires_df": True
