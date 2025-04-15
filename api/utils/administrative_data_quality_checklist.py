@@ -329,7 +329,7 @@ def zeroEntries(df: pd.DataFrame, colName: str) -> Tuple[int, float , int]:
 
 def zeroEntriesGrouped(
     df: pd.DataFrame, colName: str, catColumn: str
-) -> Dict[str, Tuple[int, float]]:
+) -> Dict[str, Tuple[int, float, int]]:
     """
     Calculate zero entries grouped by a categorical variable.
 
@@ -342,7 +342,7 @@ def zeroEntriesGrouped(
     Dict[str, Tuple[int, float]]: Dictionary with group names as keys and (zero count, zero percentage) as values
     """
     if df[colName].dtype not in ["int64", "float64"]:
-        return {group: (0, 0.0) for group in df[catColumn].unique()}
+        return {group: (0, 0.0, len(group_df)) for group,group_df in df[catColumn].unique()}
     return df.groupby(catColumn).apply(lambda x: zeroEntries(x, colName)).to_dict()
 
 

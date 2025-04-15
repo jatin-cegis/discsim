@@ -55,9 +55,9 @@ def missing_entries_analysis(uploaded_file, df):
     with col1:
         column_to_analyze = st.selectbox("Select a column you want to analyse for missing entries", options=df.columns.tolist(), index=0,key="uidCol")
     with col2:
-        group_by = st.selectbox("Do you want to break this down for particular groups of data? Please choose a (cateogorical) variable from your dataset (optional)", options=["None"] + df.columns.tolist(), index=0, help="Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.")
+        group_by = st.selectbox("Do you want to break this down for particular groups of data? Please choose a (cateogorical) variable from your dataset", options=["None"] + df.columns.tolist(), index=0, help="Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.")
     with col3:
-        filter_by_col = st.selectbox("Do you want to restrict this analysis to a particular subset of data? Please choose the specific indicator and value for which you need this analysis (optional)", options=["None"] + df.columns.tolist(), index=0, help="Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze missing entries for a specific condition.")
+        filter_by_col = st.selectbox("Do you want to restrict this analysis to a particular subset of data? Please choose the specific indicator and value for which you need this analysis", options=["None"] + df.columns.tolist(), index=0, help="Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze missing entries for a specific condition.")
     
     col4, col5, col6 = st.columns(3)
     if filter_by_col != "None":
@@ -91,12 +91,16 @@ def missing_entries_analysis(uploaded_file, df):
                     result = response.json()
                     
                     if result["grouped"]:
+                        a,b = st.columns(2)
+                        a.metric(f"Total number of rows analysed",format(result['total_rows'],',d'),border=True)
+                        b.metric(f"Zero entries",format(result['zero_entries'],',d'),border=True)
+                        st.info(f"Results are grouped by column : {group_by}")
                         grouped_data = []
                         for group, (count, percentage, total) in result["analysis"].items():
                             grouped_data.append({
                                 group_by: group, 
-                                "Total Rows": total,
-                                "Missing Entries": count,
+                                "Total Rows": format(total,',d'),
+                                "Missing Entries": format(count,',d'),
                                 "Missing Percentage": f"{percentage:.2f}%" if percentage is not None else "N/A"
                             })
                         if result["filtered"]:
@@ -117,7 +121,7 @@ def missing_entries_analysis(uploaded_file, df):
                                     labels={'value': 'Percentage', 'variable': 'Status'},
                                     color_discrete_map={'Missing': '#9e2f17', 'Recorded': '#3b8e51'},
                                     text='value')
-                        fig.update_layout(barmode='relative', yaxis_title='Percentage',showlegend=False,margin=dict(l=0, r=0, t=30, b=0),title_x=0.4)
+                        fig.update_layout(barmode='relative', yaxis_title='Percentage',margin=dict(l=0, r=0, t=30, b=0),title_x=0.4)
                         fig.update_traces(texttemplate='%{text:.1f}%', textposition='inside')
                         st.plotly_chart(fig)
 
@@ -147,7 +151,6 @@ def missing_entries_analysis(uploaded_file, df):
                             fig.update_layout(
                                 margin=dict(l=0, r=0, t=0, b=0),
                                 height=400,
-                                showlegend= False,
                             )
                             fig.update_traces(textposition='inside', textinfo='percent+label')
                             st.plotly_chart(fig)

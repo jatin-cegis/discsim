@@ -58,9 +58,9 @@ def zero_entries_analysis(uploaded_file, df):
     with col1:
         column_to_analyze = st.selectbox("Select a column you want to analyse for zero entries", df.select_dtypes(include='number').columns.tolist(),key="uidCol")
     with col2:
-        group_by = st.selectbox("Do you want to break this down for particular groups of data? Please choose a (cateogorical) variable from your dataset (optional)", ["None"] + df.columns.tolist(), help="Analyze zero entries within distinct categories of another column. This is useful if you want to understand how zero values are distributed across different groups.")
+        group_by = st.selectbox("Do you want to break this down for particular groups of data? Please choose a (cateogorical) variable from your dataset", ["None"] + df.columns.tolist(), help="Analyze zero entries within distinct categories of another column. This is useful if you want to understand how zero values are distributed across different groups.")
     with col3:
-        filter_by_col = st.selectbox("Do you want to restrict this analysis to a particular subset of data? Please choose the specific indicator and value for which you need this analysis (optional)", ["None"] + df.columns.tolist(), help="Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze zero entries for a specific condition.")
+        filter_by_col = st.selectbox("Do you want to restrict this analysis to a particular subset of data? Please choose the specific indicator and value for which you need this analysis", ["None"] + df.columns.tolist(), help="Focus on a specific subset of your data by selecting a specific value in another column. This is helpful when you want to analyze zero entries for a specific condition.")
 
     col4, col5, col6 = st.columns(3)
     if filter_by_col != "None":
@@ -90,19 +90,29 @@ def zero_entries_analysis(uploaded_file, df):
                 if response.status_code == 200:
                     result = response.json()
                     if result["grouped"]:
-                        st.write("Zero entries by group: " + group_by)
+                        a,b = st.columns(2)
+                        a.metric(f"Total number of rows analysed",format(result['total_rows'],',d'),border=True)
+                        b.metric(f"Zero entries",format(result['zero_entries'],',d'),border=True)
+                        st.info(f"Results are grouped by column : {group_by}")
                         group_column_name = group_by  # Use the selected group-by column name
-                        grouped_data = [{group_column_name: group, "Zero Count": count, "Zero Percentage": f"{percentage:.2f}%"}
-                                        for group, (count, percentage) in result["analysis"].items()]
+                        grouped_data = [
+                            {
+                                group_column_name: group_by,
+                                "Zero Count": format(count, ',d'),
+                                "Zero Percentage": f"{percentage:.2f}%",
+                                "Total Rows": format(total, ',d')
+                            }
+                            for group_by, (count, percentage, total) in result["analysis"].items()
+                        ]
                         grouped_df = pd.DataFrame(grouped_data)
                         
-                        data = pd.DataFrame([(group, percentage, 100-percentage) for group, (count, percentage) in result["analysis"].items()], columns=[group_column_name, 'Zero', 'Non-Zero'])
-                        data = data.sort_values('Zero', ascending=False)
-                        fig = px.bar(data, x=group_column_name, y=['Zero', 'Non-Zero'], 
+                        data = pd.DataFrame([(group, percentage, 100-percentage) for group, (count, percentage, totalrows) in result["analysis"].items()], columns=[group_column_name, 'Zero Entries', 'Non-Zero Entries'])
+                        data = data.sort_values('Zero Entries', ascending=False)
+                        fig = px.bar(data, x=group_column_name, y=['Zero Entries', 'Non-Zero Entries'], 
                                     title=f"Zero vs Non-Zero Entries by {group_column_name}",
                                     labels={'value': 'Percentage', 'variable': 'Entry Type'},
-                                    color_discrete_map={'Zero': '#9e2f17', 'Non-Zero': '#3b8e51'})
-                        fig.update_layout(barmode='relative', yaxis_title='Percentage',showlegend=False,margin=dict(l=0, r=0, t=30, b=0),title_x=0.4)
+                                    color_discrete_map={'Zero Entries': '#9e2f17', 'Non-Zero Entries': '#3b8e51'})
+                        fig.update_layout(barmode='relative', yaxis_title='Percentage',margin=dict(l=0, r=0, t=30, b=0),title_x=0.4)
                         fig.update_traces(texttemplate='%{y:.1f}%', textposition='inside')
                         st.plotly_chart(fig)
 
@@ -124,10 +134,10 @@ def zero_entries_analysis(uploaded_file, df):
                             analysis_df.index = analysis_df.index + 1
                             st.dataframe(analysis_df, use_container_width=True, hide_index=False)
                         
-                        labels = ['Zero', 'Non-Zero']
+                        labels = ['Zero Entries', 'Non-Zero Entries']
                         values = [percentage, 100-percentage]
                         color_map = {
-                                label: "#3b8e51" if "Non-Zero" in label else "#9e2f17"
+                                label: "#3b8e51" if "Non-Zero Entries" in label else "#9e2f17"
                                 for label in labels
                             }
                         fig = px.pie(
@@ -138,7 +148,6 @@ def zero_entries_analysis(uploaded_file, df):
                         fig.update_layout(
                             margin=dict(l=0, r=0, t=0, b=0),
                             height=400,
-                            showlegend= False,
                         )
                         fig.update_traces(textposition='inside', textinfo='percent+label')
                         st.plotly_chart(fig)

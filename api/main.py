@@ -446,6 +446,8 @@ async def missing_entries(
             return (count, percent, total)
         if isinstance(result["analysis"], dict):
             result["analysis"] = {k: safe_convert(v) for k, v in result["analysis"].items()}
+            result["total_rows"] = df.shape[0]
+            result["zero_entries"] = int((df[group_by] == 0).sum())
         else:
             result["analysis"] = safe_convert(result["analysis"])
 
@@ -522,8 +524,10 @@ async def zero_entries(
         # Convert numpy types to Python native types for JSON serialization
         if isinstance(result["analysis"], dict):
             result["analysis"] = {
-                k: (int(v[0]), float(v[1])) for k, v in result["analysis"].items()
+                k: (int(v[0]), float(v[1]), int(v[2])) for k, v in result["analysis"].items()
             }
+            result["total_rows"] = df.shape[0]
+            result["zero_entries"] = int((df[group_by] == 0).sum())
         else:
             result["analysis"] = (
                 int(result["analysis"][0]),
