@@ -528,6 +528,7 @@ async def zero_entries(
             result["analysis"] = (
                 int(result["analysis"][0]),
                 float(result["analysis"][1]),
+                int(result["analysis"][2]),
             )
 
         # Convert any non-serializable values to None in zero_entries_table

@@ -34,7 +34,7 @@ FUNCTIONALITY_MAP = {
         "keywords": ["missing"],
         "requires_df": True
     },
-    "Zero Entries Analysis": {
+    "Analyse Zero Entries": {
         "function": zero_entries_analysis,
         "keywords": ["zero"],
         "requires_df": True
