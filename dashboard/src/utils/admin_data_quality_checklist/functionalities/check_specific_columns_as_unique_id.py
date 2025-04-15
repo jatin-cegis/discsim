@@ -38,6 +38,10 @@ def check_specific_columns_as_unique_id(df):
             color:#fff!important;
             border:none;
         }
+        .st-key-uidCol label p::after{ 
+            content: " *";
+            color: red;
+        }
         </style>
     """
     st.markdown(customcss, unsafe_allow_html=True)
@@ -57,7 +61,7 @@ def check_specific_columns_as_unique_id(df):
     
 
     selectField, updateBtn = st.columns([2,1])
-    columns = selectField.multiselect("Select column(s) to verify [multiple selections are allowed - up to 4]", options=df.columns.tolist())
+    columns = selectField.multiselect("Select column(s) to verify [multiple selections are allowed - up to 4]", options=df.columns.tolist(),key="uidCol")
     
     if columns and updateBtn.button("Check Unique ID",key="functioncall"):
         with st.spinner("Checking unique ID..."):
