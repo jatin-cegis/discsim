@@ -77,7 +77,8 @@ async def upload_file(
 ):
     contents = await file.read()
     encoding = chardet.detect(contents)["encoding"]
-    if encoding not in ['UTF-8', 'UTF-8-SIG']:
+    encoding = encoding.lower() if encoding else None
+    if encoding not in ['utf-8', 'utf-8-sig']:
         return JSONResponse(
             status_code=400, 
             content={
@@ -102,9 +103,7 @@ async def upload_file(
         )
 
     # Proceed with saving the file if it doesn't exist
-    contents = await file.read()
-    file_content = contents  # Store the file content as is
-    db_file = UploadedFile(filename=file.filename, content=file_content, category=category)
+    db_file = UploadedFile(filename=file.filename, content=contents, category=category)
     db.add(db_file)
     db.commit()
     db.refresh(db_file)
@@ -138,8 +137,14 @@ async def get_file(file_id: int, db: Session = Depends(get_db)):
     if not file:
         raise HTTPException(status_code=404, detail="File not found")
     
+    if not file.content:
+        raise HTTPException(status_code=400, detail="File content is empty or missing")
+
     detected = chardet.detect(file.content)
     encoding = detected["encoding"]
+    # if not encoding:
+    #     raise HTTPException(status_code=400, detail="Unable to detect file encoding")
+    
     normalized_encoding = encoding.lower() if encoding else None
     accepted_encodings = ['utf-8', 'utf-8-sig', 'ascii']
     if normalized_encoding not in accepted_encodings:
@@ -148,12 +153,15 @@ async def get_file(file_id: int, db: Session = Depends(get_db)):
             detail=f"File is not UTF-8 encoded. Encoding found: {encoding}"
         )
     
+    try:
+        decoded_content = file.content.decode(normalized_encoding)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error decoding file: {str(e)}")
+
     return {
         "filename": file.filename,
         "datetime": file.upload_datetime.isoformat(),
-        "content": file.content.decode(
-            "utf-8"
-        ),  # Decode binary content for JSON compatibility
+        "content": decoded_content
     }
 
 

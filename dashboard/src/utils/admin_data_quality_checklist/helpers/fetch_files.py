@@ -15,13 +15,20 @@ def fetch_file_from_api(file_id):
     file_response = requests.get(f"{GET_FILE_ENDPOINT}/{file_id}")
     if file_response.status_code == 200:
         file_data = file_response.json()
-        file_content = file_data["content"].encode('utf-8')
-        uploaded_file = BytesIO(file_content)
+        file_content = file_data["content"]
+        if file_content.startswith("\ufeff"):
+            file_content = file_content.lstrip("\ufeff")
+        
+        uploaded_file = BytesIO(file_content.encode("utf-8"))  
         uploaded_file.name = file_data["filename"]
         return uploaded_file
     else:
-        #file_data = file_response.json()
-        st.error(f"Failed to fetch file with ID {file_id}")
+        try:
+            error_data = file_response.json()
+            error_message = error_data.get("detail", "Unknown error occurred.")
+        except Exception:
+            error_message = file_response.text  # fallback if not JSON
+        st.error(f"Failed to fetch file with ID {file_id}: {error_message}")
         return None
     
 def get_file(file_id):

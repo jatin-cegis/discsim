@@ -60,7 +60,8 @@ def handle_file_upload(file_option, category):
                     st.session_state.current_file_name = uploaded_file.name
                     uploaded_file = get_file(file_id)
                     st.session_state.uploaded_file = uploaded_file # Store file in session state
-                    del st.session_state['file_list'] #delete the cached filelist
+                    if 'file_list' in st.session_state:
+                        del st.session_state['file_list'] #delete the cached filelist
                 elif response.status_code == 409:
                     st.warning(
                         f"A file with this name already exists in {category}. Please upload a different file."
@@ -78,6 +79,8 @@ def handle_file_upload(file_option, category):
         else:
             # Fetch file list from API and cache it
             files = fetch_files_from_api(category)
+            if 'file_list' in st.session_state:
+                del st.session_state['file_list']
             st.session_state.file_list = files  # Save to session state for future use
             
         if not files:
