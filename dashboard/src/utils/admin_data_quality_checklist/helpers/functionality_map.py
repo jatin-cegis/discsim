@@ -9,32 +9,32 @@ from src.utils.admin_data_quality_checklist.functionalities.indicator_fill_rate_
 from src.utils.admin_data_quality_checklist.functionalities.frequency_table_analysis import frequency_table_analysis
 
 FUNCTIONALITY_MAP = {
-    "Unique ID Verifier": {
+    "Identify Unique ID(s)": {
         "function": unique_id_verifier,
         "keywords": [],
         "requires_df": False
     },
-    "Check Specific Columns as Unique ID": {
+    "Verify Unique ID(s)": {
         "function": check_specific_columns_as_unique_id,
         "keywords": [],
         "requires_df": "only_df"
     },
-    "Drop/Export Duplicate Entries": {
+    "Inspect Duplicate Entries": {
         "function": drop_export_duplicate_entries,
         "keywords": ["duplicate"],
         "requires_df": True
     },
-    "Drop/Export Duplicate Rows": {
+    "Inspect Duplicate Rows": {
         "function": drop_export_duplicate_rows,
         "keywords": ["duplicate"],
         "requires_df": False
     },
-    "Missing Entries Analysis": {
+    "Analyse Missing Entries": {
         "function": missing_entries_analysis,
         "keywords": ["missing"],
         "requires_df": True
     },
-    "Zero Entries Analysis": {
+    "Analyse Zero Entries": {
         "function": zero_entries_analysis,
         "keywords": ["zero"],
         "requires_df": True
@@ -56,10 +56,10 @@ def get_relevant_functionality(warning):
     for functionality, info in FUNCTIONALITY_MAP.items():
         if any(keyword in warning for keyword in info["keywords"]):
             return functionality
-    return "Unique ID Verifier"  # Default functionality
+    return "Identify Unique ID(s)"  # Default functionality
 
 def sidebar_functionality_select():
-    st.sidebar.header("Select Functionality")
+    st.sidebar.header("Choose a Function")
     functionality = st.sidebar.pills(
         label="Choose a functionality",
         options=list(FUNCTIONALITY_MAP.keys()),
@@ -67,10 +67,26 @@ def sidebar_functionality_select():
         key="functionSelectAdmin",
         label_visibility="collapsed"
     )
+    if "option_selection" in st.session_state and st.session_state.option_selection is not None:
+        st.session_state.navbar_selection = st.session_state.option_selection
+        st.query_params.func = st.session_state.option_selection
+        st.session_state.option_selection = None
+    else:
+        st.session_state.navbar_selection = functionality
+        st.query_params.func = functionality
+
     st.session_state.navbar_selection = functionality
     return functionality
 
 def execute_functionality(functionality, uploaded_file, df=None):
+    #if func param exists in url -> execute the function
+    if "func" in st.query_params and st.query_params["func"] is not None:
+        functionality = st.query_params["func"]
+        st.session_state.navbar_selection = st.query_params["func"]
+    if "func" in st.query_params and st.query_params["func"] == "None":
+        st.write("Choose a function")
+        st.stop()
+
     if st.session_state.navbar_selection == functionality:
         func_info = FUNCTIONALITY_MAP[functionality]
         if func_info["function"] == check_specific_columns_as_unique_id:

@@ -213,17 +213,15 @@ def process_in_chunks(
     return unique_rows, duplicate_rows if export else None
 
 
-def missingEntries(df: pd.DataFrame, colName: str) -> Tuple[int, float]:
+def missingEntries(df: pd.DataFrame, colName: str) -> Tuple[int, Optional[float], int]:
     missingCount = df[colName].isna().sum()
     totalCount = len(df)
     if totalCount == 0:
-        return missingCount, None
+        return missingCount, None, totalCount
     missingPercentage = 100 * missingCount / totalCount
-    return missingCount, (
-        float(missingPercentage)
-        if not np.isnan(missingPercentage) and not np.isinf(missingPercentage)
-        else None
-    )
+    if np.isnan(missingPercentage) or np.isinf(missingPercentage):
+        return missingCount, None, totalCount
+    return missingCount, float(missingPercentage), totalCount
 
 
 def missingEntriesGrouped(
@@ -267,7 +265,10 @@ def analyze_missing_entries(
     colName: str,
     groupBy: Optional[str] = None,
     filterBy: Optional[Dict[str, str]] = None,
-) -> Dict[str, Union[Tuple[int, float], Dict[str, Tuple[int, float]]]]:
+) -> Dict[str, Union[
+    Tuple[int, Optional[float], int],
+    Dict[str, Tuple[int, Optional[float], int]]
+]]:
     """
     Analyze missing entries in a dataframe column with optional grouping and filtering.
 
@@ -307,7 +308,7 @@ def analyze_missing_entries(
     return result
 
 
-def zeroEntries(df: pd.DataFrame, colName: str) -> Tuple[int, float]:
+def zeroEntries(df: pd.DataFrame, colName: str) -> Tuple[int, float , int]:
     """
     Calculate the number and percentage of zero entries in a column.
 
@@ -318,16 +319,17 @@ def zeroEntries(df: pd.DataFrame, colName: str) -> Tuple[int, float]:
     Returns:
     Tuple[int, float]: (zero count, zero percentage)
     """
+    totalRows = len(df)
     if df[colName].dtype not in ["int64", "float64"]:
-        return 0, 0.0
+        return 0, 0.0 , totalRows
     zeroCount = (df[colName] == 0).sum()
-    zeroPercentage = 100 * zeroCount / len(df)
-    return zeroCount, zeroPercentage
+    zeroPercentage = (zeroCount / totalRows * 100) if totalRows > 0 else 0.0
+    return zeroCount, zeroPercentage, totalRows
 
 
 def zeroEntriesGrouped(
     df: pd.DataFrame, colName: str, catColumn: str
-) -> Dict[str, Tuple[int, float]]:
+) -> Dict[str, Tuple[int, float, int]]:
     """
     Calculate zero entries grouped by a categorical variable.
 
@@ -340,13 +342,13 @@ def zeroEntriesGrouped(
     Dict[str, Tuple[int, float]]: Dictionary with group names as keys and (zero count, zero percentage) as values
     """
     if df[colName].dtype not in ["int64", "float64"]:
-        return {group: (0, 0.0) for group in df[catColumn].unique()}
+        return {group: (0, 0.0, len(group_df)) for group,group_df in df[catColumn].unique()}
     return df.groupby(catColumn).apply(lambda x: zeroEntries(x, colName)).to_dict()
 
 
 def zeroEntriesFiltered(
     df: pd.DataFrame, colName: str, catColumn: str, catValue: str
-) -> Tuple[int, float]:
+) -> Tuple[int, float ,int]:
     """
     Calculate zero entries filtered by a categorical variable.
 
@@ -368,7 +370,10 @@ def analyze_zero_entries(
     colName: str,
     groupBy: Optional[str] = None,
     filterBy: Optional[Dict[str, str]] = None,
-) -> Dict[str, Union[Tuple[int, float], Dict[str, Tuple[int, float]]]]:
+) -> Dict[str, Union[
+    Tuple[int, Optional[float], int],
+    Dict[str, Tuple[int, Optional[float], int]]
+]]:
     """
     Analyze zero entries in a dataframe column with optional grouping and filtering.
 

@@ -47,12 +47,18 @@ section[data-testid="stSidebar"]
   border-radius: 0px;
   border: none;
   position: relative;
+  /* background-color: #006898;
+  color: #fff; */
 }
 
 section[data-testid="stSidebar"]
   .st-key-functionSelectAdmin
   div[data-testid="stButtonGroup"]
-  .st-ef {
+  .st-ef,
+section[data-testid="stSidebar"]
+  .st-key-functionSelectAdmin
+  div[data-testid="stButtonGroup"]
+  div {
   row-gap: 0;
 }
 
@@ -60,6 +66,7 @@ p:has(.downloadLink) {
   text-align: center;
 }
 
+/* #31333f33 to #fdfdfd3d */
 section[data-testid="stSidebar"]
   .st-key-functionSelectAdmin
   div[data-testid="stButtonGroup"]
@@ -145,6 +152,8 @@ div.st-key-samplingtable {
 }
 
 div.stMetric {
+  padding-top: 5px;
+  padding-bottom: 5px;
   color: white;
   font-weight: 700;
   text-align: center;
@@ -156,4 +165,13 @@ div.stMetric label {
 }
 div.stMetric div div {
   color: white !important;
+}
+div.stMetric div[data-testid="stMetricValue"] div {
+  font-size: 1.5rem;
+}
+
+div[data-testid="stElementToolbar"] {
+  top: -38px;
+  visibility: visible !important;
+  opacity: 1 !important;
 }

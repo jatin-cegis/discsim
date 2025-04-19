@@ -139,6 +139,8 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                                     st.write(f"{category.capitalize()} data (up to 10 rows):")
                                     category_df = pd.DataFrame(data[category])
                                     with st.expander(f"{category.capitalize()} data (up to 10 rows):"):
+                                        category_df.index.name = 'SN'
+                                        category_df.index = category_df.index + 1
                                         st.dataframe(category_df, use_container_width=True, hide_index=True)
                                 else:
                                     st.write(f"No {category} data found.")
@@ -148,6 +150,8 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                                     st.write(f"{category.capitalize()} data (up to 10 rows):")
                                     category_df = pd.DataFrame(data[category])
                                     with st.expander(f"{category.capitalize()} data (up to 10 rows):"):
+                                        category_df.index.name = 'SN'
+                                        category_df.index = category_df.index + 1
                                         st.dataframe(category_df, use_container_width=True, hide_index=True)
                                 else:
                                     st.write(f"No {category} data found.")
@@ -173,12 +177,16 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                         for group, analysis in result["analysis"].items():
                             st.subheader(f"Group: {group}")
                             analysis_df = pd.DataFrame(analysis)
+                            analysis_df.index.name = 'SN'
+                            analysis_df.index = analysis_df.index + 1
                             st.dataframe(analysis_df, use_container_width=True, hide_index=True)
                             display_detailed_data(result["detailed_data"][group])
                             st.write("---")
                     else:
                         st.write("Indicator Fill Rate:")
                         analysis_df = pd.DataFrame(result["analysis"])
+                        analysis_df.index.name = 'SN'
+                        analysis_df.index = analysis_df.index + 1
                         st.dataframe(analysis_df, use_container_width=True, hide_index=True)
                         # Create a simple pie chart of percentages
                         fig = plot_pie_chart(labels=analysis_df['Category'], 

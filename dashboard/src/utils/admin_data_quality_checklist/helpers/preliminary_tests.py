@@ -14,7 +14,7 @@ PRELIMINARY_TESTS_ENDPOINT = f"{API_BASE_URL}/preliminary_tests"
 def run_preliminary_tests(uploaded_file):
     if 'preliminary_test_result' in st.session_state and uploaded_file == st.session_state.previous_uploaded_file:
         # If the same file is uploaded, simply return the stored results
-        with st.expander("Preliminary Tests:"):
+        with st.expander("Preliminary tests on the data file uploaded"):
             st.warning("Warnings")
             for warning in st.session_state.preliminary_test_result_response["warnings"]:
                 col1, col2 = st.columns([3, 1])
@@ -27,7 +27,7 @@ def run_preliminary_tests(uploaded_file):
             display_data_preview(st.session_state.previous_uploaded_file)
         return st.session_state.preliminary_test_result  # Return cached result
     with st.spinner("Running preliminary tests on the uploaded file..."):
-        with st.expander("Preliminary Tests:"):
+        with st.expander("Preliminary tests on the data file uploaded"):
             try:
                 uploaded_file.seek(0)  # Reset file pointer before reading again
                 files = {"file": ("uploaded_file.csv", uploaded_file, "text/csv")}

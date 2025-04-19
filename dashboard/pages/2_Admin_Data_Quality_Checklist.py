@@ -10,7 +10,7 @@ set_page_config()
 
 def admin_data_quality_check():
     # File selection
-    file_option = st.sidebar.radio("Choose an option:", ("Upload a new file", "Select a previously uploaded file"))
+    file_option = st.sidebar.radio("Choose an option:", ("Upload a file", "Select a previously uploaded file"))
 
     # Initialize states
     initialize_states()

@@ -1,6 +1,8 @@
 import streamlit as st
 
 def initialize_states():
+    if "option_selection" not in st.session_state:
+        st.session_state.option_selection = None
     if "analysis_complete" not in st.session_state:
         st.session_state.analysis_complete = False
     if "num_duplicates" not in st.session_state:
@@ -12,7 +14,7 @@ def initialize_states():
     if "previous_uploaded_file" not in st.session_state:
         st.session_state.previous_uploaded_file = None
     if "navbar_selection" not in st.session_state:
-        st.session_state.navbar_selection = "Unique ID Verifier"
+        st.session_state.navbar_selection = "Identify Unique ID(s)"
     if "drop_export_entries_complete" not in st.session_state:
         st.session_state.drop_export_entries_complete = False
     if "drop_export_rows_complete" not in st.session_state:

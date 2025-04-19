@@ -68,7 +68,9 @@ def pseudo_code_analysis():
                         container.plotly_chart(fig_same_values)
                         with container.expander("Show Data"):
                             sameHeightWeight['Percentage (%)'] = sameHeightWeight['Percentage (%)'].apply(lambda x: f'{x} %')
-                            st.dataframe(sameHeightWeight,hide_index=True,use_container_width=True)
+                            sameHeightWeight.index.name = 'SN'
+                            sameHeightWeight.index = sameHeightWeight.index + 1
+                            st.dataframe(sameHeightWeight,hide_index=False,use_container_width=True)
                 with col2:
                     if 'childrenCategory' in data['districtLevelInsights']:
                         container = st.container(border=True)
@@ -100,7 +102,9 @@ def pseudo_code_analysis():
                         )
                         container.plotly_chart(fig_combined)
                         with container.expander("Show Data"):
-                            st.dataframe(childrenCategory,hide_index=True,use_container_width=True)
+                            childrenCategory.index.name = 'SN'
+                            childrenCategory.index = childrenCategory.index + 1
+                            st.dataframe(childrenCategory,hide_index=False,use_container_width=True)
 
                 st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px;padding:0.3rem'>Wasting [Weight-For-Height]", unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
@@ -128,7 +132,9 @@ def pseudo_code_analysis():
                         container.plotly_chart(fig_wasting_metrics)
                         with container.expander("Show Data"):
                             wastingLevel['Percentage (%)'] = wastingLevel['Percentage (%)'].apply(lambda x: f'{x} %')
-                            st.dataframe(wastingLevel,hide_index=True,use_container_width=True)
+                            wastingLevel.index.name = 'SN'
+                            wastingLevel.index = wastingLevel.index + 1
+                            st.dataframe(wastingLevel,hide_index=False,use_container_width=True)
 
                 with col2:
                     if 'wastingClassification' in data['districtLevelInsights']:
@@ -156,7 +162,9 @@ def pseudo_code_analysis():
                         container.plotly_chart(fig_wasting_metrics)
                         with container.expander("Show Data"):
                             wastingClassification['Percentage (%)'] = wastingClassification['Percentage (%)'].apply(lambda x: f'{x} %')
-                            st.dataframe(wastingClassification,hide_index=True,use_container_width=True)
+                            wastingClassification.index.name = 'SN'
+                            wastingClassification.index = wastingClassification.index + 1
+                            st.dataframe(wastingClassification,hide_index=False,use_container_width=True)
 
                 st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px;padding:0.3rem'>Underweight [Weight-For-Age]", unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
@@ -184,7 +192,9 @@ def pseudo_code_analysis():
                         container.plotly_chart(fig_underweight_metrics)
                         with container.expander("Show Data"):
                             underweightLevels['Percentage (%)'] = underweightLevels['Percentage (%)'].apply(lambda x: f'{x} %')
-                            st.dataframe(underweightLevels,hide_index=True,use_container_width=True)
+                            underweightLevels.index.name = 'SN'
+                            underweightLevels.index = underweightLevels.index + 1
+                            st.dataframe(underweightLevels,hide_index=False,use_container_width=True)
 
                 with col2:
                     if 'underweightClassification' in data['districtLevelInsights']:
@@ -212,7 +222,9 @@ def pseudo_code_analysis():
                         container.plotly_chart(fig_underweight_metrics)
                         with container.expander("Show Data"):
                             underweightClassification['Percentage (%)'] = underweightClassification['Percentage (%)'].apply(lambda x: f'{x} %')
-                            st.dataframe(underweightClassification,hide_index=True,use_container_width=True)
+                            underweightClassification.index.name = 'SN'
+                            underweightClassification.index = underweightClassification.index + 1
+                            st.dataframe(underweightClassification,hide_index=False,use_container_width=True)
 
                 st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px;padding:0.3rem'>Stunting [Height For Age]", unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
@@ -240,7 +252,9 @@ def pseudo_code_analysis():
                         container.plotly_chart(fig_underweight_metrics)
                         with container.expander("Show Data"):
                             stuntingLevels['Percentage (%)'] = stuntingLevels['Percentage (%)'].apply(lambda x: f'{x} %')
-                            st.dataframe(stuntingLevels,hide_index=True,use_container_width=True)
+                            stuntingLevels.index.name = 'SN'
+                            stuntingLevels.index = stuntingLevels.index + 1
+                            st.dataframe(stuntingLevels,hide_index=False,use_container_width=True)
 
                 with col2:
                     if 'stuntingClassification' in data['districtLevelInsights']:
@@ -268,7 +282,9 @@ def pseudo_code_analysis():
                         container.plotly_chart(fig_underweight_metrics)
                         with container.expander("Show Data"):
                             stuntingClassification['Percentage (%)'] = stuntingClassification['Percentage (%)'].apply(lambda x: f'{x} %')
-                            st.dataframe(stuntingClassification,hide_index=True,use_container_width=True)
+                            stuntingClassification.index.name = 'SN'
+                            stuntingClassification.index = stuntingClassification.index + 1
+                            st.dataframe(stuntingClassification,hide_index=False,use_container_width=True)
 
 
             with project:
@@ -298,7 +314,9 @@ def pseudo_code_analysis():
                         )
                         container.plotly_chart(fig_top_12_projectSameHeight)
                         with container.expander("Show Data"):
-                            st.dataframe(projectSameHeight,hide_index=True,use_container_width=True)
+                            projectSameHeight.index.name = 'SN'
+                            projectSameHeight.index = projectSameHeight.index + 1
+                            st.dataframe(projectSameHeight,hide_index=False,use_container_width=True)
                     
                 with col2:
                     if 'sameWeight' in data['projectLevelInsights']:
@@ -325,7 +343,9 @@ def pseudo_code_analysis():
                         )
                         container.plotly_chart(fig_top_12_projectSameWeight)
                         with container.expander("Show Data"):
-                            st.dataframe(projectSameWeight,hide_index=True,use_container_width=True)
+                            projectSameWeight.index.name = 'SN'
+                            projectSameWeight.index = projectSameWeight.index + 1
+                            st.dataframe(projectSameWeight,hide_index=False,use_container_width=True)
 
                 st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>WASTING [WEIGHT-FOR-HEIGHT]", unsafe_allow_html=True)
 
@@ -363,7 +383,9 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_wasting_levels)
                     with container.expander("Show Data"):
-                        st.dataframe(projectWastingLevels,hide_index=True,use_container_width=True)
+                        projectWastingLevels.index.name = 'SN'
+                        projectWastingLevels.index = projectWastingLevels.index + 1
+                        st.dataframe(projectWastingLevels,hide_index=False,use_container_width=True)
 
 
                 if 'wastingClassification' in data['projectLevelInsights']:
@@ -392,7 +414,9 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_projectWastingClassification)
                     with container.expander("Show Data"):
-                        st.dataframe(projectWastingClassification,hide_index=True,use_container_width=True)
+                        projectWastingClassification.index.name = 'SN'
+                        projectWastingClassification.index = projectWastingClassification.index + 1
+                        st.dataframe(projectWastingClassification,hide_index=False,use_container_width=True)
 
                 st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>UNDERWEIGHT [WEIGHT-FOR-AGE]", unsafe_allow_html=True)
 
@@ -430,7 +454,9 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_uw_levels)
                     with container.expander("Show Data"):
-                        st.dataframe(projectUnderweightLevels,hide_index=True,use_container_width=True)
+                        projectUnderweightLevels.index.name = 'SN'
+                        projectUnderweightLevels.index = projectUnderweightLevels.index + 1
+                        st.dataframe(projectUnderweightLevels,hide_index=False,use_container_width=True)
                             
                 if 'underweightClassification' in data['projectLevelInsights']:
                     container = st.container(border=True)
@@ -459,7 +485,9 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_projectUnderweightClassification)
                     with container.expander("Show Data"):
-                        st.dataframe(projectUnderweightClassification,hide_index=True,use_container_width=True)
+                        projectUnderweightClassification.index.name = 'SN'
+                        projectUnderweightClassification.index = projectUnderweightClassification.index + 1
+                        st.dataframe(projectUnderweightClassification,hide_index=False,use_container_width=True)
 
                 if 'discrepancy' in data['projectLevelInsights']:
                     container = st.container(border=True)
@@ -493,7 +521,9 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_treemap)
                     with container.expander("Show Data"):
-                            st.dataframe(projectDisc,hide_index=True,use_container_width=True)
+                        projectDisc.index.name = 'SN'
+                        projectDisc.index = projectDisc.index + 1
+                        st.dataframe(projectDisc,hide_index=False,use_container_width=True)
                     
             with sector:
                 col1,col2 = st.columns(2)
@@ -522,7 +552,9 @@ def pseudo_code_analysis():
                         )
                         container.plotly_chart(fig_top_12_sectorSameHeight)
                         with container.expander("Show Data"):
-                            st.dataframe(sectorSameHeight,hide_index=True,use_container_width=True)
+                            sectorSameHeight.index.name = 'SN'
+                            sectorSameHeight.index = sectorSameHeight.index + 1
+                            st.dataframe(sectorSameHeight,hide_index=False,use_container_width=True)
                 with col2:
                     if 'sameWeight' in data['sectorLevelInsights']:
                         container = st.container(border=True)
@@ -548,7 +580,9 @@ def pseudo_code_analysis():
                         )
                         container.plotly_chart(fig_top_12_sectorSameWeight)
                         with container.expander("Show Data"):
-                            st.dataframe(sectorSameWeight,hide_index=True,use_container_width=True)
+                            sectorSameWeight.index.name = 'SN'
+                            sectorSameWeight.index = sectorSameWeight.index + 1
+                            st.dataframe(sectorSameWeight,hide_index=False,use_container_width=True)
 
                 st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>WASTING [WEIGHT-FOR-HEIGHT]", unsafe_allow_html=True)
 
@@ -578,7 +612,9 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_wasting_levels)
                     with container.expander("Show Data"):
-                        st.dataframe(sectorWastingLevels,hide_index=True,use_container_width=True)
+                        sectorWastingLevels.index.name = 'SN'
+                        sectorWastingLevels.index = sectorWastingLevels.index + 1
+                        st.dataframe(sectorWastingLevels,hide_index=False,use_container_width=True)
 
                 if 'wastingClassification' in data['sectorLevelInsights']:
                     container = st.container(border=True)
@@ -606,7 +642,9 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_sectorWastingClassification)
                     with container.expander("Show Data"):
-                        st.dataframe(sectorWastingClassification,hide_index=True,use_container_width=True)
+                        sectorWastingClassification.index.name = 'SN'
+                        sectorWastingClassification.index = sectorWastingClassification.index + 1
+                        st.dataframe(sectorWastingClassification,hide_index=False,use_container_width=True)
 
                 
                 st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>UNDERWEIGHT [WEIGHT-FOR-AGE]", unsafe_allow_html=True)
@@ -638,7 +676,9 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_uw_levels)
                     with container.expander("Show Data"):
-                        st.dataframe(sectorUnderweightLevels,hide_index=True,use_container_width=True)
+                        sectorUnderweightLevels.index.name = 'SN'
+                        sectorUnderweightLevels.index = sectorUnderweightLevels.index + 1
+                        st.dataframe(sectorUnderweightLevels,hide_index=False,use_container_width=True)
                             
                 if 'underweightClassification' in data['sectorLevelInsights']:
                     container = st.container(border=True)
@@ -667,7 +707,9 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_sectorUnderweightClassification)
                     with container.expander("Show Data"):
-                        st.dataframe(sectorUnderweightClassification,hide_index=True,use_container_width=True)
+                        sectorUnderweightClassification.index.name = 'SN'
+                        sectorUnderweightClassification.index = sectorUnderweightClassification.index + 1
+                        st.dataframe(sectorUnderweightClassification,hide_index=False,use_container_width=True)
 
                 if 'discrepancy' in data['sectorLevelInsights']:
                     container = st.container(border=True)
@@ -701,7 +743,9 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_treemap)
                     with container.expander("Show Data"):
-                            st.dataframe(sectorDisc,hide_index=True,use_container_width=True)    
+                        sectorDisc.index.name = 'SN'
+                        sectorDisc.index = sectorDisc.index + 1
+                        st.dataframe(sectorDisc,hide_index=False,use_container_width=True)    
 
             with awc:
                 if 'discrepancy' in data['awcLevelInsights']:
@@ -736,14 +780,16 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_treemap)
                     with container.expander("Show Data"):
-                            st.dataframe(awcDisc,hide_index=True,use_container_width=True)    
+                        awcDisc.index.name = 'SN'
+                        awcDisc.index = awcDisc.index + 1
+                        st.dataframe(awcDisc,hide_index=False,use_container_width=True)    
                         
         else:
             st.error(f"Error: {response.json()['detail']}")
 
 
     else:
-        st.info("Please upload a CSV file to begin.")
+        st.info("Please upload a CSV file (UTF-8 encoded) to begin.")
 
 if __name__ == "__main__":
     selectedNav = setheader("Post Survey Nutrition")

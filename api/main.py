@@ -46,6 +46,7 @@ from api.utils.post_survey_analysis import calculate_discrepancy_scores
 from api.utils.pseudo_code import anganwadi_center_data_anaylsis
 from api.database import get_db, UploadedFile
 from api.database import engine, Base
+import chardet
 
 app = FastAPI()
 
@@ -74,6 +75,17 @@ async def upload_file(
     category: str = Form(...),
     db: Session = Depends(get_db)
 ):
+    contents = await file.read()
+    encoding = chardet.detect(contents)["encoding"]
+    encoding = encoding.lower() if encoding else None
+    if encoding not in ['utf-8', 'utf-8-sig']:
+        return JSONResponse(
+            status_code=400, 
+            content={
+                "message": "File is not UTF-8 encoded",
+            },
+        )
+
     # Check if a file with the same name and category already exists
     existing_file = (
         db.query(UploadedFile)
@@ -91,9 +103,7 @@ async def upload_file(
         )
 
     # Proceed with saving the file if it doesn't exist
-    contents = await file.read()
-    file_content = contents  # Store the file content as is
-    db_file = UploadedFile(filename=file.filename, content=file_content, category=category)
+    db_file = UploadedFile(filename=file.filename, content=contents, category=category)
     db.add(db_file)
     db.commit()
     db.refresh(db_file)
@@ -126,14 +136,32 @@ async def get_file(file_id: int, db: Session = Depends(get_db)):
     file = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
     if not file:
         raise HTTPException(status_code=404, detail="File not found")
+    
+    if not file.content:
+        raise HTTPException(status_code=400, detail="File content is empty or missing")
 
-    # Return file content and filename as JSON
+    detected = chardet.detect(file.content)
+    encoding = detected["encoding"]
+    # if not encoding:
+    #     raise HTTPException(status_code=400, detail="Unable to detect file encoding")
+    
+    normalized_encoding = encoding.lower() if encoding else None
+    accepted_encodings = ['utf-8', 'utf-8-sig', 'ascii']
+    if normalized_encoding not in accepted_encodings:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File is not UTF-8 encoded. Encoding found: {encoding}"
+        )
+    
+    try:
+        decoded_content = file.content.decode(normalized_encoding)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error decoding file: {str(e)}")
+
     return {
         "filename": file.filename,
         "datetime": file.upload_datetime.isoformat(),
-        "content": file.content.decode(
-            "utf-8"
-        ),  # Decode binary content for JSON compatibility
+        "content": decoded_content
     }
 
 
@@ -328,13 +356,14 @@ async def get_dataframe(data_type: str = Query(...)):
 
 @app.post("/drop_export_duplicate_rows", response_model=DropExportDuplicatesResponse)
 async def drop_export_duplicate_rows(
-    file: UploadFile = File(...), input_data: str = Form(...)
+    file: UploadFile = File(...), 
+    # input_data: str = Form(...)
 ):
     global last_processed_data
     try:
-        input_params = json.loads(input_data)
-        kept_row = input_params.get("keptRow", "first")
-        export = input_params.get("export", True)
+        # input_params = json.loads(input_data)
+        # kept_row = input_params.get("keptRow", "first")
+        # export = input_params.get("export", True)
 
         contents = await file.read()
         df = pd.read_csv(
@@ -342,12 +371,12 @@ async def drop_export_duplicate_rows(
         )
 
         # Process duplicates
-        if kept_row == "none":
-            unique_rows = df.drop_duplicates(keep=False)
-            duplicate_rows = df[df.duplicated(keep=False)]
-        else:
-            unique_rows = df.drop_duplicates(keep=kept_row)
-            duplicate_rows = df[df.duplicated(keep=False)] if export else None
+        #if kept_row == "none":
+        unique_rows = df.drop_duplicates(keep=False)
+        duplicate_rows = df[df.duplicated(keep=False)]
+        # else:
+        #     unique_rows = df.drop_duplicates(keep=kept_row)
+        #     duplicate_rows = df[df.duplicated(keep=False)] if export else None
 
         unique_count = len(unique_rows)
         duplicate_count = len(duplicate_rows) if duplicate_rows is not None else 0
@@ -415,26 +444,20 @@ async def missing_entries(
 
         # Perform the analysis
         result = analyze_missing_entries(df, column_to_analyze, group_by, filter_by)
-
         # Convert numpy types to Python native types for JSON serialization
-        if isinstance(result["analysis"], dict):
-            result["analysis"] = {
-                k: (
-                    int(v[0]),
-                    float(v[1]) if not np.isnan(v[1]) and not np.isinf(v[1]) else None,
-                )
-                for k, v in result["analysis"].items()
-            }
-        else:
-            result["analysis"] = (
-                int(result["analysis"][0]),
-                (
-                    float(result["analysis"][1])
-                    if not np.isnan(result["analysis"][1])
-                    and not np.isinf(result["analysis"][1])
-                    else None
-                ),
+        def safe_convert(entry):
+            count = int(entry[0])
+            percent = (
+                float(entry[1]) if entry[1] is not None and not np.isnan(entry[1]) and not np.isinf(entry[1]) else None
             )
+            total = int(entry[2]) if entry[2] is not None else 0
+            return (count, percent, total)
+        if isinstance(result["analysis"], dict):
+            result["analysis"] = {k: safe_convert(v) for k, v in result["analysis"].items()}
+            result["total_rows"] = df.shape[0]
+            result["zero_entries"] = int((df[group_by] == 0).sum())
+        else:
+            result["analysis"] = safe_convert(result["analysis"])
 
         # Include rows with missing entries
         missing_rows = df[df[column_to_analyze].isna()]
@@ -509,12 +532,15 @@ async def zero_entries(
         # Convert numpy types to Python native types for JSON serialization
         if isinstance(result["analysis"], dict):
             result["analysis"] = {
-                k: (int(v[0]), float(v[1])) for k, v in result["analysis"].items()
+                k: (int(v[0]), float(v[1]), int(v[2])) for k, v in result["analysis"].items()
             }
+            result["total_rows"] = df.shape[0]
+            result["zero_entries"] = int((df[group_by] == 0).sum())
         else:
             result["analysis"] = (
                 int(result["analysis"][0]),
                 float(result["analysis"][1]),
+                int(result["analysis"][2]),
             )
 
         # Convert any non-serializable values to None in zero_entries_table
