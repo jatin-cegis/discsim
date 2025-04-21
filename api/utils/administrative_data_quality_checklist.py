@@ -550,14 +550,13 @@ def indicatorFillRate(
         {
             "Missing": missing.sum(),
             "Zero": zero.sum() if include_zero_as_separate_category else 0,
-            "Invalid": invalid.sum()
-            - missing.sum(),  # Don't double count missing as invalid
+            "Invalid": invalid.sum() - missing.sum(),  # Don't double count missing as invalid
             "Valid": valid.sum(),
         }
     )
 
     result_df = pd.DataFrame(
-        {"Count": counts, "Percentage": (counts / total * 100).round(2)}
+        {"Number of observations": counts, "Percentage of observations": (counts / total * 100).round(1)}
     )
 
     if include_zero_as_separate_category:
@@ -604,6 +603,8 @@ def analyze_indicator_fill_rate(
     include_zero_as_separate_category: bool = True,
 ) -> Dict[str, Union[pd.DataFrame, Dict[str, pd.DataFrame]]]:
     result = {}
+
+    result["total"] = len(df)
 
     if filterBy:
         for col, value in filterBy.items():
@@ -670,10 +671,10 @@ def analyze_indicator_fill_rate(
             raise ValueError(f"Unsupported data type for column: {colName}")
 
         return {
-            "missing": missing.head(10).to_dict(orient="records"),
-            "zero": zero.head(10).to_dict(orient="records") if not zero.empty else {},
-            "invalid": invalid.head(10).to_dict(orient="records"),
-            "valid": valid.head(10).to_dict(orient="records"),
+            "missing": missing.to_dict(orient="records"),
+            "zero": zero.to_dict(orient="records") if not zero.empty else {},
+            "invalid": invalid.to_dict(orient="records"),
+            "valid": valid.to_dict(orient="records"),
         }
 
     if groupBy:

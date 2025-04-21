@@ -39,12 +39,12 @@ FUNCTIONALITY_MAP = {
         "keywords": ["zero"],
         "requires_df": True
     },
-    "Indicator Fill Rate Analysis": {
+    "Analyse valid entries for an indicator": {
         "function": indicator_fill_rate_analysis,
         "keywords": [],
         "requires_df": True
     },
-    "Frequency Table Analysis": {
+    "Generate frequency table": {
         "function": frequency_table_analysis,
         "keywords": [],
         "requires_df": True

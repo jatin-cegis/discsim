@@ -6,6 +6,7 @@ import pandas as pd
 import requests
 from dotenv import load_dotenv
 from src.utils.admin_data_quality_checklist.helpers.graph_functions import plot_100_stacked_bar_chart, plot_pie_chart
+import plotly.express as px
 
 load_dotenv()
 
@@ -41,6 +42,30 @@ def get_string_operations():
     return ['Contains', 'Does not contain']
 
 def indicator_fill_rate_analysis(uploaded_file, df):
+    customcss = """
+        <style>
+        div[data-testid="stExpander"] summary{
+            padding:0.4rem 1rem;
+        }
+        .stHorizontalBlock{
+            //margin-top:-30px;
+        }
+        .st-key-processBtn button{
+            background-color:#3b8e51;
+            color:#fff;
+            border:none;
+        }
+        .st-key-processBtn button:hover,.st-key-processBtn button:active,.st-key-processBtn button:focus,st-key-processBtn button:focus:not(:active){
+            color:#fff!important;
+            border:none;
+        }
+        .st-key-uidCol label p::after,.st-key-duplicateKeep label p::after,.st-key-duplicateValue label p::after { 
+            content: " *";
+            color: red;
+        }
+        </style>
+    """
+    st.markdown(customcss, unsafe_allow_html=True)
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
     title_info_markdown = """
@@ -55,32 +80,32 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         - Displays samples of missing, zero, invalid, and valid data.
         - Valid input format: CSV file
     """
-    st.markdown("<h2 style='text-align: center;'>Indicator Fill Rate Analysis</h2>", unsafe_allow_html=True, help=title_info_markdown)
-    
+    st.markdown("<h2 style='text-align: center;font-weight:800;color:#136a9a;margin-top:-15px'>Analyse valid entries for an indicator</h2>", unsafe_allow_html=True, help=title_info_markdown)
+    st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>The following function helps you assess the data quality of the indicator you choose. On choosing an indicator, you will be able to see the share of missing entries, zero entries, invalid entries, and the share of valid and usable entries. You have the option to define your own invalid criteria for numerical, string, and date-time indicators. A higher share of valid entries indicates good data quality</p>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     with col1:
-        column_to_analyze = st.selectbox("Select column to analyze", df.columns.tolist())
+        column_to_analyze = st.selectbox("Select the indicator to analyse", df.columns.tolist(),key="uidCol")
     with col2:
-        group_by = st.selectbox("Group by (optional)", ["None"] + df.columns.tolist())
+        group_by = st.selectbox("Do you want to break down your analysis by any categorical variable? You can categorise the analysis", ["None"] + df.columns.tolist())
     with col3:
-        filter_by_col = st.selectbox("Filter by (optional)", ["None"] + df.columns.tolist())
+        filter_by_col = st.selectbox("Do you want to analyse only a subset of your data? You can filter your data", ["None"] + df.columns.tolist())
     
     col31, col32, col33 = st.columns(3)
     if filter_by_col != "None":
         with col31:
-            filter_by_value = st.selectbox("Filter value", df[filter_by_col].unique().tolist())
+            filter_by_value = st.selectbox("Enter the value for which you want the analysis", df[filter_by_col].unique().tolist())
         with col32:
             st.write("")
         with col33:
             st.write("")
     
     if is_numeric_column(df[column_to_analyze]):
-        st.write("Set condition for invalid values:")
+        st.write("Define a criteria for invalid values")
         col4, col5, col6 = st.columns(3)
         with col4:
-            operation = st.selectbox("Operation", get_numeric_operations())
+            operation = st.selectbox("Operation", get_numeric_operations(),key="duplicateKeep")
         with col5:
-            threshold = st.number_input("Threshold", value=0.0, step=0.1)
+            threshold = st.number_input("Value", value=0.0, step=0.1,key="duplicateValue")
         with col6:
             st.write("")
         invalid_condition = f"{operation} {threshold}"
@@ -89,9 +114,9 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         st.write("Set condition for invalid string values:")
         col7, col8, col9 = st.columns(3)
         with col7:
-            operation = st.selectbox("Operation", get_string_operations())
+            operation = st.selectbox("Operation", get_string_operations(),key="duplicateKeep")
         with col8:
-            value = st.selectbox("Value", df[column_to_analyze].unique().tolist())
+            value = st.selectbox("Value", df[column_to_analyze].unique().tolist(),key="duplicateValue")
         with col9:
             st.write("")
         invalid_condition = (operation, value)
@@ -100,9 +125,9 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         st.write("Set condition for invalid datetime values:")
         col10, col11, col12 = st.columns(3)
         with col10:
-            start_date = st.date_input("Start date(Exclusive)")
+            start_date = st.date_input("Start date(Exclusive)",key="duplicateKeep")
         with col11:
-            end_date = st.date_input("End date(Inclusive)")
+            end_date = st.date_input("End date(Inclusive)",key="duplicateValue")
         with col12:
             st.write("")
         invalid_condition = (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
@@ -111,7 +136,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         st.write("The column should include either numbers, strings, or dates.")
         invalid_condition = None
 
-    if st.button("Analyze Indicator Fill Rate"):
+    if st.button("Analyze Indicator Fill Rate",key="processBtn"):
         with st.spinner("Analyzing indicator fill rate..."):
             try:
                 uploaded_file.seek(0)  # Reset file pointer
@@ -136,28 +161,27 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                         if include_zero_as_separate_category:
                             for category in ["missing", "zero", "invalid", "valid"]:
                                 if data[category]:
-                                    st.write(f"{category.capitalize()} data (up to 10 rows):")
                                     category_df = pd.DataFrame(data[category])
-                                    with st.expander(f"{category.capitalize()} data (up to 10 rows):"):
-                                        category_df.index.name = 'SN'
-                                        category_df.index = category_df.index + 1
+                                    with st.expander(f"Show/Export {category.capitalize()} Entries:"):
                                         st.dataframe(category_df, use_container_width=True, hide_index=True)
                                 else:
-                                    st.write(f"No {category} data found.")
+                                    st.warning(f"No {category} entries found.")
                         else:
                             for category in ["missing", "invalid", "valid"]:
                                 if data[category]:
-                                    st.write(f"{category.capitalize()} data (up to 10 rows):")
                                     category_df = pd.DataFrame(data[category])
-                                    with st.expander(f"{category.capitalize()} data (up to 10 rows):"):
-                                        category_df.index.name = 'SN'
-                                        category_df.index = category_df.index + 1
+                                    with st.expander(f"Show/Export {category.capitalize()} Entries:"):
                                         st.dataframe(category_df, use_container_width=True, hide_index=True)
                                 else:
-                                    st.write(f"No {category} data found.")
+                                    st.warning(f"No {category} entries found.")
                     
                     if result["grouped"]:
-                        st.write("Indicator Fill Rate by group:")
+                        st.info("Indicator Fill Rate Report by Group:")
+                        st.metric(f"Total number of rows analysed",format(result['total'],',d'),border=True)
+
+                        if result["filtered"]:
+                            st.info(f"Results are filtered by {filter_by_col} = {filter_by_value}")
+
                         # Prepare data for 100% stacked column chart
                         all_groups_data = []
                         for group, analysis in result["analysis"].items():
@@ -166,41 +190,68 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                             all_groups_data.append(analysis_df)
                         combined_df = pd.concat(all_groups_data, ignore_index=True)
                         # Calculate percentages within each group
-                        combined_df['Percentage'] = combined_df.groupby('Group')['Count'].transform(lambda x: x / x.sum() * 100)
+                        combined_df['Percentage'] = combined_df.groupby('Group')['Number of observations'].transform(lambda x: x / x.sum() * 100).round(1).astype(str) + ' %'
+                        color_map = {
+                            "Valid": "#3b8e51",
+                            "Missing": "#9e2f17",
+                            "Zero": "#bd5942",
+                            "Invalid": "#006898",
+                        }
                         # Create the 100% stacked column chart
-                        fig = plot_100_stacked_bar_chart(combined_df, x='Group', y='Percentage', color='Category',
-                                                        title="Indicator Fill Rate by Group",
-                                                        x_label=group_by, y_label="Percentage")
+                        fig = px.bar(combined_df, x='Group', y='Percentage', color='Category',color_discrete_map = color_map, labels={"x": group_by, 'value': "Percentage"}, barmode='relative',text='Percentage' ) 
+                        fig.update_traces(textposition='inside',textangle=0)
                         st.plotly_chart(fig)
 
                         # Display detailed data for each group
                         for group, analysis in result["analysis"].items():
                             st.subheader(f"Group: {group}")
                             analysis_df = pd.DataFrame(analysis)
-                            analysis_df.index.name = 'SN'
-                            analysis_df.index = analysis_df.index + 1
+                            analysis_df["Number of observations"] = analysis_df["Number of observations"].apply(lambda x: f"{int(x):,}")
+                            analysis_df["Percentage of observations"]=analysis_df["Percentage of observations"].astype(str)+' %'
                             st.dataframe(analysis_df, use_container_width=True, hide_index=True)
                             display_detailed_data(result["detailed_data"][group])
                             st.write("---")
                     else:
-                        st.write("Indicator Fill Rate:")
+                        st.info("Indicator Fill Rate Result:")
+                        st.metric(f"Total number of rows analysed",format(result['total'],',d'),border=True)
+
+                        if result["filtered"]:
+                            st.info(f"Results are filtered by {filter_by_col} = {filter_by_value}")
+
                         analysis_df = pd.DataFrame(result["analysis"])
-                        analysis_df.index.name = 'SN'
-                        analysis_df.index = analysis_df.index + 1
-                        st.dataframe(analysis_df, use_container_width=True, hide_index=True)
                         # Create a simple pie chart of percentages
-                        fig = plot_pie_chart(labels=analysis_df['Category'], 
-                                            values=analysis_df['Percentage'], 
-                                            title="Indicator Fill Rate")
+                        sorted_data = sorted(zip(analysis_df['Percentage of observations'], analysis_df['Category']), reverse=True)
+                        sorted_values, sorted_labels = zip(*sorted_data)
+                        color_map = {
+                            "Valid": "#3b8e51",
+                            "Missing": "#9e2f17",
+                            "Zero": "#bd5942",
+                            "Invalid": "#006898",
+                        }
+                        fig = px.pie(
+                            names=sorted_labels, 
+                            values=sorted_values, 
+                            color=sorted_labels,
+                            color_discrete_map=color_map)
+                        fig.update_layout(
+                            margin=dict(l=0, r=0, t=40, b=0),
+                            height=400,
+                        )
+                        fig.update_traces(textposition='inside', textinfo='percent+label')
                         st.plotly_chart(fig)
+
+                        with st.expander("Show/Export data:"):
+                            analysis_df["Number of observations"] = analysis_df["Number of observations"].apply(lambda x: f"{int(x):,}")
+                            analysis_df["Percentage of observations"]=analysis_df["Percentage of observations"].astype(str)+' %'
+                            st.dataframe(analysis_df, use_container_width=True, hide_index=True)
+
+                    
+                        if invalid_condition:
+                            st.info(f"Custom invalid condition applied: Column {column_to_analyze} - {invalid_condition}")
 
                         display_detailed_data(result["detailed_data"])
 
-                    if result["filtered"]:
-                        st.info(f"Results are filtered by {filter_by_col} = {filter_by_value}")
                     
-                    if invalid_condition:
-                        st.info(f"Custom invalid condition applied: {invalid_condition}")
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:
