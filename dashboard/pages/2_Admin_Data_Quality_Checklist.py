@@ -52,7 +52,7 @@ if st.session_state.get('reset_upload', False):
     st.rerun()
 
 if __name__ == "__main__":
-    selectedNav = setheader("Admin Data Quality")
+    selectedNav = setheader("Admin Data Diagnostic")
     if selectedNav == "Pre Survey":
           st.switch_page("pages/1_Pre_Survey.py")
     if selectedNav == "Post Survey Nutrition":

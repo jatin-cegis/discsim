@@ -63,7 +63,7 @@ if __name__ == "__main__":
     selectedNav = setheader("Post Survey")
     if selectedNav == "Pre Survey":
           st.switch_page("pages/1_Pre_Survey.py")
-    if selectedNav == "Admin Data Quality":
+    if selectedNav == "Admin Data Diagnostic":
           st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
     if selectedNav == "Pseudo Code":
           st.switch_page("pages/4_Pseudo_Code.py")
