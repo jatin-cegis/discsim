@@ -679,7 +679,7 @@ async def frequency_table(
         # Parse the input data
         input_data = json.loads(input_data)
         column_to_analyze = input_data["column_to_analyze"]
-        top_n = input_data.get("top_n", 5)
+        top_n = input_data.get("top_n", None)
         group_by = input_data.get("group_by")
         filter_by = input_data.get("filter_by")
 
@@ -699,6 +699,9 @@ async def frequency_table(
         result = analyze_frequency_table(
             df, column_to_analyze, top_n, group_by, filter_by
         )
+
+        #send number of rows analysed
+        result["total"] = len(df)
 
         # Convert DataFrame to dict for JSON serialization
         if isinstance(result["analysis"], dict):

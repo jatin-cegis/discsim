@@ -697,7 +697,9 @@ def analyze_indicator_fill_rate(
 
 
 def frequencyTable(
-    df: pd.DataFrame, colName: str, top_n: Optional[int] = None
+    df: pd.DataFrame, 
+    colName: str, 
+    top_n: Optional[str] = None
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Generate a frequency table for a given column in a dataframe.
@@ -705,24 +707,34 @@ def frequencyTable(
     Args:
     df (pd.DataFrame): Input dataframe
     colName (str): Name of the column to analyze
-    top_n (Optional[int]): Number of top frequent values to return separately (default: None, all values are returned)
+    top_n (Optional[int]): Sort order - "ascending", "descending", or None (default: None)
 
     Returns:
     Tuple[pd.DataFrame, pd.DataFrame]: (Complete frequency table, Top n frequency table)
     """
     # Calculate value counts and reset index to make it a proper dataframe
     freqTable = df[colName].value_counts().reset_index()
-    freqTable.columns = ["value", "count"]
+    freqTable.columns = ["value", "Frequency"]
 
     # Calculate share
     total = len(df)
-    freqTable["share"] = (freqTable["count"] / total * 100).round(2)
+    freqTable["share"] = (freqTable["Frequency"] / total * 100).round(2)
+
+    # Normalize order input
+    if top_n:
+        top_n = top_n.lower()
 
     # Sort by count descending (should already be sorted, but this ensures it)
-    freqTable = freqTable.sort_values("count", ascending=False).reset_index(drop=True)
-
-    # Get top n frequent values
-    topNFreq = freqTable if top_n is None or top_n == 0 else freqTable.head(top_n)
+    #freqTable = freqTable.sort_values("count", ascending=False).reset_index(drop=True)
+    #topNFreq = freqTable if top_n is None or top_n == 0 else freqTable.head(top_n)
+    
+    # Order based on user input
+    if top_n == "ascending":
+        topNFreq = freqTable.sort_values("Frequency", ascending=True)
+    elif top_n == "descending":
+        topNFreq = freqTable.sort_values("Frequency", ascending=False)
+    else: 
+        topNFreq = freqTable.copy()  # No sorting
 
     return freqTable, topNFreq
 
@@ -730,7 +742,7 @@ def frequencyTable(
 def analyze_frequency_table(
     df: pd.DataFrame,
     colName: str,
-    top_n: int = 5,
+    top_n: Optional[str] = None,
     groupBy: Optional[str] = None,
     filterBy: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]]:
@@ -740,7 +752,7 @@ def analyze_frequency_table(
     Args:
     df (pd.DataFrame): Input dataframe
     colName (str): Name of the column to analyze
-    top_n (int): Number of top frequent values to return separately (default: 5)
+    top_n (Optional[str]): Order the  data to return separately (default: None)
     groupBy (Optional[str]): Name of the categorical column to group by (default: None)
     filterBy (Optional[Dict[str, str]]): Dictionary with column name as key and value to filter on (default: None)
 
@@ -757,6 +769,10 @@ def analyze_frequency_table(
         result["filtered"] = False
 
     if groupBy:
+
+        # Normalize top_n input for consistency
+        order = top_n.lower() if top_n else None
+
         # Create a frequency table for all combinations when groupBy is activated
         result["grouped"] = True
         grouped_freq_table = (
@@ -766,10 +782,14 @@ def analyze_frequency_table(
             grouped_freq_table["count"] / grouped_freq_table["count"].sum() * 100
         ).round(2)
 
-        grouped_freq_table = grouped_freq_table.sort_values(
-            "count", ascending=False
-        ).reset_index(drop=True)
-        top_n_freq = grouped_freq_table.head(top_n)
+        # Apply sorting based on order
+        if order == "ascending":
+            grouped_freq_table = grouped_freq_table.sort_values("count", ascending=True)
+        elif order == "descending":
+            grouped_freq_table = grouped_freq_table.sort_values("count", ascending=False)
+        
+        result["analysis"] = grouped_freq_table.reset_index(drop=True)
+        top_n_freq = grouped_freq_table.copy()
 
         result["analysis"] = (grouped_freq_table, top_n_freq)
 
