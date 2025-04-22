@@ -49,7 +49,7 @@ def drop_export_duplicate_rows(uploaded_file):
     """
     col1,col2 = st.columns(2)
     col1.markdown("<h2 style='text-align: center;font-weight:800;color:#136a9a;margin-top:-15px;'>Inspect Duplicate Rows</h2>", unsafe_allow_html=True, help=title_info_markdown)
-    st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>The function helps you to inspect if any duplicate exist in the dataset. You can get a modified dataset with unique rows only</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>The function helps you to inspect if any duplicate rows exist in the dataset. You can get a modified dataset with unique rows only</p>", unsafe_allow_html=True)
 
     # kept_row = st.selectbox("Which duplicate to keep", ["first", "last", "none"], help="first(keeps the first occurrence), last(keeps the last occurrence), or none(removes all occurrences)")
 
