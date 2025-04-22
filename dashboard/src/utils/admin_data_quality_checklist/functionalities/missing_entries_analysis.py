@@ -89,7 +89,8 @@ def missing_entries_analysis(uploaded_file, df):
                                                     
                 if response.status_code == 200:
                     result = response.json()
-                    
+                    st.success(f"Missing entries analysed for column: '{column_to_analyze}'")
+
                     if result["grouped"]:
                         a,b = st.columns(2)
                         a.metric(f"Total number of rows analysed",format(result['total_rows'],',d'),border=True)
@@ -169,7 +170,7 @@ def missing_entries_analysis(uploaded_file, df):
                                                                     
                             if column_to_analyze in missing_entries_df.columns:
                                 missing_entries_df = missing_entries_df.sort_values(column_to_analyze, ascending=False)
-                                st.success(f"Missing entries analysed for column: '{column_to_analyze}'")
+                                
                             else:
                                 st.warning(f"Column '{column_to_analyze}' not found in the missing entries table. Displaying unsorted data.")
                             
@@ -177,6 +178,15 @@ def missing_entries_analysis(uploaded_file, df):
                                 missing_entries_df.index.name = 'SN'
                                 missing_entries_df.index = missing_entries_df.index + 1
                                 st.dataframe(missing_entries_df, use_container_width=True, hide_index=False)
+
+                            #each instance group by
+                            if group_by is not "None":
+                                unique_values = missing_entries_df[group_by].unique()
+                                st.write(f"### Splitting data by `{group_by}`")
+                                for val in unique_values:
+                                    with st.expander(f"Missing Entries for **{val}**"):
+                                        st.dataframe(missing_entries_df[missing_entries_df[group_by] == val])
+
                     else:
                         st.error("The 'missing_entries_table' key is not present in the API response.")
 
