@@ -414,7 +414,7 @@ def apply_invalid_condition(series, condition):
         return pd.Series(False, index=series.index)
 
     if isinstance(condition, tuple):
-        operation, value = condition
+        operation, value, criteria = condition
         if pd.api.types.is_string_dtype(series):
             return apply_string_condition(series, condition)
         elif pd.api.types.is_datetime64_any_dtype(series):
@@ -422,7 +422,7 @@ def apply_invalid_condition(series, condition):
         else:
             raise ValueError(f"Unsupported data type for condition: {series.dtype}")
 
-    operation, threshold = condition.split()
+    operation, threshold, criteria = condition.split()
     threshold = float(threshold)
 
     if operation == "<":
@@ -442,7 +442,7 @@ def apply_invalid_condition(series, condition):
 
 
 def apply_string_condition(series, condition):
-    operation, value = condition
+    operation, value, criteria = condition
     if operation == "Contains":
         return (
             series == value
@@ -456,7 +456,7 @@ def apply_string_condition(series, condition):
 
 
 def apply_datetime_condition(series, condition):
-    start_date, end_date = condition
+    start_date, end_date, criteria = condition
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
     # Convert series to datetime, coercing errors to NaT
@@ -509,11 +509,27 @@ def get_numeric_operations():
 def get_string_operations():
     return ["Contains", "Does not contain"]
 
+def parse_invalid_condition(condition_input) -> Tuple[str, str, str]:
+    if isinstance(condition_input, tuple) and len(condition_input) == 3:
+        return condition_input
+
+    if isinstance(condition_input, list) and len(condition_input) == 3:
+        return tuple(condition_input)
+
+    if isinstance(condition_input, str):
+        parts = condition_input.strip().split(maxsplit=2)
+        if len(parts) != 3:
+            raise ValueError("Invalid condition string must be in the format: '<operation> <value> <label>'")
+        return tuple(parts)
+
+    raise ValueError("Invalid condition must be a string, list, or tuple of 3 elements.")
+
+
 
 def indicatorFillRate(
     df: pd.DataFrame,
     colName: str,
-    invalid_condition: Optional[Union[str, Tuple[str, str]]] = None,
+    invalid_condition: Optional[Union[str, Tuple[str, str, str]]] = None,
     include_zero_as_separate_category: bool = True,
 ) -> pd.DataFrame:
     total = len(df)
@@ -546,11 +562,20 @@ def indicatorFillRate(
     invalid = invalid | missing
     valid = ~(invalid | zero)
 
+    #custom invalid names
+    if invalid_condition is not None:
+        invalid_condition = parse_invalid_condition(invalid_condition)
+        operation, value, criteria = invalid_condition
+    if criteria is not None:
+        invalidLabel = criteria
+    else:
+        invalidLabel = "Invalid"
+
     counts = pd.Series(
         {
             "Missing": missing.sum(),
             "Zero": zero.sum() if include_zero_as_separate_category else 0,
-            "Invalid": invalid.sum() - missing.sum(),  # Don't double count missing as invalid
+            invalidLabel: invalid.sum() - missing.sum(),  # Don't double count missing as invalid
             "Valid": valid.sum(),
         }
     )
@@ -573,7 +598,7 @@ def indicatorFillRateGrouped(
     df: pd.DataFrame,
     colName: str,
     catColumn: str,
-    invalid_condition: Optional[Union[str, Tuple[str, str]]] = None,
+    invalid_condition: Optional[Union[str, Tuple[str, str, str]]] = None,
     include_zero_as_separate_category: bool = True,
 ) -> Dict[str, pd.DataFrame]:
     return {
@@ -589,7 +614,7 @@ def indicatorFillRateFiltered(
     colName: str,
     catColumn: str,
     catValue: str,
-    invalid_condition: Optional[Union[str, Tuple[str, str]]] = None,
+    invalid_condition: Optional[Union[str, Tuple[str, str, str]]] = None,
 ) -> pd.DataFrame:
     return indicatorFillRate(df[df[catColumn] == catValue], colName, invalid_condition)
 
@@ -599,7 +624,7 @@ def analyze_indicator_fill_rate(
     colName: str,
     groupBy: Optional[str] = None,
     filterBy: Optional[Dict[str, str]] = None,
-    invalid_condition: Optional[Union[str, Tuple[str, str]]] = None,
+    invalid_condition: Optional[Union[str, Tuple[str, str, str]]] = None,
     include_zero_as_separate_category: bool = True,
 ) -> Dict[str, Union[pd.DataFrame, Dict[str, pd.DataFrame]]]:
     result = {}
@@ -613,7 +638,7 @@ def analyze_indicator_fill_rate(
     else:
         result["filtered"] = False
 
-    def get_detailed_data(data):
+    def get_detailed_data(data, invalid_condition):
         series = data[colName]
         missing = data[series.isnull()]
 
@@ -670,10 +695,19 @@ def analyze_indicator_fill_rate(
         else:
             raise ValueError(f"Unsupported data type for column: {colName}")
 
+        #custom invalid names
+        if invalid_condition is not None:
+            invalid_condition = parse_invalid_condition(invalid_condition)
+            operation, value, criteria = invalid_condition
+        if criteria is not None:
+            invalidLabel = criteria
+        else:
+            invalidLabel = "Invalid"
+
         return {
             "missing": missing.to_dict(orient="records"),
             "zero": zero.to_dict(orient="records") if not zero.empty else {},
-            "invalid": invalid.to_dict(orient="records"),
+            invalidLabel: invalid.to_dict(orient="records"),
             "valid": valid.to_dict(orient="records"),
         }
 
@@ -683,7 +717,7 @@ def analyze_indicator_fill_rate(
             df, colName, groupBy, invalid_condition, include_zero_as_separate_category
         )
         result["detailed_data"] = {
-            group: get_detailed_data(group_df)
+            group: get_detailed_data(group_df, invalid_condition)
             for group, group_df in df.groupby(groupBy)
         }
     else:
@@ -691,7 +725,7 @@ def analyze_indicator_fill_rate(
         result["analysis"] = indicatorFillRate(
             df, colName, invalid_condition, include_zero_as_separate_category
         )
-        result["detailed_data"] = get_detailed_data(df)
+        result["detailed_data"] = get_detailed_data(df, invalid_condition)
 
     return result
 

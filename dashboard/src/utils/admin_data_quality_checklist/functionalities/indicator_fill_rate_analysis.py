@@ -103,34 +103,34 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         st.write("Define a criteria for invalid values")
         col4, col5, col6 = st.columns(3)
         with col4:
-            operation = st.selectbox("Operation", get_numeric_operations(),key="duplicateKeep")
+            criteria_name = st.text_input("Criteria Name", "Invalid", max_chars=15)
         with col5:
-            threshold = st.number_input("Value", value=0.0, step=0.1,key="duplicateValue")
+            operation = st.selectbox("Operation", get_numeric_operations(),key="duplicateKeep")
         with col6:
-            st.write("")
-        invalid_condition = f"{operation} {threshold}"
+            threshold = st.number_input("Value", value=0.0, step=0.1,key="duplicateValue")
+        invalid_condition = f"{operation} {threshold} {criteria_name}"
         include_zero_as_separate_category = st.checkbox("Include zero entries as a separate category", value=True)
     elif is_string_column(df[column_to_analyze]):
         st.write("Set condition for invalid string values:")
         col7, col8, col9 = st.columns(3)
         with col7:
-            operation = st.selectbox("Operation", get_string_operations(),key="duplicateKeep")
+            criteria_name = st.text_input("Criteria Name", "Invalid", max_chars=15)
         with col8:
-            value = st.selectbox("Value", df[column_to_analyze].unique().tolist(),key="duplicateValue")
+            operation = st.selectbox("Operation", get_string_operations(),key="duplicateKeep")
         with col9:
-            st.write("")
-        invalid_condition = (operation, value)
+            value = st.selectbox("Value", df[column_to_analyze].unique().tolist(),key="duplicateValue")
+        invalid_condition = (operation, value, criteria_name)
         include_zero_as_separate_category = False
     elif is_datetime_column(df[column_to_analyze]):
         st.write("Set condition for invalid datetime values:")
         col10, col11, col12 = st.columns(3)
         with col10:
-            start_date = st.date_input("Start date(Exclusive)",key="duplicateKeep")
+            criteria_name = st.text_input("Criteria Name", "Invalid", max_chars=15)
         with col11:
-            end_date = st.date_input("End date(Inclusive)",key="duplicateValue")
+            start_date = st.date_input("Start date(Exclusive)",key="duplicateKeep")
         with col12:
-            st.write("")
-        invalid_condition = (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+            end_date = st.date_input("End date(Inclusive)",key="duplicateValue")
+        invalid_condition = (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'), criteria_name)
         include_zero_as_separate_category = False
     else:
         st.write("The column should include either numbers, strings, or dates.")
@@ -157,23 +157,21 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                 if response.status_code == 200:
                     result = response.json()
                     
-                    def display_detailed_data(data):
+                    def display_detailed_data(data, invalid_label="Invalid"):
+                        categories = ["missing", "valid"]
                         if include_zero_as_separate_category:
-                            for category in ["missing", "zero", "invalid", "valid"]:
-                                if data[category]:
-                                    category_df = pd.DataFrame(data[category])
-                                    with st.expander(f"Show/Export {category.capitalize()} Entries:"):
-                                        st.dataframe(category_df, use_container_width=True, hide_index=True)
-                                else:
-                                    st.warning(f"No {category} entries found.")
-                        else:
-                            for category in ["missing", "invalid", "valid"]:
-                                if data[category]:
-                                    category_df = pd.DataFrame(data[category])
-                                    with st.expander(f"Show/Export {category.capitalize()} Entries:"):
-                                        st.dataframe(category_df, use_container_width=True, hide_index=True)
-                                else:
-                                    st.warning(f"No {category} entries found.")
+                            categories.insert(1, "zero")
+                        categories.insert(-1, invalid_label)
+                        for category in categories:
+                            entries = data.get(category, None)
+                            if entries is not None and len(entries) > 0:
+                                category_df = pd.DataFrame(entries)
+                                with st.expander(f"Show/Export {category.capitalize()} Entries:"):
+                                    category_df.index.name = 'SN'
+                                    category_df.index = category_df.index + 1
+                                    st.dataframe(category_df, use_container_width=True, hide_index=False)
+                            else:
+                                st.warning(f"No {category.capitalize()} entries found.")
                     
                     if result["grouped"]:
                         st.info("Indicator Fill Rate Report by Group:")
@@ -195,7 +193,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                             "Valid": "#3b8e51",
                             "Missing": "#9e2f17",
                             "Zero": "#bd5942",
-                            "Invalid": "#006898",
+                            criteria_name: "#006898",
                         }
                         # Create the 100% stacked column chart
                         fig = px.bar(combined_df, x='Group', y='Percentage', color='Category',color_discrete_map = color_map, labels={"x": group_by, 'value': "Percentage"}, barmode='relative',text='Percentage' ) 
@@ -204,12 +202,12 @@ def indicator_fill_rate_analysis(uploaded_file, df):
 
                         # Display detailed data for each group
                         for group, analysis in result["analysis"].items():
-                            st.subheader(f"Group: {group}")
+                            st.subheader(f"Group: `{group}`")
                             analysis_df = pd.DataFrame(analysis)
                             analysis_df["Number of observations"] = analysis_df["Number of observations"].apply(lambda x: f"{int(x):,}")
                             analysis_df["Percentage of observations"]=analysis_df["Percentage of observations"].astype(str)+' %'
                             st.dataframe(analysis_df, use_container_width=True, hide_index=True)
-                            display_detailed_data(result["detailed_data"][group])
+                            display_detailed_data(result["detailed_data"][group],criteria_name)
                             st.write("---")
                     else:
                         st.info("Indicator Fill Rate Result:")
@@ -226,7 +224,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                             "Valid": "#3b8e51",
                             "Missing": "#9e2f17",
                             "Zero": "#bd5942",
-                            "Invalid": "#006898",
+                            criteria_name: "#006898",
                         }
                         fig = px.pie(
                             names=sorted_labels, 
@@ -249,7 +247,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                         if invalid_condition:
                             st.info(f"Custom invalid condition applied: Column {column_to_analyze} - {invalid_condition}")
 
-                        display_detailed_data(result["detailed_data"])
+                        display_detailed_data(result["detailed_data"], criteria_name)
 
                     
                 else:
