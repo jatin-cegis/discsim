@@ -518,9 +518,10 @@ def parse_invalid_condition(condition_input) -> Tuple[str, str, str]:
 
     if isinstance(condition_input, str):
         parts = condition_input.strip().split(maxsplit=2)
-        if len(parts) != 3:
+        if len(parts) < 3:
             raise ValueError("Invalid condition string must be in the format: '<operation> <value> <label>'")
-        return tuple(parts)
+        operation, value, label = parts[0], parts[1], parts[2]
+        return operation, value, label
 
     raise ValueError("Invalid condition must be a string, list, or tuple of 3 elements.")
 

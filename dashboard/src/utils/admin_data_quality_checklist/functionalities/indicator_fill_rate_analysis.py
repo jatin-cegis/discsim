@@ -103,7 +103,8 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         st.write("Define a criteria for invalid values")
         col4, col5, col6 = st.columns(3)
         with col4:
-            criteria_name = st.text_input("Criteria Name", "Invalid", max_chars=15)
+            criteria_name = st.text_input("Criteria Name (spaces will be removed)", "Invalid", max_chars=15)
+            criteria_name = criteria_name.replace(" ", "")
         with col5:
             operation = st.selectbox("Operation", get_numeric_operations(),key="duplicateKeep")
         with col6:
@@ -114,7 +115,8 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         st.write("Set condition for invalid string values:")
         col7, col8, col9 = st.columns(3)
         with col7:
-            criteria_name = st.text_input("Criteria Name", "Invalid", max_chars=15)
+            criteria_name = st.text_input("Criteria Name (spaces will be removed)", "Invalid", max_chars=15)
+            criteria_name = criteria_name.replace(" ", "")
         with col8:
             operation = st.selectbox("Operation", get_string_operations(),key="duplicateKeep")
         with col9:
@@ -125,7 +127,8 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         st.write("Set condition for invalid datetime values:")
         col10, col11, col12 = st.columns(3)
         with col10:
-            criteria_name = st.text_input("Criteria Name", "Invalid", max_chars=15)
+            criteria_name = st.text_input("Criteria Name (spaces will be removed)", "Invalid", max_chars=15)
+            criteria_name = criteria_name.replace(" ", "")
         with col11:
             start_date = st.date_input("Start date(Exclusive)",key="duplicateKeep")
         with col12:
