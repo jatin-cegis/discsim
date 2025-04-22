@@ -535,7 +535,7 @@ async def zero_entries(
                 k: (int(v[0]), float(v[1]), int(v[2])) for k, v in result["analysis"].items()
             }
             result["total_rows"] = df.shape[0]
-            result["zero_entries"] = int((df[group_by] == 0).sum())
+            result["zero_entries"] = int((df[column_to_analyze] == 0).sum())
         else:
             result["analysis"] = (
                 int(result["analysis"][0]),
