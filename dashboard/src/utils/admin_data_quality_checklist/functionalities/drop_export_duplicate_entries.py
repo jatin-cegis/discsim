@@ -117,8 +117,8 @@ def drop_export_duplicate_entries(uploaded_file, df):
                         with col4.expander("Show/export duplicate entries"):
                             try:
                                 duplicate_df.index.name = 'SN'
-                                duplicate_df.index = unique_df.index + 1
-                                st.dataframe(duplicate_df, hide_index=True)
+                                duplicate_df.index = duplicate_df.index + 1
+                                st.dataframe(duplicate_df, hide_index=False)
                             except Exception as e:
                                 st.error(f"Error displaying duplicate rows: {str(e)}")
                     else:
