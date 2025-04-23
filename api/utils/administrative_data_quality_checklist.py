@@ -414,7 +414,7 @@ def apply_invalid_condition(series, condition):
         return pd.Series(False, index=series.index)
 
     if isinstance(condition, tuple):
-        operation, value = condition
+        operation, value, criteria = condition
         if pd.api.types.is_string_dtype(series):
             return apply_string_condition(series, condition)
         elif pd.api.types.is_datetime64_any_dtype(series):
@@ -422,7 +422,7 @@ def apply_invalid_condition(series, condition):
         else:
             raise ValueError(f"Unsupported data type for condition: {series.dtype}")
 
-    operation, threshold = condition.split()
+    operation, threshold, criteria = condition.split()
     threshold = float(threshold)
 
     if operation == "<":
@@ -442,7 +442,7 @@ def apply_invalid_condition(series, condition):
 
 
 def apply_string_condition(series, condition):
-    operation, value = condition
+    operation, value, criteria = condition
     if operation == "Contains":
         return (
             series == value
@@ -456,7 +456,7 @@ def apply_string_condition(series, condition):
 
 
 def apply_datetime_condition(series, condition):
-    start_date, end_date = condition
+    start_date, end_date, criteria = condition
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
     # Convert series to datetime, coercing errors to NaT
@@ -509,11 +509,28 @@ def get_numeric_operations():
 def get_string_operations():
     return ["Contains", "Does not contain"]
 
+def parse_invalid_condition(condition_input) -> Tuple[str, str, str]:
+    if isinstance(condition_input, tuple) and len(condition_input) == 3:
+        return condition_input
+
+    if isinstance(condition_input, list) and len(condition_input) == 3:
+        return tuple(condition_input)
+
+    if isinstance(condition_input, str):
+        parts = condition_input.strip().split(maxsplit=2)
+        if len(parts) < 3:
+            raise ValueError("Invalid condition string must be in the format: '<operation> <value> <label>'")
+        operation, value, label = parts[0], parts[1], parts[2]
+        return operation, value, label
+
+    raise ValueError("Invalid condition must be a string, list, or tuple of 3 elements.")
+
+
 
 def indicatorFillRate(
     df: pd.DataFrame,
     colName: str,
-    invalid_condition: Optional[Union[str, Tuple[str, str]]] = None,
+    invalid_condition: Optional[Union[str, Tuple[str, str, str]]] = None,
     include_zero_as_separate_category: bool = True,
 ) -> pd.DataFrame:
     total = len(df)
@@ -546,18 +563,26 @@ def indicatorFillRate(
     invalid = invalid | missing
     valid = ~(invalid | zero)
 
+    #custom invalid names
+    if invalid_condition is not None:
+        invalid_condition = parse_invalid_condition(invalid_condition)
+        operation, value, criteria = invalid_condition
+    if criteria is not None:
+        invalidLabel = criteria
+    else:
+        invalidLabel = "Invalid"
+
     counts = pd.Series(
         {
             "Missing": missing.sum(),
             "Zero": zero.sum() if include_zero_as_separate_category else 0,
-            "Invalid": invalid.sum()
-            - missing.sum(),  # Don't double count missing as invalid
+            invalidLabel: invalid.sum() - missing.sum(),  # Don't double count missing as invalid
             "Valid": valid.sum(),
         }
     )
 
     result_df = pd.DataFrame(
-        {"Count": counts, "Percentage": (counts / total * 100).round(2)}
+        {"Number of observations": counts, "Percentage of observations": (counts / total * 100).round(1)}
     )
 
     if include_zero_as_separate_category:
@@ -574,7 +599,7 @@ def indicatorFillRateGrouped(
     df: pd.DataFrame,
     colName: str,
     catColumn: str,
-    invalid_condition: Optional[Union[str, Tuple[str, str]]] = None,
+    invalid_condition: Optional[Union[str, Tuple[str, str, str]]] = None,
     include_zero_as_separate_category: bool = True,
 ) -> Dict[str, pd.DataFrame]:
     return {
@@ -590,7 +615,7 @@ def indicatorFillRateFiltered(
     colName: str,
     catColumn: str,
     catValue: str,
-    invalid_condition: Optional[Union[str, Tuple[str, str]]] = None,
+    invalid_condition: Optional[Union[str, Tuple[str, str, str]]] = None,
 ) -> pd.DataFrame:
     return indicatorFillRate(df[df[catColumn] == catValue], colName, invalid_condition)
 
@@ -600,10 +625,12 @@ def analyze_indicator_fill_rate(
     colName: str,
     groupBy: Optional[str] = None,
     filterBy: Optional[Dict[str, str]] = None,
-    invalid_condition: Optional[Union[str, Tuple[str, str]]] = None,
+    invalid_condition: Optional[Union[str, Tuple[str, str, str]]] = None,
     include_zero_as_separate_category: bool = True,
 ) -> Dict[str, Union[pd.DataFrame, Dict[str, pd.DataFrame]]]:
     result = {}
+
+    result["total"] = len(df)
 
     if filterBy:
         for col, value in filterBy.items():
@@ -612,7 +639,7 @@ def analyze_indicator_fill_rate(
     else:
         result["filtered"] = False
 
-    def get_detailed_data(data):
+    def get_detailed_data(data, invalid_condition):
         series = data[colName]
         missing = data[series.isnull()]
 
@@ -669,11 +696,20 @@ def analyze_indicator_fill_rate(
         else:
             raise ValueError(f"Unsupported data type for column: {colName}")
 
+        #custom invalid names
+        if invalid_condition is not None:
+            invalid_condition = parse_invalid_condition(invalid_condition)
+            operation, value, criteria = invalid_condition
+        if criteria is not None:
+            invalidLabel = criteria
+        else:
+            invalidLabel = "Invalid"
+
         return {
-            "missing": missing.head(10).to_dict(orient="records"),
-            "zero": zero.head(10).to_dict(orient="records") if not zero.empty else {},
-            "invalid": invalid.head(10).to_dict(orient="records"),
-            "valid": valid.head(10).to_dict(orient="records"),
+            "missing": missing.to_dict(orient="records"),
+            "zero": zero.to_dict(orient="records") if not zero.empty else {},
+            invalidLabel: invalid.to_dict(orient="records"),
+            "valid": valid.to_dict(orient="records"),
         }
 
     if groupBy:
@@ -682,7 +718,7 @@ def analyze_indicator_fill_rate(
             df, colName, groupBy, invalid_condition, include_zero_as_separate_category
         )
         result["detailed_data"] = {
-            group: get_detailed_data(group_df)
+            group: get_detailed_data(group_df, invalid_condition)
             for group, group_df in df.groupby(groupBy)
         }
     else:
@@ -690,13 +726,15 @@ def analyze_indicator_fill_rate(
         result["analysis"] = indicatorFillRate(
             df, colName, invalid_condition, include_zero_as_separate_category
         )
-        result["detailed_data"] = get_detailed_data(df)
+        result["detailed_data"] = get_detailed_data(df, invalid_condition)
 
     return result
 
 
 def frequencyTable(
-    df: pd.DataFrame, colName: str, top_n: Optional[int] = None
+    df: pd.DataFrame, 
+    colName: str, 
+    top_n: Optional[str] = None
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Generate a frequency table for a given column in a dataframe.
@@ -704,24 +742,34 @@ def frequencyTable(
     Args:
     df (pd.DataFrame): Input dataframe
     colName (str): Name of the column to analyze
-    top_n (Optional[int]): Number of top frequent values to return separately (default: None, all values are returned)
+    top_n (Optional[int]): Sort order - "ascending", "descending", or None (default: None)
 
     Returns:
     Tuple[pd.DataFrame, pd.DataFrame]: (Complete frequency table, Top n frequency table)
     """
     # Calculate value counts and reset index to make it a proper dataframe
     freqTable = df[colName].value_counts().reset_index()
-    freqTable.columns = ["value", "count"]
+    freqTable.columns = ["value", "Frequency"]
 
     # Calculate share
     total = len(df)
-    freqTable["share"] = (freqTable["count"] / total * 100).round(2)
+    freqTable["share"] = (freqTable["Frequency"] / total * 100).round(2)
+
+    # Normalize order input
+    if top_n:
+        top_n = top_n.lower()
 
     # Sort by count descending (should already be sorted, but this ensures it)
-    freqTable = freqTable.sort_values("count", ascending=False).reset_index(drop=True)
-
-    # Get top n frequent values
-    topNFreq = freqTable if top_n is None or top_n == 0 else freqTable.head(top_n)
+    #freqTable = freqTable.sort_values("count", ascending=False).reset_index(drop=True)
+    #topNFreq = freqTable if top_n is None or top_n == 0 else freqTable.head(top_n)
+    
+    # Order based on user input
+    if top_n == "ascending":
+        topNFreq = freqTable.sort_values("Frequency", ascending=True)
+    elif top_n == "descending":
+        topNFreq = freqTable.sort_values("Frequency", ascending=False)
+    else: 
+        topNFreq = freqTable.copy()  # No sorting
 
     return freqTable, topNFreq
 
@@ -729,7 +777,7 @@ def frequencyTable(
 def analyze_frequency_table(
     df: pd.DataFrame,
     colName: str,
-    top_n: int = 5,
+    top_n: Optional[str] = None,
     groupBy: Optional[str] = None,
     filterBy: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]]:
@@ -739,7 +787,7 @@ def analyze_frequency_table(
     Args:
     df (pd.DataFrame): Input dataframe
     colName (str): Name of the column to analyze
-    top_n (int): Number of top frequent values to return separately (default: 5)
+    top_n (Optional[str]): Order the  data to return separately (default: None)
     groupBy (Optional[str]): Name of the categorical column to group by (default: None)
     filterBy (Optional[Dict[str, str]]): Dictionary with column name as key and value to filter on (default: None)
 
@@ -756,6 +804,10 @@ def analyze_frequency_table(
         result["filtered"] = False
 
     if groupBy:
+
+        # Normalize top_n input for consistency
+        order = top_n.lower() if top_n else None
+
         # Create a frequency table for all combinations when groupBy is activated
         result["grouped"] = True
         grouped_freq_table = (
@@ -765,10 +817,14 @@ def analyze_frequency_table(
             grouped_freq_table["count"] / grouped_freq_table["count"].sum() * 100
         ).round(2)
 
-        grouped_freq_table = grouped_freq_table.sort_values(
-            "count", ascending=False
-        ).reset_index(drop=True)
-        top_n_freq = grouped_freq_table.head(top_n)
+        # Apply sorting based on order
+        if order == "ascending":
+            grouped_freq_table = grouped_freq_table.sort_values("count", ascending=True)
+        elif order == "descending":
+            grouped_freq_table = grouped_freq_table.sort_values("count", ascending=False)
+        
+        result["analysis"] = grouped_freq_table.reset_index(drop=True)
+        top_n_freq = grouped_freq_table.copy()
 
         result["analysis"] = (grouped_freq_table, top_n_freq)
 

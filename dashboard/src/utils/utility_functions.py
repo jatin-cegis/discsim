@@ -74,7 +74,7 @@ def setheader(SelectedNav = None):
         "fix_shadow":False,
         "hide_nav":False
     }
-    return st_navbar(["Pre Survey", "Admin Data Quality", "Post Survey Nutrition"],selected=SelectedNav,styles=navStyles,options=navOptions) # type: ignore
+    return st_navbar(["Pre Survey", "Admin Data Diagnostic", "Post Survey Nutrition"],selected=SelectedNav,styles=navStyles,options=navOptions) # type: ignore
 
 def setFooter():
          # Footer using markdown with custom HTML

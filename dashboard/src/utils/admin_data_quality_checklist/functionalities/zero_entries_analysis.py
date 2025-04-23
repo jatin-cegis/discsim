@@ -164,6 +164,15 @@ def zero_entries_analysis(uploaded_file, df):
                                 zero_entries_df.index.name = 'SN'
                                 zero_entries_df.index = zero_entries_df.index + 1
                                 st.dataframe(zero_entries_df, use_container_width=True, hide_index=False)
+
+                            #each instance group by
+                            if group_by is not "None":
+                                unique_values = zero_entries_df[group_by].unique()
+                                st.write(f"### Splitting data by `{group_by}`")
+                                for val in unique_values:
+                                    with st.expander(f"Zero Entries for **{val}**"):
+                                        st.dataframe(zero_entries_df[zero_entries_df[group_by] == val])
+
                         else:
                             st.warning(f"Zero entries not found.")
                 else:

@@ -56,7 +56,7 @@ def drop_export_duplicate_entries(uploaded_file, df):
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        uid_col = st.multiselect("Select unique identifier column(s)' Rename it to 'Select unique identifier column(s) [up to 4 columns allowed]", df.columns.tolist(),key="uidCol")
+        uid_col = st.multiselect("Select unique identifier column(s) [up to 4 columns allowed]", df.columns.tolist(),key="uidCol")
     with col2: 
         helpKeep = """
             1. First occurrence (in case duplicate, i.e. >1, entries exist, keeps the first occurrence and drops the rest)
@@ -112,14 +112,17 @@ def drop_export_duplicate_entries(uploaded_file, df):
 
                     col4.subheader("Duplicate Entries")
                     col4.text("In case you want to use them later for your reference, you can view or download the duplicate rows dropped from the original dataset here")
-                    with col4.expander("Show/export duplicate entries"):
-                        try:
-                            duplicate_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=duplicate").json())
-                            duplicate_df.index.name = 'SN'
-                            duplicate_df.index = unique_df.index + 1
-                            st.dataframe(duplicate_df, hide_index=True)
-                        except Exception as e:
-                            st.error(f"Error displaying duplicate rows: {str(e)}")
+                    duplicate_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=duplicate").json())
+                    if len(duplicate_df)>0:
+                        with col4.expander("Show/export duplicate entries"):
+                            try:
+                                duplicate_df.index.name = 'SN'
+                                duplicate_df.index = duplicate_df.index + 1
+                                st.dataframe(duplicate_df, hide_index=False)
+                            except Exception as e:
+                                st.error(f"Error displaying duplicate rows: {str(e)}")
+                    else:
+                        col4.warning("No Duplicate Entries")
 
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")

@@ -17,7 +17,7 @@ def plot_pie_chart(labels, values, title):
     fig.update_layout(
         margin=dict(l=0, r=0, t=40, b=0),
         height=400,
-        showlegend= False
+        showlegend= True
     )
     fig.update_traces(textposition='inside', textinfo='percent+label')
     return fig
