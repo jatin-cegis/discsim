@@ -82,15 +82,10 @@ def check_specific_columns_as_unique_id(df):
                     paraField.write("In case you want to drop/export the duplicate entries from the column(s), you can use the Inspect Duplicate Entries function")
                     dropentry = "Inspect Duplicate Entries"
                     colBtn.button(dropentry, on_click=handle_click, args=[dropentry],key="dropentryBtn")
-                    if dropentry:
-                        st.session_state.option_selection = dropentry
 
                     paraField.write("In case you want to identify the Unique ID(s) in your file, you can use the Identify Unique ID(s) function")
                     verifyID = "Identify Unique ID(s)"
                     colBtn.button(verifyID, on_click=handle_click, args=[verifyID],key="verifyIDBtn")
-                    if verifyID:
-                        st.session_state.option_selection = verifyID
-
             else:
                 error_detail = response.json().get("detail", "Unknown error")
                 st.error(f"Error: {response.status_code} - {error_detail}")

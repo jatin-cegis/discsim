@@ -68,22 +68,24 @@ def sidebar_functionality_select():
         label_visibility="collapsed"
     )
     if "option_selection" in st.session_state and st.session_state.option_selection is not None:
-        st.session_state.navbar_selection = st.session_state.option_selection
-        st.query_params.func = st.session_state.option_selection
+        selected_function = st.session_state.option_selection
         st.session_state.option_selection = None
     else:
-        st.session_state.navbar_selection = functionality
-        st.query_params.func = functionality
+        selected_function = functionality  # from pills
 
-    st.session_state.navbar_selection = functionality
-    return functionality
+    # Update navbar selection and URL
+    st.session_state.navbar_selection = selected_function
+    st.query_params.func = selected_function
+
+    return selected_function
 
 def execute_functionality(functionality, uploaded_file, df=None):
     #if func param exists in url -> execute the function
-    if "func" in st.query_params and st.query_params["func"] is not None:
-        functionality = st.query_params["func"]
-        st.session_state.navbar_selection = st.query_params["func"]
-    if "func" in st.query_params and st.query_params["func"] == "None":
+    url_func = st.query_params.get("func")
+    if url_func and url_func != "None":
+        functionality = url_func
+        st.session_state.navbar_selection = url_func
+    elif url_func == "None":
         st.write("Choose a function")
         st.stop()
 
