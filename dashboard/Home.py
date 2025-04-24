@@ -119,7 +119,7 @@ if __name__ == "__main__":
                                     ''')
                   
                   with postsurvey:
-                        st.page_link("pages/3_Post_Survey.py", label="Go to Module Page",icon=":material/display_external_input:")
+                        st.page_link("pages/4_Pseudo_Code.py", label="Go to Module Page",icon=":material/display_external_input:")
                         with st.expander("ECD Nested Supervision"):
                               st.write('''
                                     demo
