@@ -92,9 +92,10 @@ def missing_entries_analysis(uploaded_file, df):
                     st.success(f"Missing entries analysed for column: '{column_to_analyze}'")
 
                     if result["grouped"]:
-                        a,b = st.columns(2)
-                        a.metric(f"Total number of rows analysed",format(result['total_rows'],',d'),border=True)
-                        b.metric(f"Missing entries",format(result['zero_entries'],',d'),border=True)
+                        if result["filtered"] == False:
+                            a,b = st.columns(2)
+                            a.metric(f"Total number of rows analysed",format(result['total_rows'],',d'),border=True)
+                            b.metric(f"Missing entries",format(result['zero_entries'],',d'),border=True)
                         st.info(f"Results are grouped by column : {group_by}")
                         grouped_data = []
                         for group, (count, percentage, total) in result["analysis"].items():
