@@ -163,7 +163,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         st.write("The column should include either numbers, strings, or dates.")
         invalid_conditions = None
 
-    if st.button("Analyze Indicator Fill Rate",key="processBtn"):
+    if st.button("Analyse the indicator values",key="processBtn"):
         with st.spinner("Analyzing indicator fill rate..."):
             try:
                 uploaded_file.seek(0)  # Reset file pointer
