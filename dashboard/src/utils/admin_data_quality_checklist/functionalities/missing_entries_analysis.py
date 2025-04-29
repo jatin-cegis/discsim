@@ -127,7 +127,7 @@ def missing_entries_analysis(uploaded_file, df):
                                     color_discrete_map={'Missing': '#9e2f17', 'Recorded': '#3b8e51'},
                                     text='value')
                         fig.update_layout(barmode='relative', yaxis_title='Percentage',margin=dict(l=0, r=0, t=30, b=0),title_x=0.4)
-                        fig.update_traces(texttemplate='%{text:.1f}%', textposition='inside')
+                        fig.update_traces(texttemplate='%{text:.1f}%')
                         st.plotly_chart(fig)
 
                         # Center-align just Missing Count and Missing Percentage
@@ -157,7 +157,7 @@ def missing_entries_analysis(uploaded_file, df):
                                 margin=dict(l=0, r=0, t=0, b=0),
                                 height=400,
                             )
-                            fig.update_traces(textposition='inside', textinfo='percent+label')
+                            fig.update_traces(textinfo='percent+label')
                             st.plotly_chart(fig)
                         else:
                             st.write(f"Missing entries: {count} (percentage unavailable)")

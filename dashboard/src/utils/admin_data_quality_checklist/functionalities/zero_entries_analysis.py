@@ -116,7 +116,7 @@ def zero_entries_analysis(uploaded_file, df):
                                     labels={'value': 'Percentage', 'variable': 'Entry Type'},
                                     color_discrete_map={'Zero Entries': '#9e2f17', 'Non-Zero Entries': '#3b8e51'})
                         fig.update_layout(barmode='relative', yaxis_title='Percentage',margin=dict(l=0, r=0, t=30, b=0),title_x=0.4)
-                        fig.update_traces(texttemplate='%{y:.1f}%', textposition='inside')
+                        fig.update_traces(texttemplate='%{y:.1f}%')
                         st.plotly_chart(fig)
 
                         with st.expander("Show tabular view"):
@@ -146,7 +146,7 @@ def zero_entries_analysis(uploaded_file, df):
                             margin=dict(l=0, r=0, t=0, b=0),
                             height=400,
                         )
-                        fig.update_traces(textposition='inside', textinfo='percent+label')
+                        fig.update_traces(textinfo='percent+label')
                         st.plotly_chart(fig)
                     
                     if result["filtered"]:

@@ -23,7 +23,6 @@ def plot_pie_chart(labels, values, title):
     fig.update_traces(
         customdata=formatted_values,
         texttemplate="%{label}<br>%{customdata} (%{percent})",
-        textposition='inside', 
         textinfo='none')
     return fig
 
