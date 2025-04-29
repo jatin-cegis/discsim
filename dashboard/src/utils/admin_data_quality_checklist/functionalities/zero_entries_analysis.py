@@ -127,12 +127,6 @@ def zero_entries_analysis(uploaded_file, df):
                         a,b = st.columns(2)
                         a.metric(f"Total number of rows analysed",format(total,',d'),border=True)
                         b.metric(f"Zero entries",format(count,',d')+f"({percentage:.2f}%)",border=True)
-                        #Show Dataframe when Zero Entries Exists
-                        if count > 0:
-                            analysis_df = pd.DataFrame([{"Zero Count": count, "Zero Percentage": f"{percentage:.2f}%"}])
-                            analysis_df.index.name = 'SN'
-                            analysis_df.index = analysis_df.index + 1
-                            st.dataframe(analysis_df, use_container_width=True, hide_index=False)
                         
                         labels = ['Zero Entries', 'Non-Zero Entries']
                         values = [percentage, 100-percentage]
@@ -160,7 +154,7 @@ def zero_entries_analysis(uploaded_file, df):
                         zero_entries_df = pd.DataFrame(result["zero_entries_table"])
                         if column_to_analyze in zero_entries_df.columns:
                             zero_entries_df = zero_entries_df.sort_values(column_to_analyze, ascending=False)
-                            with st.expander("Rows with Zero Entries:"):
+                            with st.expander("Show/export rows with zero entries:"):
                                 zero_entries_df.index.name = 'SN'
                                 zero_entries_df.index = zero_entries_df.index + 1
                                 st.dataframe(zero_entries_df, use_container_width=True, hide_index=False)
