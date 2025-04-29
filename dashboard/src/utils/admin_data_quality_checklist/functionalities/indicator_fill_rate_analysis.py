@@ -85,6 +85,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
     st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>The following function helps you assess the data quality of the indicator you choose. On choosing an indicator, you will be able to see the share of missing entries, zero entries, invalid entries, and the share of valid and usable entries. You have the option to define your own invalid criteria for numerical, string, and date-time indicators. A higher share of valid entries indicates good data quality</p>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     with col1:
+        st.write("")
         column_to_analyze = st.selectbox("Select the indicator to analyse", df.columns.tolist(),key="uidCol")
     with col2:
         group_by = st.selectbox("Do you want to break down your analysis by any categorical variable? You can categorise the analysis", ["None"] + df.columns.tolist())

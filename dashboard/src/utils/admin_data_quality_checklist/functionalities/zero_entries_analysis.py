@@ -56,6 +56,9 @@ def zero_entries_analysis(uploaded_file, df):
     st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>The function helps you analyse the zero entries present in your data. Furthermore, you can get a break down of the prevalence of zero entries among different groups of your data, or analyse the zero entries for only specific subset(s) of your data</p>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     with col1:
+        st.write("")
+        st.write("")
+        st.write("")
         column_to_analyze = st.selectbox("Select a column you want to analyse for zero entries", df.select_dtypes(include='number').columns.tolist(),key="uidCol")
     with col2:
         group_by = st.selectbox("Do you want to break this down for particular groups of data? Please choose a (cateogorical) variable from your dataset", ["None"] + df.columns.tolist(), help="Analyze zero entries within distinct categories of another column. This is useful if you want to understand how zero values are distributed across different groups.")

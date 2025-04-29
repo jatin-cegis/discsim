@@ -56,7 +56,7 @@ def drop_export_duplicate_entries(uploaded_file, df):
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        uid_col = st.multiselect("Select unique identifier column(s) [up to 4 columns allowed]", df.columns.tolist(),key="uidCol")
+        uid_col = st.multiselect("Select unique identifier column(s) [up to 4 columns]", df.columns.tolist(),key="uidCol")
     with col2: 
         helpKeep = """
             1. First occurrence (in case duplicate, i.e. >1, entries exist, keeps the first occurrence and drops the rest)

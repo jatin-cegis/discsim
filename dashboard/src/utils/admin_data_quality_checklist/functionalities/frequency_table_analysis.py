@@ -55,6 +55,7 @@ def frequency_table_analysis(uploaded_file, df):
     with col1:
         column_to_analyze = st.selectbox("Select the categorical variable for which you want to generate the frequency table", df.columns.tolist(),key="uidCol")
     with col2:
+        st.write("")
         top_n = st.selectbox(
             "Do you want to order your frequency table?",["None","Ascending","Descending"]
         )

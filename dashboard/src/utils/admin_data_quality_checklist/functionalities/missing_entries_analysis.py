@@ -53,6 +53,9 @@ def missing_entries_analysis(uploaded_file, df):
 
     col1, col2, col3 = st.columns(3)
     with col1:
+        st.write("")
+        st.write("")
+        st.write("")
         column_to_analyze = st.selectbox("Select a column you want to analyse for missing entries", options=df.columns.tolist(), index=0,key="uidCol")
     with col2:
         group_by = st.selectbox("Do you want to break this down for particular groups of data? Please choose a (cateogorical) variable from your dataset", options=["None"] + df.columns.tolist(), index=0, help="Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.")
