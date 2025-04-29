@@ -79,7 +79,7 @@ def drop_export_duplicate_rows(uploaded_file):
                     unique_rows = len(unique_df)
                     duplicate_rows = len(duplicate_df)
 
-                    fig = plot_pie_chart([f"Unique Rows ({unique_rows})", f"Duplicate Rows ({duplicate_rows})"], [unique_rows, duplicate_rows], "Dataset Composition")
+                    fig = plot_pie_chart([f"Unique Rows", f"Duplicate Rows"], [unique_rows, duplicate_rows], "Dataset Composition")
                     st.plotly_chart(fig)
                     
                     # Display dataframes
