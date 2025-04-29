@@ -112,14 +112,14 @@ def frequency_table_analysis(uploaded_file, df):
                             orientation="h",
                             text=display_df["count"].apply(lambda x: f"{x:,}"), 
                             barmode="group",
-                            color_discrete_sequence=px.colors.plotlyjs.Blues
+                            color_discrete_sequence= ["#006898", "#bd5942", "#9e2f17", "#3b8e51", "#3390B3", "#66AFC6"]
                         )
                         fig.update_traces(width=0.2)
                         fig.update_layout(
                             barcornerradius=5,
                             xaxis_tickformat=",",
                             legend_title=group_by,
-                            bargap=0.2,
+                            bargap=0.1,
                             height=400,
                             margin=dict(t=0, b=0),
                             xaxis=dict(title=None,showgrid=False,showticklabels=True),
