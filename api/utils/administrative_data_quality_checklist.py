@@ -641,6 +641,7 @@ def analyze_indicator_fill_rate(
     if filterBy:
         for col, value in filterBy.items():
             df = df[df[col] == value]
+        result["total"] = len(df)
         result["filtered"] = True
     else:
         result["filtered"] = False
