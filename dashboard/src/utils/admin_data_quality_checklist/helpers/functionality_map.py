@@ -39,7 +39,7 @@ FUNCTIONALITY_MAP = {
         "keywords": ["zero"],
         "requires_df": True
     },
-    "Analyse valid entries for an indicator": {
+    "Analyse the data quality of an indicator": {
         "function": indicator_fill_rate_analysis,
         "keywords": [],
         "requires_df": True
