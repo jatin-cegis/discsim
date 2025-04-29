@@ -409,61 +409,95 @@ def analyze_zero_entries(
     return result
 
 
-def apply_invalid_condition(series, condition):
-    if condition is None:
-        return pd.Series(False, index=series.index)
+def apply_invalid_condition(series: pd.Series, conditions: List[Dict]) -> Dict[str, pd.Series]:
+    if is_numeric_column(series):
+        return apply_numeric_conditions(series, conditions)
+    elif is_string_column(series):
+        return apply_string_conditions(series, conditions)
+    elif is_datetime_column(series):
+        return apply_datetime_conditions(series, conditions)
+    else:
+        raise ValueError("Unsupported column type for invalid condition.")
 
-    if isinstance(condition, tuple):
-        operation, value, criteria = condition
-        if pd.api.types.is_string_dtype(series):
-            return apply_string_condition(series, condition)
-        elif pd.api.types.is_datetime64_any_dtype(series):
-            return apply_datetime_condition(series, condition)
+def apply_numeric_conditions(series: pd.Series, conditions: List[Dict]) -> Dict[str, pd.Series]:
+    result = {}
+    for cond in conditions:
+        op = cond['operation']
+        val = cond['value']
+        label = cond.get('label', 'Invalid')
+
+        if op == "<":
+            result[label] = series < val
+        elif op == "<=":
+            result[label] = series <= val
+        elif op == ">":
+            result[label] = series > val
+        elif op == ">=":
+            result[label] = series >= val
+        elif op == "==":
+            result[label] = series == val
+        elif op == "!=":
+            result[label] = series != val
         else:
-            raise ValueError(f"Unsupported data type for condition: {series.dtype}")
+            raise ValueError(f"Invalid operation: {op}")
+        
+    return result
 
-    operation, threshold, criteria = condition.split()
-    threshold = float(threshold)
+def apply_string_conditions(series: pd.Series, conditions: List[Dict]) -> Dict[str, pd.Series]:
+    """
+    Apply multiple string invalid conditions on a Series.
 
-    if operation == "<":
-        return series < threshold
-    elif operation == "<=":
-        return series <= threshold
-    elif operation == ">":
-        return series > threshold
-    elif operation == ">=":
-        return series >= threshold
-    elif operation == "==":
-        return series == threshold
-    elif operation == "!=":
-        return series != threshold
-    else:
-        raise ValueError(f"Invalid operation: {operation}")
+    Returns a dictionary {criteria_label: mask_series}.
+    """
+    masks = {}
 
+    for cond in conditions:
+        operation = cond["operation"]
+        value = cond["value"]
+        label = cond["label"]
 
-def apply_string_condition(series, condition):
-    operation, value, criteria = condition
-    if operation == "Contains":
-        return (
-            series == value
-        )  # Mark as invalid if the cell matches the specified value
-    elif operation == "Does not contain":
-        return (
-            series != value
-        )  # Mark as valid if the cell does not match the specified value
-    else:
-        raise ValueError(f"Invalid operation: {operation}")
+        if operation == "Contains":
+            mask = series.str.contains(value, na=False)
+        elif operation == "Does not contain":
+            mask = ~series.str.contains(value, na=False)
+        elif operation == "Equals":
+            mask = series == value
+        elif operation == "Not equals":
+            mask = series != value
+        else:
+            raise ValueError(f"Invalid string operation: {operation}")
+
+        masks[label] = mask
+
+    return masks
 
 
-def apply_datetime_condition(series, condition):
-    start_date, end_date, criteria = condition
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date)
-    # Convert series to datetime, coercing errors to NaT
+
+def apply_datetime_conditions(series: pd.Series, conditions: List[Dict]) -> Dict[str, pd.Series]:
+    """
+    Apply multiple datetime invalid conditions on a Series.
+
+    Returns a dictionary {criteria_label: mask_series}.
+    """
+    # Ensure the series is in datetime format
     series = pd.to_datetime(series, errors="coerce")
 
-    # Apply the condition
-    return (series >= start_date) & (series <= end_date)
+    masks = {}
+
+    for cond in conditions:
+        label = cond["label"]
+        start_date_str, end_date_str = cond["value"]
+
+        start_date = pd.to_datetime(start_date_str)
+        end_date = pd.to_datetime(end_date_str)
+
+        # Mask for values between start_date (exclusive) and end_date (inclusive)
+        mask = (series > start_date) & (series <= end_date)
+
+        masks[label] = mask
+
+    return masks
+
 
 
 def is_numeric_column(series):
@@ -507,7 +541,7 @@ def get_numeric_operations():
 
 
 def get_string_operations():
-    return ["Contains", "Does not contain"]
+    return ["Contains", "Does not contain", "Equals", "Not equals"]
 
 def parse_invalid_condition(condition_input) -> Tuple[str, str, str]:
     if isinstance(condition_input, tuple) and len(condition_input) == 3:
@@ -530,7 +564,7 @@ def parse_invalid_condition(condition_input) -> Tuple[str, str, str]:
 def indicatorFillRate(
     df: pd.DataFrame,
     colName: str,
-    invalid_condition: Optional[Union[str, Tuple[str, str, str]]] = None,
+    invalid_conditions: Optional[List[Dict]] = None,
     include_zero_as_separate_category: bool = True,
 ) -> pd.DataFrame:
     total = len(df)
@@ -540,75 +574,47 @@ def indicatorFillRate(
 
     if is_numeric_column(series):
         series = pd.to_numeric(series, errors="coerce")
-        zero = series == 0
-        if invalid_condition:
-            invalid = apply_invalid_condition(series, invalid_condition)
-        else:
-            invalid = pd.Series(False, index=series.index)
-    elif is_string_column(series):
-        zero = pd.Series(False, index=series.index)  # No concept of zero for strings
-        if invalid_condition:
-            invalid = apply_string_condition(series, invalid_condition)
-        else:
-            invalid = pd.Series(False, index=series.index)
-    elif is_datetime_column(series):
-        zero = pd.Series(False, index=series.index)  # No concept of zero for datetimes
-        if invalid_condition:
-            invalid = apply_datetime_condition(series, invalid_condition)
-        else:
-            invalid = pd.Series(False, index=series.index)
+    elif is_string_column(series) or is_datetime_column(series):
+        pass  # No conversion needed
     else:
         raise ValueError(f"Unsupported data type for column: {colName}")
 
-    invalid = invalid | missing
-    valid = ~(invalid | zero)
-
-    #custom invalid names
-    if invalid_condition is not None:
-        invalid_condition = parse_invalid_condition(invalid_condition)
-        operation, value, criteria = invalid_condition
-    if criteria is not None:
-        invalidLabel = criteria
-    else:
-        invalidLabel = "Invalid"
-
-    counts = pd.Series(
-        {
-            "Missing": missing.sum(),
-            "Zero": zero.sum() if include_zero_as_separate_category else 0,
-            invalidLabel: invalid.sum() - missing.sum(),  # Don't double count missing as invalid
-            "Valid": valid.sum(),
-        }
-    )
-
-    result_df = pd.DataFrame(
-        {"Number of observations": counts, "Percentage of observations": (counts / total * 100).round(1)}
-    )
-
+    missing = series.isnull()
+    zero = (series == 0) if is_numeric_column(series) else pd.Series(False, index=series.index)
+    invalid_masks = apply_invalid_condition(series, invalid_conditions or [])
+    combined_invalid = pd.Series(False, index=series.index)
+    rows = [{"Category": "Missing", "Number of observations": missing.sum()}]
     if include_zero_as_separate_category:
-        return result_df.reset_index().rename(columns={"index": "Category"})
-    else:
-        return (
-            result_df[result_df.index != "Zero"]
-            .reset_index()
-            .rename(columns={"index": "Category"})
-        )
+        rows.append({"Category": "Zero", "Number of observations": zero.sum()})
+    for label, mask in invalid_masks.items():
+            cleaned_mask = mask & ~missing
+            rows.append({
+                "Category": label,
+                "Number of observations": cleaned_mask.sum()
+            })
+            combined_invalid |= cleaned_mask
+    
+    valid = ~(missing | zero | combined_invalid)
+    rows.append({"Category": "Valid", "Number of observations": valid.sum()})
+
+    result_df = pd.DataFrame(rows)
+    result_df["Percentage of observations"] = (result_df["Number of observations"] / total * 100).round(1)
+    return result_df
 
 
 def indicatorFillRateGrouped(
     df: pd.DataFrame,
     colName: str,
     catColumn: str,
-    invalid_condition: Optional[Union[str, Tuple[str, str, str]]] = None,
+    invalid_conditions: Optional[List[Tuple[str, Union[str, float], str]]] = None,
     include_zero_as_separate_category: bool = True,
 ) -> Dict[str, pd.DataFrame]:
     return {
         name: indicatorFillRate(
-            group, colName, invalid_condition, include_zero_as_separate_category
+            group, colName, invalid_conditions, include_zero_as_separate_category
         )
         for name, group in df.groupby(catColumn)
     }
-
 
 def indicatorFillRateFiltered(
     df: pd.DataFrame,
@@ -625,7 +631,7 @@ def analyze_indicator_fill_rate(
     colName: str,
     groupBy: Optional[str] = None,
     filterBy: Optional[Dict[str, str]] = None,
-    invalid_condition: Optional[Union[str, Tuple[str, str, str]]] = None,
+    invalid_conditions: Optional[List[Dict]] = None,
     include_zero_as_separate_category: bool = True,
 ) -> Dict[str, Union[pd.DataFrame, Dict[str, pd.DataFrame]]]:
     result = {}
@@ -639,94 +645,75 @@ def analyze_indicator_fill_rate(
     else:
         result["filtered"] = False
 
-    def get_detailed_data(data, invalid_condition):
-        series = data[colName]
-        missing = data[series.isnull()]
+    def get_detailed_data(
+        data: pd.DataFrame,
+        colName: str,
+        invalid_conditions: Optional[List[Dict]] = None,
+    ) -> Dict[str, List[Dict]]:
+        """
+        Get detailed breakdown of data based on missing, zero, invalid, and valid entries.
 
+        Args:
+            data (pd.DataFrame): Input dataframe.
+            colName (str): Column name to analyze.
+            invalid_conditions (List[Dict], optional): List of invalid conditions.
+
+        Returns:
+            Dict[str, List[Dict]]: Mapping category -> list of record dictionaries.
+        """
+        series = data[colName]
+
+        # Handle type conversion
         if is_numeric_column(series):
-            zero = data[series == 0]
-            invalid = (
-                data[apply_invalid_condition(series, invalid_condition)]
-                if invalid_condition
-                else pd.DataFrame()
-            )
-            valid = data[
-                ~series.isnull()
-                & (series != 0)
-                & (
-                    ~apply_invalid_condition(series, invalid_condition)
-                    if invalid_condition
-                    else True
-                )
-            ]
-        elif is_string_column(series):
-            zero = data[series == 0]
-            invalid = (
-                data[apply_string_condition(series, invalid_condition)]
-                if invalid_condition
-                else pd.DataFrame()
-            )
-            valid = data[
-                ~series.isnull()
-                & (series != "")
-                & (
-                    ~apply_string_condition(series, invalid_condition)
-                    if invalid_condition
-                    else True
-                )
-            ]
+            series = pd.to_numeric(series, errors="coerce")
         elif is_datetime_column(series):
-            # Parse dates if the column contains datetime data
-            if is_datetime_column(series):
-                series = pd.to_datetime(series, errors="coerce")
-            zero = data[series == 0]
-            invalid = (
-                data[apply_datetime_condition(series, invalid_condition)]
-                if invalid_condition
-                else pd.DataFrame()
-            )
-            valid = data[
-                ~series.isnull()
-                & (
-                    ~apply_datetime_condition(series, invalid_condition)
-                    if invalid_condition
-                    else True
-                )
-            ]
-        else:
+            series = pd.to_datetime(series, errors="coerce")
+        elif not is_string_column(series):
             raise ValueError(f"Unsupported data type for column: {colName}")
 
-        #custom invalid names
-        if invalid_condition is not None:
-            invalid_condition = parse_invalid_condition(invalid_condition)
-            operation, value, criteria = invalid_condition
-        if criteria is not None:
-            invalidLabel = criteria
-        else:
-            invalidLabel = "Invalid"
+        # Build base masks
+        missing_mask = series.isnull()
+        zero_mask = (series == 0) if is_numeric_column(series) else pd.Series(False, index=series.index)
 
-        return {
-            "missing": missing.to_dict(orient="records"),
-            "zero": zero.to_dict(orient="records") if not zero.empty else {},
-            invalidLabel: invalid.to_dict(orient="records"),
-            "valid": valid.to_dict(orient="records"),
-        }
+        # Apply invalid conditions
+        invalid_masks = apply_invalid_condition(series, invalid_conditions or [])
+        combined_invalid_mask = pd.Series(False, index=series.index)
+
+        detailed = {}
+
+        # Collect invalid entries
+        for label, mask in invalid_masks.items():
+            clean_mask = mask & ~missing_mask
+            detailed[label] = data[clean_mask].to_dict(orient="records")
+            combined_invalid_mask |= clean_mask
+
+        # Collect other categories
+        detailed["missing"] = data[missing_mask].to_dict(orient="records")
+        if is_numeric_column(series):
+            detailed["zero"] = data[zero_mask].to_dict(orient="records")
+
+        # Now valid = not missing, not zero, not invalid
+        valid_mask = ~(missing_mask | zero_mask | combined_invalid_mask) if is_numeric_column(series) else ~(missing_mask | combined_invalid_mask)
+        detailed["valid"] = data[valid_mask].to_dict(orient="records")
+
+        return detailed
+
 
     if groupBy:
         result["grouped"] = True
         result["analysis"] = indicatorFillRateGrouped(
-            df, colName, groupBy, invalid_condition, include_zero_as_separate_category
+            df, colName, groupBy, invalid_conditions, include_zero_as_separate_category
         )
         result["detailed_data"] = {
-            group: get_detailed_data(group_df, invalid_condition)
+            group: get_detailed_data(group_df,colName,invalid_conditions)
             for group, group_df in df.groupby(groupBy)
         }
     else:
         result["grouped"] = False
         result["analysis"] = indicatorFillRate(
-            df, colName, invalid_condition, include_zero_as_separate_category
+            df, colName, invalid_conditions, include_zero_as_separate_category
         )
-        result["detailed_data"] = get_detailed_data(df, invalid_condition)
+        result["detailed_data"] = get_detailed_data(df,colName,invalid_conditions)
 
     return result
 
