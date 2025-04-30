@@ -4,6 +4,7 @@ def plot_pie_chart(labels, values, title):
     # Sort values and labels in descending order
     sorted_data = sorted(zip(values, labels), reverse=True)
     sorted_values, sorted_labels = zip(*sorted_data)
+    formatted_values = [format((v),',d') for v in sorted_values]
     color_map = {
         label: "#3b8e51" if "Unique" in label else "#9e2f17"
         for label in sorted_labels
@@ -19,7 +20,10 @@ def plot_pie_chart(labels, values, title):
         height=400,
         showlegend= True
     )
-    fig.update_traces(textposition='inside', textinfo='percent+label')
+    fig.update_traces(
+        customdata=formatted_values,
+        texttemplate="%{label}<br>%{customdata} (%{percent})",
+        textinfo='none')
     return fig
 
 def plot_100_stacked_bar_chart(data, x, y, color, title, x_label, y_label):

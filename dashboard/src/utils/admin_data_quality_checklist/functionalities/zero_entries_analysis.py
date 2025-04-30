@@ -56,6 +56,9 @@ def zero_entries_analysis(uploaded_file, df):
     st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>The function helps you analyse the zero entries present in your data. Furthermore, you can get a break down of the prevalence of zero entries among different groups of your data, or analyse the zero entries for only specific subset(s) of your data</p>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     with col1:
+        st.write("")
+        st.write("")
+        st.write("")
         column_to_analyze = st.selectbox("Select a column you want to analyse for zero entries", df.select_dtypes(include='number').columns.tolist(),key="uidCol")
     with col2:
         group_by = st.selectbox("Do you want to break this down for particular groups of data? Please choose a (cateogorical) variable from your dataset", ["None"] + df.columns.tolist(), help="Analyze zero entries within distinct categories of another column. This is useful if you want to understand how zero values are distributed across different groups.")
@@ -113,7 +116,7 @@ def zero_entries_analysis(uploaded_file, df):
                                     labels={'value': 'Percentage', 'variable': 'Entry Type'},
                                     color_discrete_map={'Zero Entries': '#9e2f17', 'Non-Zero Entries': '#3b8e51'})
                         fig.update_layout(barmode='relative', yaxis_title='Percentage',margin=dict(l=0, r=0, t=30, b=0),title_x=0.4)
-                        fig.update_traces(texttemplate='%{y:.1f}%', textposition='inside')
+                        fig.update_traces(texttemplate='%{y:.1f}%')
                         st.plotly_chart(fig)
 
                         with st.expander("Show tabular view"):
@@ -127,12 +130,6 @@ def zero_entries_analysis(uploaded_file, df):
                         a,b = st.columns(2)
                         a.metric(f"Total number of rows analysed",format(total,',d'),border=True)
                         b.metric(f"Zero entries",format(count,',d')+f"({percentage:.2f}%)",border=True)
-                        #Show Dataframe when Zero Entries Exists
-                        if count > 0:
-                            analysis_df = pd.DataFrame([{"Zero Count": count, "Zero Percentage": f"{percentage:.2f}%"}])
-                            analysis_df.index.name = 'SN'
-                            analysis_df.index = analysis_df.index + 1
-                            st.dataframe(analysis_df, use_container_width=True, hide_index=False)
                         
                         labels = ['Zero Entries', 'Non-Zero Entries']
                         values = [percentage, 100-percentage]
@@ -149,7 +146,7 @@ def zero_entries_analysis(uploaded_file, df):
                             margin=dict(l=0, r=0, t=0, b=0),
                             height=400,
                         )
-                        fig.update_traces(textposition='inside', textinfo='percent+label')
+                        fig.update_traces(textinfo='percent+label')
                         st.plotly_chart(fig)
                     
                     if result["filtered"]:
@@ -160,7 +157,7 @@ def zero_entries_analysis(uploaded_file, df):
                         zero_entries_df = pd.DataFrame(result["zero_entries_table"])
                         if column_to_analyze in zero_entries_df.columns:
                             zero_entries_df = zero_entries_df.sort_values(column_to_analyze, ascending=False)
-                            with st.expander("Rows with Zero Entries:"):
+                            with st.expander("Show/export rows with zero entries:"):
                                 zero_entries_df.index.name = 'SN'
                                 zero_entries_df.index = zero_entries_df.index + 1
                                 st.dataframe(zero_entries_df, use_container_width=True, hide_index=False)

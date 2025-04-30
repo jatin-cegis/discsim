@@ -20,26 +20,27 @@ def is_numeric_column(series):
 def is_string_column(series):
     return pd.api.types.is_string_dtype(series)
 
-def is_datetime_column(series):
+def is_datetime_column(series: pd.Series) -> bool:
+    """
+    Check if a pandas Series is of datetime type or can be interpreted as datetime.
+    """
     if pd.api.types.is_datetime64_any_dtype(series):
         return True
-    
-    # Try to parse the first non-null value as a date
-    first_valid = series.first_valid_index()
-    if first_valid is not None:
+    # parsing first few non-null entries (for robustness)
+    non_null_values = series.dropna().head(5)
+    for val in non_null_values:
         try:
-            pd.to_datetime(series[first_valid])
+            pd.to_datetime(val)
             return True
-        except:
-            pass
-    
+        except (ValueError, TypeError):
+            continue
     return False
 
 def get_numeric_operations():
     return ['<', '<=', '>', '>=', '==', '!=']
 
 def get_string_operations():
-    return ['Contains', 'Does not contain']
+    return ['Contains', 'Does not contain', 'Equals', 'Not equals']
 
 def indicator_fill_rate_analysis(uploaded_file, df):
     customcss = """
@@ -80,10 +81,11 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         - Displays samples of missing, zero, invalid, and valid data.
         - Valid input format: CSV file
     """
-    st.markdown("<h2 style='text-align: center;font-weight:800;color:#136a9a;margin-top:-15px'>Analyse valid entries for an indicator</h2>", unsafe_allow_html=True, help=title_info_markdown)
+    st.markdown("<h2 style='text-align: center;font-weight:800;color:#136a9a;margin-top:-15px'>Analyse the data quality of an indicator</h2>", unsafe_allow_html=True, help=title_info_markdown)
     st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>The following function helps you assess the data quality of the indicator you choose. On choosing an indicator, you will be able to see the share of missing entries, zero entries, invalid entries, and the share of valid and usable entries. You have the option to define your own invalid criteria for numerical, string, and date-time indicators. A higher share of valid entries indicates good data quality</p>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     with col1:
+        st.write("")
         column_to_analyze = st.selectbox("Select the indicator to analyse", df.columns.tolist(),key="uidCol")
     with col2:
         group_by = st.selectbox("Do you want to break down your analysis by any categorical variable? You can categorise the analysis", ["None"] + df.columns.tolist())
@@ -99,47 +101,72 @@ def indicator_fill_rate_analysis(uploaded_file, df):
         with col33:
             st.write("")
     
+    num_conditions = st.number_input("How many invalid conditions? [add up to 3]", min_value=0, max_value=3, value=0, step=1)
+    invalid_conditions = []
     if is_numeric_column(df[column_to_analyze]):
-        st.write("Define a criteria for invalid values")
-        col4, col5, col6 = st.columns(3)
-        with col4:
-            criteria_name = st.text_input("Criteria Name (spaces will be removed)", "Invalid", max_chars=15)
-            criteria_name = criteria_name.replace(" ", "")
-        with col5:
-            operation = st.selectbox("Operation", get_numeric_operations(),key="duplicateKeep")
-        with col6:
-            threshold = st.number_input("Value", value=0.0, step=0.1,key="duplicateValue")
-        invalid_condition = f"{operation} {threshold} {criteria_name}"
         include_zero_as_separate_category = st.checkbox("Include zero entries as a separate category", value=True)
-    elif is_string_column(df[column_to_analyze]):
-        st.write("Set condition for invalid string values:")
-        col7, col8, col9 = st.columns(3)
-        with col7:
-            criteria_name = st.text_input("Criteria Name (spaces will be removed)", "Invalid", max_chars=15)
-            criteria_name = criteria_name.replace(" ", "")
-        with col8:
-            operation = st.selectbox("Operation", get_string_operations(),key="duplicateKeep")
-        with col9:
-            value = st.selectbox("Value", df[column_to_analyze].unique().tolist(),key="duplicateValue")
-        invalid_condition = (operation, value, criteria_name)
-        include_zero_as_separate_category = False
-    elif is_datetime_column(df[column_to_analyze]):
-        st.write("Set condition for invalid datetime values:")
-        col10, col11, col12 = st.columns(3)
-        with col10:
-            criteria_name = st.text_input("Criteria Name (spaces will be removed)", "Invalid", max_chars=15)
-            criteria_name = criteria_name.replace(" ", "")
-        with col11:
-            start_date = st.date_input("Start date(Exclusive)",key="duplicateKeep")
-        with col12:
-            end_date = st.date_input("End date(Inclusive)",key="duplicateValue")
-        invalid_condition = (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'), criteria_name)
-        include_zero_as_separate_category = False
-    else:
-        st.write("The column should include either numbers, strings, or dates.")
-        invalid_condition = None
+    if num_conditions:
+        if is_numeric_column(df[column_to_analyze]):
+            st.write("Define a criteria for invalid values")
+            for i in range(num_conditions):
+                st.markdown(f"**Condition {i+1}**")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    label = st.text_input(f"Criteria Name (spaces will be removed)", f"Invalid{i+1}", max_chars=15)
+                with col2:
+                    operation = st.selectbox(f"Operation", get_numeric_operations(), key=f"op{i}")
+                with col3:
+                    value = st.number_input(f"Value", value=0.0, step=0.1, key=f"val{i}")
 
-    if st.button("Analyze Indicator Fill Rate",key="processBtn"):
+                invalid_conditions.append({
+                    "label": label.strip().replace(" ", ""),
+                    "operation": operation,
+                    "value": value
+                })
+        elif is_string_column(df[column_to_analyze]):
+            st.write("Set condition for invalid string values:")
+            for i in range(num_conditions):
+                st.markdown(f"**Condition {i+1}**")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    label = st.text_input(f"Criteria Name (spaces will be removed)", f"Invalid{i+1}", max_chars=15)
+                with col2:
+                    operation = st.selectbox(f"Operation", get_string_operations(), key=f"st{i}")
+                with col3:
+                    if operation in ["Contains", "Does not contain"]:
+                        value = st.text_input(f"Enter value", key=f"str_val_text_{i}")
+                    else:
+                        value = st.selectbox(f"Select value", df[column_to_analyze].dropna().unique().tolist(), key=f"str_val_select_{i}")
+
+                invalid_conditions.append({
+                    "label": label.strip().replace(" ", ""),
+                    "operation": operation,
+                    "value": value
+                })
+            include_zero_as_separate_category = False
+        elif is_datetime_column(df[column_to_analyze]):
+            st.write("Set condition for invalid datetime values:")
+            for i in range(num_conditions):
+                st.markdown(f"**Condition {i+1}**")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    label = st.text_input(f"Criteria Name (spaces will be removed)", f"Invalid{i+1}", max_chars=15, key=f"dt_label_{i}")
+                with col2:
+                    start_date = st.date_input(f"Start date (Exclusive)", key=f"dt_start_{i}")
+                with col3:
+                    end_date = st.date_input(f"End date (Inclusive)", key=f"dt_end_{i}")
+
+                invalid_conditions.append({
+                    "label": label.strip().replace(" ", ""),
+                    "operation": "between_dates",  # Always fixed operation for datetime
+                    "value": (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+                })
+            include_zero_as_separate_category = False
+        else:
+            st.write("The column should include either numbers, strings, or dates.")
+            invalid_conditions = None
+
+    if st.button("Analyse the indicator values",key="processBtn"):
         with st.spinner("Analyzing indicator fill rate..."):
             try:
                 uploaded_file.seek(0)  # Reset file pointer
@@ -148,7 +175,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                     "column_to_analyze": column_to_analyze,
                     "group_by": group_by if group_by != "None" else None,
                     "filter_by": {filter_by_col: filter_by_value} if filter_by_col != "None" else None,
-                    "invalid_condition": invalid_condition,
+                    "invalid_conditions": invalid_conditions,
                     "include_zero_as_separate_category": include_zero_as_separate_category
                 }
                 response = requests.post(
@@ -159,12 +186,13 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                 
                 if response.status_code == 200:
                     result = response.json()
-                    
-                    def display_detailed_data(data, invalid_label="Invalid"):
+                    invalid_labels = [cond["label"] for cond in invalid_conditions] if invalid_conditions else []
+                    def display_detailed_data(data: dict, invalid_labels: list = None):
                         categories = ["missing", "valid"]
                         if include_zero_as_separate_category:
                             categories.insert(1, "zero")
-                        categories.insert(-1, invalid_label)
+                        for label in reversed(invalid_labels):
+                            categories.insert(-1, label)
                         for category in categories:
                             entries = data.get(category, None)
                             if entries is not None and len(entries) > 0:
@@ -196,11 +224,14 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                             "Valid": "#3b8e51",
                             "Missing": "#9e2f17",
                             "Zero": "#bd5942",
-                            criteria_name: "#006898",
                         }
+                        invalid_colors = ["#006898", "#3390B3", "#66AFC6", "#99C7D9", "#005272", "#003E4F", "#002B33", "#005E8A", "#007AA6", "#00507A"]
+                        for i, cat in enumerate(invalid_labels):
+                            if cat not in color_map:
+                                color_map[cat] = invalid_colors[i % len(invalid_colors)]
                         # Create the 100% stacked column chart
                         fig = px.bar(combined_df, x='Group', y='Percentage', color='Category',color_discrete_map = color_map, labels={"x": group_by, 'value': "Percentage"}, barmode='relative',text='Percentage' ) 
-                        fig.update_traces(textposition='inside',textangle=0)
+                        fig.update_traces(textangle=0)
                         st.plotly_chart(fig)
 
                         # Display detailed data for each group
@@ -210,7 +241,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                             analysis_df["Number of observations"] = analysis_df["Number of observations"].apply(lambda x: f"{int(x):,}")
                             analysis_df["Percentage of observations"]=analysis_df["Percentage of observations"].astype(str)+' %'
                             st.dataframe(analysis_df, use_container_width=True, hide_index=True)
-                            display_detailed_data(result["detailed_data"][group],criteria_name)
+                            display_detailed_data(result["detailed_data"][group],invalid_labels)
                             st.write("---")
                     else:
                         st.info("Indicator Fill Rate Result:")
@@ -222,13 +253,18 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                         analysis_df = pd.DataFrame(result["analysis"])
                         # Create a simple pie chart of percentages
                         sorted_data = sorted(zip(analysis_df['Percentage of observations'], analysis_df['Category']), reverse=True)
-                        sorted_values, sorted_labels = zip(*sorted_data)
+                        sorted_values, sorted_labels = zip(*sorted_data)  
+
                         color_map = {
                             "Valid": "#3b8e51",
                             "Missing": "#9e2f17",
                             "Zero": "#bd5942",
-                            criteria_name: "#006898",
                         }
+                        invalid_colors = ["#006898", "#3390B3", "#66AFC6", "#99C7D9", "#005272", "#003E4F", "#002B33", "#005E8A", "#007AA6", "#00507A"]
+                        for i, cat in enumerate(sorted_labels):
+                            if cat not in color_map:
+                                color_map[cat] = invalid_colors[i % len(invalid_colors)]
+
                         fig = px.pie(
                             names=sorted_labels, 
                             values=sorted_values, 
@@ -238,7 +274,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                             margin=dict(l=0, r=0, t=40, b=0),
                             height=400,
                         )
-                        fig.update_traces(textposition='inside', textinfo='percent+label')
+                        fig.update_traces(textinfo='percent+label')
                         st.plotly_chart(fig)
 
                         with st.expander("Show/Export data:"):
@@ -247,11 +283,11 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                             st.dataframe(analysis_df, use_container_width=True, hide_index=True)
 
                     
-                        if invalid_condition:
-                            st.info(f"Custom invalid condition applied: Column {column_to_analyze} - {invalid_condition}")
+                        if invalid_conditions:
+                            invalid_desc = ", ".join([f"{col['label']}: {col['operation']} {col['value']}" for col in invalid_conditions])
+                            st.info(f"Custom invalid conditions applied to column `{column_to_analyze}`: {invalid_desc}")
 
-                        display_detailed_data(result["detailed_data"], criteria_name)
-
+                        display_detailed_data(result["detailed_data"],invalid_labels)
                     
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")

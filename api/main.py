@@ -588,11 +588,10 @@ async def indicator_fill_rate(
         column_to_analyze = input_data["column_to_analyze"]
         group_by = input_data.get("group_by")
         filter_by = input_data.get("filter_by")
-        invalid_condition = input_data.get("invalid_condition")
+        invalid_conditions = input_data.get("invalid_conditions", [])
         include_zero_as_separate_category = input_data.get(
             "include_zero_as_separate_category", True
         )
-
         # Validate input
         if column_to_analyze not in df.columns:
             raise ValueError(f"Column '{column_to_analyze}' not found in the dataset")
@@ -611,7 +610,7 @@ async def indicator_fill_rate(
             column_to_analyze,
             group_by,
             filter_by,
-            invalid_condition,
+            invalid_conditions,
             include_zero_as_separate_category,
         )
 

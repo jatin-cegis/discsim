@@ -53,6 +53,9 @@ def missing_entries_analysis(uploaded_file, df):
 
     col1, col2, col3 = st.columns(3)
     with col1:
+        st.write("")
+        st.write("")
+        st.write("")
         column_to_analyze = st.selectbox("Select a column you want to analyse for missing entries", options=df.columns.tolist(), index=0,key="uidCol")
     with col2:
         group_by = st.selectbox("Do you want to break this down for particular groups of data? Please choose a (cateogorical) variable from your dataset", options=["None"] + df.columns.tolist(), index=0, help="Analyze missing entries within distinct categories of another column. This is useful if you want to understand how missing values are distributed across different groups.")
@@ -92,9 +95,10 @@ def missing_entries_analysis(uploaded_file, df):
                     st.success(f"Missing entries analysed for column: '{column_to_analyze}'")
 
                     if result["grouped"]:
-                        a,b = st.columns(2)
-                        a.metric(f"Total number of rows analysed",format(result['total_rows'],',d'),border=True)
-                        b.metric(f"Missing entries",format(result['zero_entries'],',d'),border=True)
+                        if result["filtered"] == False:
+                            a,b = st.columns(2)
+                            a.metric(f"Total number of rows analysed",format(result['total_rows'],',d'),border=True)
+                            b.metric(f"Missing entries",format(result['zero_entries'],',d'),border=True)
                         st.info(f"Results are grouped by column : {group_by}")
                         grouped_data = []
                         for group, (count, percentage, total) in result["analysis"].items():
@@ -123,7 +127,7 @@ def missing_entries_analysis(uploaded_file, df):
                                     color_discrete_map={'Missing': '#9e2f17', 'Recorded': '#3b8e51'},
                                     text='value')
                         fig.update_layout(barmode='relative', yaxis_title='Percentage',margin=dict(l=0, r=0, t=30, b=0),title_x=0.4)
-                        fig.update_traces(texttemplate='%{text:.1f}%', textposition='inside')
+                        fig.update_traces(texttemplate='%{text:.1f}%')
                         st.plotly_chart(fig)
 
                         # Center-align just Missing Count and Missing Percentage
@@ -153,7 +157,7 @@ def missing_entries_analysis(uploaded_file, df):
                                 margin=dict(l=0, r=0, t=0, b=0),
                                 height=400,
                             )
-                            fig.update_traces(textposition='inside', textinfo='percent+label')
+                            fig.update_traces(textinfo='percent+label')
                             st.plotly_chart(fig)
                         else:
                             st.write(f"Missing entries: {count} (percentage unavailable)")
