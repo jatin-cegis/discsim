@@ -792,7 +792,7 @@ def pseudo_code_analysis():
         st.info("Please upload a CSV file (UTF-8 encoded) to begin.")
 
 if __name__ == "__main__":
-    selectedNav = setheader("Post Survey Nutrition")
+    selectedNav = setheader("Nutrition Analytics")
     if selectedNav == "Pre Survey":
           st.switch_page("pages/1_Pre_Survey.py")
     if selectedNav == "Admin Data Diagnostic":

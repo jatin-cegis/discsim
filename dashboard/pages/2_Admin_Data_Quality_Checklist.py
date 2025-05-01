@@ -55,8 +55,8 @@ if __name__ == "__main__":
     selectedNav = setheader("Admin Data Diagnostic")
     if selectedNav == "Pre Survey":
           st.switch_page("pages/1_Pre_Survey.py")
-    if selectedNav == "Post Survey Nutrition":
-          st.switch_page("pages/4_Pseudo_Code.py")
+    if selectedNav == "Nutrition Analytics":
+          st.switch_page("pages/3_Nutrition_Analytics.py")
     admin_data_quality_check()
 
     setFooter()
