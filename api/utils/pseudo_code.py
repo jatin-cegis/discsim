@@ -302,8 +302,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
     project_level_disc['Discrepancy Rate (%)'] > 0,
     np.select(
         [
-            project_level_disc['Percentile_Rank (%)'] >= 80, #green threshold
-            project_level_disc['Percentile_Rank (%)'] <= 30 #red threshold
+            project_level_disc['Percentile_Rank (%)'] >= 75, #green threshold
+            project_level_disc['Percentile_Rank (%)'] <= 25 #red threshold
         ], ['Green', 'Red'],default='Yellow'),'')
 
     # Sector Level Analysis

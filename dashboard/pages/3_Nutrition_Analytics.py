@@ -321,10 +321,10 @@ def pseudo_code_analysis():
                     if 'sameHeight' in data['projectLevelInsights']:
                         container = st.container(border=True)
                         projectSameHeight = pd.DataFrame(data['projectLevelInsights']['sameHeight'])
-                        container.markdown("<h6 style='text-align:center;padding-bottom:0'>Remeasurements with Exact Same AWT and Supervisor Height Measurements", unsafe_allow_html=True)
-                        container.markdown("<p style='text-align:center;color:grey;font-size:12px'>Top 10 Projects", unsafe_allow_html=True)
-                        top_12_projectSameHeight = projectSameHeight.nlargest(10, 'Exact_Same_Height_%')
-                        top_12_projectSameHeight = top_12_projectSameHeight.sort_values(by='Exact_Same_Height_%', ascending=True)
+                        container.markdown("<h6 style='text-align:center;padding-bottom:10px'>Remeasurements with Exact Same AWT and Supervisor Height Measurements", unsafe_allow_html=True)
+                        # removed the limit on iteration 1
+                        # top_12_projectSameHeight = projectSameHeight.nlargest(10, 'Exact_Same_Height_%')
+                        top_12_projectSameHeight = projectSameHeight.sort_values(by='Exact_Same_Height_%', ascending=True)
                         fig_top_12_projectSameHeight = px.bar(
                             top_12_projectSameHeight,
                             x='Exact_Same_Height_%', 
@@ -341,7 +341,7 @@ def pseudo_code_analysis():
                             yaxis=dict(title=None,showgrid=False,showticklabels=True)
                         )
                         container.plotly_chart(fig_top_12_projectSameHeight)
-                        with container.expander("Show Data"):
+                        with container.expander("Show in tabular form"):
                             projectSameHeight.index.name = 'SN'
                             projectSameHeight.index = projectSameHeight.index + 1
                             st.dataframe(projectSameHeight,hide_index=False,use_container_width=True)
@@ -350,10 +350,9 @@ def pseudo_code_analysis():
                     if 'sameWeight' in data['projectLevelInsights']:
                         container = st.container(border=True)
                         projectSameWeight = pd.DataFrame(data['projectLevelInsights']['sameWeight'])
-                        container.markdown("<h6 style='text-align:center;padding-bottom:0'>Remeasurements with Exact Same AWT and Supervisor Weight Measurements", unsafe_allow_html=True)
-                        container.markdown("<p style='text-align:center;color:grey;font-size:12px'>Top 10 Projects", unsafe_allow_html=True)
-                        top_12_projectSameWeight = projectSameWeight.nlargest(10, 'Exact_Same_Weight_%')
-                        top_12_projectSameWeight = top_12_projectSameWeight.sort_values(by='Exact_Same_Weight_%', ascending=True)
+                        container.markdown("<h6 style='text-align:center;padding-bottom:10px'>Remeasurements with Exact Same AWT and Supervisor Weight Measurements", unsafe_allow_html=True)
+                        #top_12_projectSameWeight = projectSameWeight.nlargest(10, 'Exact_Same_Weight_%')
+                        top_12_projectSameWeight = projectSameWeight.sort_values(by='Exact_Same_Weight_%', ascending=True)
                         fig_top_12_projectSameWeight = px.bar(
                             top_12_projectSameWeight,
                             x='Exact_Same_Weight_%', 
@@ -370,7 +369,7 @@ def pseudo_code_analysis():
                             yaxis=dict(title=None,showgrid=False,showticklabels=True)
                         )
                         container.plotly_chart(fig_top_12_projectSameWeight)
-                        with container.expander("Show Data"):
+                        with container.expander("Show in tabular form"):
                             projectSameWeight.index.name = 'SN'
                             projectSameWeight.index = projectSameWeight.index + 1
                             st.dataframe(projectSameWeight,hide_index=False,use_container_width=True)
@@ -380,7 +379,8 @@ def pseudo_code_analysis():
                 if 'wastingLevels' in data['projectLevelInsights']:
                     container = st.container(border=True)
                     projectWastingLevels = pd.DataFrame(data['projectLevelInsights']['wastingLevels'])
-                    container.markdown("<h6 style='text-align:center;'>Difference in Wasting levels between AWTs and Supervisors", unsafe_allow_html=True)
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference in Wasting levels between AWTs and Supervisors", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px;padding-bottom:10px'>Note: AWT SAM and AWT Wasting figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
                     categories = ['AWT_SAM_%', 'AWT_Wasting_%','Supervisor_SAM_%', 'Supervisor_Wasting_%']
                     colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
                     wasting_table_melted = projectWastingLevels.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
@@ -419,10 +419,18 @@ def pseudo_code_analysis():
                 if 'wastingClassification' in data['projectLevelInsights']:
                     container = st.container(border=True)
                     projectWastingClassification = pd.DataFrame(data['projectLevelInsights']['wastingClassification'])
-                    container.markdown("<h6 style='text-align:center;'>Difference between AWT and Supervisor in Wasting Classification", unsafe_allow_html=True)
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference between AWT and Supervisor in Wasting Classification", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px;padding-bottom:10px'>SAM - Severely acutely malnourished [>3 SD (Standard Deviation)],<br> MAM = Moderately acutely malnourished [2-3 SD]", unsafe_allow_html=True)
                     categories = ['AWT_Normal_Sup_SAM_%', 'AWT_Normal_Sup_MAM_%', 'AWT_MAM_Sup_SAM_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
                     colors = ['darkred', 'red', 'lightcoral', 'gold', 'green']
                     project_analysis_melted = projectWastingClassification.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    project_analysis_melted['Percentage'] = project_analysis_melted.groupby('Proj_Name')['Percentage'].transform(
+                        lambda x: x / x.sum() * 100
+                    )
+                    project_analysis_melted['Percentage'] = project_analysis_melted['Percentage'].round(0)
+                    project_analysis_melted['Percentage_label'] = project_analysis_melted['Percentage'].apply(
+                        lambda x: f"{x:.1f}%"  # Ensures 1 decimal place even for values < 1
+                    )
                     fig_projectWastingClassification = px.bar(
                         project_analysis_melted,
                         x='Percentage',
@@ -437,7 +445,7 @@ def pseudo_code_analysis():
                         height=400,
                         xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=True),
                         yaxis=dict(title=None,showgrid=False,showticklabels=True),
-                        legend=dict(title=None,orientation='h'),
+                        legend=dict(orientation='h', yanchor='bottom', y=-0.25, xanchor='center', x=0.4,title=None),
                         bargap=0.2
                     )
                     container.plotly_chart(fig_projectWastingClassification)
@@ -451,7 +459,8 @@ def pseudo_code_analysis():
                 if 'underweightLevels' in data['projectLevelInsights']:
                     container = st.container(border=True)
                     projectUnderweightLevels = pd.DataFrame(data['projectLevelInsights']['underweightLevels'])
-                    container.markdown("<h6 style='text-align:center;'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px;padding:10px'>Note: AWT SUW and AWT Underweight figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
                     categories = ['AWT_SUW_%', 'Sup_SUW_%', 'AWT_Underweight_%', 'Sup_Underweight_%']
                     colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
                     project_analysis_melted = projectUnderweightLevels.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
@@ -489,10 +498,18 @@ def pseudo_code_analysis():
                 if 'underweightClassification' in data['projectLevelInsights']:
                     container = st.container(border=True)
                     projectUnderweightClassification = pd.DataFrame(data['projectLevelInsights']['underweightClassification'])
-                    container.markdown("<h6 style='text-align:center;'>Difference between AWT and Supervisor in Underweight Classification", unsafe_allow_html=True)
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference between AWT and Supervisor in Underweight Classification", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px;padding-bottom:10px'>SUW - Severely underweight [>3 SD],<br> MUW = Moderately Underweight [2-3 SD]", unsafe_allow_html=True)
                     categories = ['AWT_Normal_Sup_SUW_%', 'AWT_Normal_Sup_MUW_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
                     colors = ['darkred', 'red', 'gold', 'green']
                     project_analysis_melted = projectUnderweightClassification.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    project_analysis_melted['Percentage'] = project_analysis_melted.groupby('Proj_Name')['Percentage'].transform(
+                        lambda x: x / x.sum() * 100
+                    )
+                    project_analysis_melted['Percentage'] = project_analysis_melted['Percentage'].round(0)
+                    project_analysis_melted['Percentage_label'] = project_analysis_melted['Percentage'].apply(
+                        lambda x: f"{x:.1f}%"  # Ensures 1 decimal place even for values < 1
+                    )
                     fig_projectUnderweightClassification = px.bar(
                         project_analysis_melted,
                         x='Percentage',
@@ -508,7 +525,7 @@ def pseudo_code_analysis():
                         height=400,
                         xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=True),
                         yaxis=dict(title=None,showgrid=False,showticklabels=True),
-                        legend=dict(title=None,orientation='h'),
+                        legend=dict(orientation='h', yanchor='bottom', y=-0.25, xanchor='center', x=0.4,title=None),
                         bargap=0.2
                     )
                     container.plotly_chart(fig_projectUnderweightClassification)
@@ -534,7 +551,7 @@ def pseudo_code_analysis():
                             'Zone': True
                         }
                     )
-                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0))
+                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0),height=len(projectDisc) * 30)
                     fig_treemap.update_traces(
                         marker=dict(
                             cornerradius=5,
@@ -545,7 +562,8 @@ def pseudo_code_analysis():
                             "Total Measurements: %{customdata[0]}<br>"
                             "Discp. Rate: %{customdata[1]:.1f}%<br>"
                             "Percentile Rank: %{customdata[2]:.1f}%"
-                        )
+                        ),
+                        textinfo='label+value'
                     )
                     container.plotly_chart(fig_treemap)
                     with container.expander("Show Data"):
