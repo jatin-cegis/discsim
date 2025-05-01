@@ -175,3 +175,20 @@ div[data-testid="stElementToolbar"] {
   visibility: visible !important;
   opacity: 1 !important;
 }
+
+.stSlider div[data-testid="stTooltipHoverTarget"] svg,
+.stNumberInput div[data-testid="stTooltipHoverTarget"] svg,
+.stSelectbox div[data-testid="stTooltipHoverTarget"] svg,
+.stTextInput div[data-testid="stTooltipHoverTarget"] svg,
+.stMultiSelect div[data-testid="stTooltipHoverTarget"] svg {
+  visibility: hidden;
+}
+
+.stSlider div[data-testid="stTooltipHoverTarget"]::after,
+.stNumberInput div[data-testid="stTooltipHoverTarget"]::after,
+.stSelectbox div[data-testid="stTooltipHoverTarget"]::after,
+.stTextInput div[data-testid="stTooltipHoverTarget"]::after,
+.stMultiSelect div[data-testid="stTooltipHoverTarget"]::after {
+  content: "ⓘ"; /* Unicode character for a right arrow */
+  font-size: 12px;
+}
