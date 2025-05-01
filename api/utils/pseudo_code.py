@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import plotly.express as px
 import base64
+import json
 from scipy.stats import percentileofscore
 
 def error_handling(params):
@@ -103,6 +104,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
     }
     same_values_df = pd.DataFrame(same_values_data)
     same_values_df['Percentage (%)'] = round((same_values_df['Value'] / num_remeasurements) * 100, 1)
+    same_height_data = df[df['Height'] == df['Sup_Height']]
+    same_weight_data = df[df['Weight'] == df['Sup_Weight']]
 
     #Children Classifications
     children_category_data = pd.DataFrame({
@@ -151,7 +154,9 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
     }
     misclassification_wasting_df = pd.DataFrame(misclassification_wasting_data)
     misclassification_wasting_df['Percentage (%)'] = round((misclassification_wasting_df['Value'] / num_remeasurements) * 100, 1)
-    
+    misclassification_wasting_AWT_Normal_Supervisor_SAM = df[(df['Status_Wasting'] == "Normal") & (df['Sup_Status_Wasting'] == "SAM")]
+    misclassification_wasting_AWT_Normal_Supervisor_MAM = df[(df['Status_Wasting'] == "Normal") & (df['Sup_Status_Wasting'] == "MAM")]
+
     #UnderWeight Levels
     underweight_metrics_data = {
         "Metric": ["AWT SUW", "Supervisor SUW", "AWT UW", "Supervisor UW"],
@@ -182,6 +187,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
     }
     underweight_classification_df = pd.DataFrame(underweight_classification_data)
     underweight_classification_df['Percentage (%)'] = round((underweight_classification_df['Value'] / num_remeasurements) * 100, 1)
+    underweight_classification_AWT_Normal_Supervisor_SUW = df[(df['Status_UW'] == "Normal") & (df['Sup_Status_UW'] == "SUW")]
+    underweight_classification_AWT_Normal_Supervisor_MUW = df[(df['Status_UW'] == "Normal") & (df['Sup_Status_UW'] == "MUW")]
 
     #Stunting Levels
     stunting_metrics_data = {
@@ -420,11 +427,17 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
         },
         "districtLevelInsights":{
             "sameHeightWeight":same_values_df.to_dict(orient="records"),
+            "sameHeightRecords":json.dumps(same_height_data.to_dict(orient="records"), default=str),
+            "sameWeightRecords":json.dumps(same_weight_data.to_dict(orient="records"), default=str),
             "childrenCategory":children_category_data.to_dict(orient="records"),
             "wastingLevels":wasting_metrics_df.to_dict(orient="records"),
             "wastingClassification":misclassification_wasting_df.to_dict(orient="records"),
+            "misclassification_wasting_AWT_Normal_Supervisor_SAM":json.dumps(misclassification_wasting_AWT_Normal_Supervisor_SAM.to_dict(orient="records"), default=str),
+            "misclassification_wasting_AWT_Normal_Supervisor_MAM":json.dumps(misclassification_wasting_AWT_Normal_Supervisor_MAM.to_dict(orient="records"), default=str),
             "underweightLevels":underweight_metrics_df.to_dict(orient="records"),
             "underweightClassification":underweight_classification_df.to_dict(orient="records"),
+            "underweight_classification_AWT_Normal_Supervisor_SUW":json.dumps(underweight_classification_AWT_Normal_Supervisor_SUW.to_dict(orient="records"), default=str),
+            "underweight_classification_AWT_Normal_Supervisor_MUW":json.dumps(underweight_classification_AWT_Normal_Supervisor_MUW.to_dict(orient="records"), default=str),
             "stuntingLevels":stunting_metrics_df.to_dict(orient="records"),
             "stuntingClassification":misclassification_stunting_df.to_dict(orient="records")
         },

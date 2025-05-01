@@ -4,6 +4,7 @@ import plotly.express as px
 import requests
 import os
 from src.utils.utility_functions import set_page_config,setFooter,setheader
+import json
 from src.utils.pseudo_code.helpers.file_upload import handle_file_upload
 set_page_config()
 
@@ -71,6 +72,16 @@ def pseudo_code_analysis():
                             sameHeightWeight.index.name = 'SN'
                             sameHeightWeight.index = sameHeightWeight.index + 1
                             st.dataframe(sameHeightWeight,hide_index=False,use_container_width=True)
+                        with container.expander("Show/export cases with exact same height"):
+                            sameHeight = pd.DataFrame(json.loads(data['districtLevelInsights']['sameHeightRecords']))
+                            sameHeight.index.name = 'SN'
+                            sameHeight.index = sameHeight.index + 1
+                            st.dataframe(sameHeight,hide_index=False,use_container_width=True)
+                        with container.expander("Show/export cases with exact same weight"):
+                            sameWeight = pd.DataFrame(json.loads(data['districtLevelInsights']['sameWeightRecords']))
+                            sameWeight.index.name = 'SN'
+                            sameWeight.index = sameWeight.index + 1
+                            st.dataframe(sameWeight,hide_index=False,use_container_width=True)
                 with col2:
                     if 'childrenCategory' in data['districtLevelInsights']:
                         container = st.container(border=True)
@@ -90,12 +101,12 @@ def pseudo_code_analysis():
                             barmode='group',
                             color_discrete_map = {'Average Height Difference (cms)': '#4285f4', 'Average Weight Difference (kgs)': '#34a853'}
                         )
-                        fig_combined.update_traces(width=0.1)
+                        fig_combined.update_traces(width=0.2)
                         fig_combined.update_layout(
                             barcornerradius=5,
                             legend=dict(orientation='h', yanchor='bottom', y=-0.25, xanchor='center', x=0.5,title=None),
                             margin=dict(t=0, b=0),
-                            height=300,
+                            height=430,
                             xaxis=dict(title=None,showgrid=False,showticklabels=True),
                             yaxis=dict(title="Difference (in cms & kgs)",showgrid=False,showticklabels=False),
                             bargroupgap=0.1,
@@ -125,7 +136,7 @@ def pseudo_code_analysis():
                             barcornerradius=5,
                             showlegend=False,
                             margin=dict(t=0, b=0),
-                            height=300,
+                            height=430,
                             xaxis=dict(title=None,showgrid=False,showticklabels=True),
                             yaxis=dict(title="% Remeasurements",showgrid=False,showticklabels=False)
                         )
@@ -157,7 +168,6 @@ def pseudo_code_analysis():
                             height=300,
                             xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
                             yaxis=dict(title=None,showgrid=False,showticklabels=True),
-                            bargap=0.5
                         )
                         container.plotly_chart(fig_wasting_metrics)
                         with container.expander("Show Data"):
@@ -165,6 +175,16 @@ def pseudo_code_analysis():
                             wastingClassification.index.name = 'SN'
                             wastingClassification.index = wastingClassification.index + 1
                             st.dataframe(wastingClassification,hide_index=False,use_container_width=True)
+                        with container.expander("Show/export cases where AWT Normal; Supervisor SAM"):
+                            misclassification_wasting_AWT_Normal_Supervisor_SAM = pd.DataFrame(json.loads(data['districtLevelInsights']['misclassification_wasting_AWT_Normal_Supervisor_SAM']))
+                            misclassification_wasting_AWT_Normal_Supervisor_SAM.index.name = 'SN'
+                            misclassification_wasting_AWT_Normal_Supervisor_SAM.index = misclassification_wasting_AWT_Normal_Supervisor_SAM.index + 1
+                            st.dataframe(misclassification_wasting_AWT_Normal_Supervisor_SAM,hide_index=False,use_container_width=True)
+                        with container.expander("Show/export cases where AWT Normal; Supervisor MAM"):
+                            misclassification_wasting_AWT_Normal_Supervisor_MAM = pd.DataFrame(json.loads(data['districtLevelInsights']['misclassification_wasting_AWT_Normal_Supervisor_MAM']))
+                            misclassification_wasting_AWT_Normal_Supervisor_MAM.index.name = 'SN'
+                            misclassification_wasting_AWT_Normal_Supervisor_MAM.index = misclassification_wasting_AWT_Normal_Supervisor_MAM.index + 1
+                            st.dataframe(misclassification_wasting_AWT_Normal_Supervisor_MAM,hide_index=False,use_container_width=True)
 
                 st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px;padding:0.3rem'>Underweight [Weight-For-Age]", unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
@@ -185,7 +205,7 @@ def pseudo_code_analysis():
                             barcornerradius=5,
                             showlegend=False,
                             margin=dict(t=0, b=0),
-                            height=300,
+                            height=450,
                             xaxis=dict(title=None,showgrid=False,showticklabels=True),
                             yaxis=dict(title="% Remeasurements",showgrid=False,showticklabels=False)
                         )
@@ -217,7 +237,6 @@ def pseudo_code_analysis():
                             height=300,
                             xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
                             yaxis=dict(title=None,showgrid=False,showticklabels=True),
-                            bargap=0.5
                         )
                         container.plotly_chart(fig_underweight_metrics)
                         with container.expander("Show Data"):
@@ -225,6 +244,16 @@ def pseudo_code_analysis():
                             underweightClassification.index.name = 'SN'
                             underweightClassification.index = underweightClassification.index + 1
                             st.dataframe(underweightClassification,hide_index=False,use_container_width=True)
+                        with container.expander("Show/export cases where AWT Normal; Supervisor SUW"):
+                            underweight_classification_AWT_Normal_Supervisor_SUW = pd.DataFrame(json.loads(data['districtLevelInsights']['underweight_classification_AWT_Normal_Supervisor_SUW']))
+                            underweight_classification_AWT_Normal_Supervisor_SUW.index.name = 'SN'
+                            underweight_classification_AWT_Normal_Supervisor_SUW.index = underweight_classification_AWT_Normal_Supervisor_SUW.index + 1
+                            st.dataframe(underweight_classification_AWT_Normal_Supervisor_SUW,hide_index=False,use_container_width=True)
+                        with container.expander("Show/export cases where AWT Normal; Supervisor MUW"):
+                            underweight_classification_AWT_Normal_Supervisor_MUW = pd.DataFrame(json.loads(data['districtLevelInsights']['underweight_classification_AWT_Normal_Supervisor_MUW']))
+                            underweight_classification_AWT_Normal_Supervisor_MUW.index.name = 'SN'
+                            underweight_classification_AWT_Normal_Supervisor_MUW.index = underweight_classification_AWT_Normal_Supervisor_MUW.index + 1
+                            st.dataframe(underweight_classification_AWT_Normal_Supervisor_MUW,hide_index=False,use_container_width=True)
 
                 st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px;padding:0.3rem'>Stunting [Height For Age]", unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
@@ -277,7 +306,6 @@ def pseudo_code_analysis():
                             height=300,
                             xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
                             yaxis=dict(title=None,showgrid=False,showticklabels=True),
-                            bargap=0.5
                         )
                         container.plotly_chart(fig_underweight_metrics)
                         with container.expander("Show Data"):
