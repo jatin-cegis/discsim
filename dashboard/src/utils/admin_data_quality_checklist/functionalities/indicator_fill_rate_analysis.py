@@ -103,6 +103,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
     
     num_conditions = st.number_input("How many invalid conditions? [add up to 3]", min_value=0, max_value=3, value=0, step=1)
     invalid_conditions = []
+    include_zero_as_separate_category = False
     if is_numeric_column(df[column_to_analyze]):
         include_zero_as_separate_category = st.checkbox("Include zero entries as a separate category", value=True)
     if num_conditions:
