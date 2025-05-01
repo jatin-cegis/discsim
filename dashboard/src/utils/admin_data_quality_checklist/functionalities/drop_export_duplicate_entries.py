@@ -14,6 +14,9 @@ DROP_EXPORT_DUPLICATES_ENDPOINT = f"{API_BASE_URL}/drop_export_duplicates"
 GET_PROCESSED_DATA_ENDPOINT = f"{API_BASE_URL}/get_processed_data"
 GET_DATAFRAME_ENDPOINT = f"{API_BASE_URL}/get_dataframe"
 
+def handle_click(newSelection):
+    st.session_state.option_selection = newSelection
+
 def drop_export_duplicate_entries(uploaded_file, df):
     customcss = """
         <style>
@@ -23,12 +26,14 @@ def drop_export_duplicate_entries(uploaded_file, df):
         .stHorizontalBlock{
             //margin-top:-30px;
         }
-        .st-key-processBtn button{
+        .st-key-processBtn button,.st-key-dropentryBtn button, .st-key-dropentryBtns button{
             background-color:#3b8e51;
             color:#fff;
             border:none;
         }
-        .st-key-processBtn button:hover,.st-key-processBtn button:active,.st-key-processBtn button:focus,st-key-processBtn button:focus:not(:active){
+        .st-key-processBtn button:hover,.st-key-processBtn button:active,.st-key-processBtn button:focus,st-key-processBtn button:focus:not(:active),
+        .st-key-dropentryBtn button:hover,.st-key-dropentryBtn button:active,.st-key-dropentryBtn button:focus,st-key-dropentryBtn button:focus:not(:active),
+        .st-key-dropentryBtns button:hover,.st-key-dropentryBtns button:active,.st-key-dropentryBtns button:focus,st-key-dropentryBtns button:focus:not(:active){
             color:#fff!important;
             border:none;
         }
@@ -103,6 +108,14 @@ def drop_export_duplicate_entries(uploaded_file, df):
                     col5.text("In case you want to continue your analysis using the modified dataset, you can view and download the modified dataset with only unique entries here")
                     with col5.expander("Show/export unique entries"):
                         try:
+                            st.write("")
+                            paraField, colBtn = st.columns([2,1])
+                            paraField.write("To further deep-dive into this data, download the file, upload it to the module, and use the Generate Frequency Table function")
+                            dropentry = "Generate frequency table"
+                            colBtn.button(dropentry, on_click=handle_click, args=[dropentry],key="dropentryBtn")
+                            st.write("")
+                            st.write("")
+
                             unique_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=unique").json())
                             unique_df.index.name = 'SN'
                             unique_df.index = unique_df.index + 1
@@ -115,6 +128,13 @@ def drop_export_duplicate_entries(uploaded_file, df):
                     duplicate_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=duplicate").json())
                     if len(duplicate_df)>0:
                         with col4.expander("Show/export duplicate entries"):
+                            st.write("")
+                            paraField, colBtn = st.columns([2,1])
+                            paraField.write("To further deep-dive into this data, download the file, upload it to the module, and use the Generate Frequency Table function")
+                            dropentry = "Generate frequency table"
+                            colBtn.button(dropentry, on_click=handle_click, args=[dropentry],key="dropentryBtns")
+                            st.write("")
+                            st.write("")
                             try:
                                 duplicate_df.index.name = 'SN'
                                 duplicate_df.index = duplicate_df.index + 1
