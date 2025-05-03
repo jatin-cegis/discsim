@@ -316,6 +316,7 @@ def pseudo_code_analysis():
 
 
             with project:
+                st.markdown("<h4 style='text-align:center'>Project-level insights on Nested Supervision intervention", unsafe_allow_html=True)
                 col1,col2 = st.columns(2)
                 with col1:
                     if 'sameHeight' in data['projectLevelInsights']:
@@ -572,6 +573,7 @@ def pseudo_code_analysis():
                         st.dataframe(projectDisc,hide_index=False,use_container_width=True)
                     
             with sector:
+                st.markdown("<h4 style='text-align:center'>Sector-level insights on Nested Supervision intervention", unsafe_allow_html=True)
                 col1,col2 = st.columns(2)
                 with col1:
                     if 'sameHeight' in data['sectorLevelInsights']:
@@ -794,6 +796,7 @@ def pseudo_code_analysis():
                         st.dataframe(sectorDisc,hide_index=False,use_container_width=True)    
 
             with awc:
+                st.markdown("<h4 style='text-align:center'>AWC-level insights on Nested Supervision intervention", unsafe_allow_html=True)
                 if 'discrepancy' in data['awcLevelInsights']:
                     container = st.container(border=True)
                     container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
