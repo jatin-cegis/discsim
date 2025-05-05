@@ -117,7 +117,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                 with col2:
                     operation = st.selectbox(f"Operation", get_numeric_operations(), key=f"op{i}")
                 with col3:
-                    value = st.number_input(f"Value", value=0.0, step=0.1, key=f"val{i}")
+                    value = st.number_input(f"Value", key=f"val{i}")
 
                 invalid_conditions.append({
                     "label": label.strip().replace(" ", ""),
