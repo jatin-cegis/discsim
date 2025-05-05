@@ -2,6 +2,8 @@ section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] {
   padding: 7px;
   background-color: #136a9a;
   margin-bottom: 20px;
+  margin-right: -10px;
+  margin-left: -10px;
 }
 
 section[data-testid="stSidebar"] img,
