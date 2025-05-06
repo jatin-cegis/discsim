@@ -2,6 +2,8 @@ section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] {
   padding: 7px;
   background-color: #136a9a;
   margin-bottom: 20px;
+  margin-right: -10px;
+  margin-left: -10px;
 }
 
 section[data-testid="stSidebar"] img,
@@ -174,4 +176,21 @@ div[data-testid="stElementToolbar"] {
   top: -38px;
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+.stSlider div[data-testid="stTooltipHoverTarget"] svg,
+.stNumberInput div[data-testid="stTooltipHoverTarget"] svg,
+.stSelectbox div[data-testid="stTooltipHoverTarget"] svg,
+.stTextInput div[data-testid="stTooltipHoverTarget"] svg,
+.stMultiSelect div[data-testid="stTooltipHoverTarget"] svg {
+  visibility: hidden;
+}
+
+.stSlider div[data-testid="stTooltipHoverTarget"]::after,
+.stNumberInput div[data-testid="stTooltipHoverTarget"]::after,
+.stSelectbox div[data-testid="stTooltipHoverTarget"]::after,
+.stTextInput div[data-testid="stTooltipHoverTarget"]::after,
+.stMultiSelect div[data-testid="stTooltipHoverTarget"]::after {
+  content: "ⓘ"; /* Unicode character for a right arrow */
+  font-size: 12px;
 }

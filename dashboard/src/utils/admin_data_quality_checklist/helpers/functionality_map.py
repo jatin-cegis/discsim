@@ -56,14 +56,14 @@ def get_relevant_functionality(warning):
     for functionality, info in FUNCTIONALITY_MAP.items():
         if any(keyword in warning for keyword in info["keywords"]):
             return functionality
-    return "Identify Unique ID(s)"  # Default functionality
+    #return "Identify Unique ID(s)"  # Default functionality
 
 def sidebar_functionality_select():
     st.sidebar.header("Choose a Function")
     functionality = st.sidebar.pills(
         label="Choose a functionality",
         options=list(FUNCTIONALITY_MAP.keys()),
-        default=list(FUNCTIONALITY_MAP.keys())[0],
+        # default=list(FUNCTIONALITY_MAP.keys())[0],
         key="functionSelectAdmin",
         label_visibility="collapsed"
     )

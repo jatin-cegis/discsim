@@ -128,7 +128,7 @@ def uniqueIDcheck(data: List[Dict], colsList: List[str]) -> Tuple[str, bool]:
         return "No columns selected", False
 
     if len(colsList) > 4:
-        return "Selected more than 4 columns", False
+        return "You have selected more than 4 columns", False
 
     # Convert input data to DataFrame
     df = pd.DataFrame(data)

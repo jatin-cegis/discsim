@@ -103,6 +103,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
     
     num_conditions = st.number_input("How many invalid conditions? [add up to 3]", min_value=0, max_value=3, value=0, step=1)
     invalid_conditions = []
+    include_zero_as_separate_category = False
     if is_numeric_column(df[column_to_analyze]):
         include_zero_as_separate_category = st.checkbox("Include zero entries as a separate category", value=True)
     if num_conditions:
@@ -116,7 +117,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                 with col2:
                     operation = st.selectbox(f"Operation", get_numeric_operations(), key=f"op{i}")
                 with col3:
-                    value = st.number_input(f"Value", value=0.0, step=0.1, key=f"val{i}")
+                    value = st.number_input(f"Value", key=f"val{i}")
 
                 invalid_conditions.append({
                     "label": label.strip().replace(" ", ""),

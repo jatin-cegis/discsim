@@ -2,13 +2,21 @@ import streamlit as st
 import pandas as pd
 from src.utils.state_management import initialize_states, reset_session_states, reset_upload
 from src.utils.admin_data_quality_checklist.helpers.file_upload import handle_file_upload
-from src.utils.admin_data_quality_checklist.helpers.preliminary_tests import run_preliminary_tests
 from src.utils.admin_data_quality_checklist.helpers.functionality_map import execute_functionality, sidebar_functionality_select
 from src.utils.utility_functions import set_page_config,setFooter,setheader
-
+from src.utils.admin_data_quality_checklist.helpers.about_the_data import abouthepage
 set_page_config()
 
 def admin_data_quality_check():
+    notecss = """
+        <style>
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(div.st-key-notefordata){
+            padding:5px;
+        }
+        </style>
+    """
+    st.markdown(notecss, unsafe_allow_html=True)
+
     # File selection
     file_option = st.sidebar.radio("Choose an option:", ("Upload a file", "Select a previously uploaded file"))
 
@@ -31,16 +39,16 @@ def admin_data_quality_check():
             reset_session_states()
             st.session_state.previous_uploaded_file = uploaded_file
         st.sidebar.divider()
-        # Run preliminary tests
-        if run_preliminary_tests(uploaded_file):
-            
-            # Sidebar for functionality selection
-            functionality = sidebar_functionality_select()
-            
-            # Use the selected functionality
+
+        with st.sidebar.container(border=True,key="notefordata"):
+            st.markdown("<h5>Unselect the function to preview the data",unsafe_allow_html=True)
+
+        functionality = sidebar_functionality_select()
+        if(functionality):
             st.session_state.navbar_selection = functionality
-                        
             execute_functionality(functionality, uploaded_file, df)
+        else:
+            abouthepage(uploaded_file)
 
     else:
         st.info("Please upload a CSV file to begin.")
@@ -55,8 +63,8 @@ if __name__ == "__main__":
     selectedNav = setheader("Admin Data Diagnostic")
     if selectedNav == "Pre Survey":
           st.switch_page("pages/1_Pre_Survey.py")
-    if selectedNav == "Post Survey Nutrition":
-          st.switch_page("pages/4_Pseudo_Code.py")
+    if selectedNav == "Nutrition Analytics":
+          st.switch_page("pages/3_Nutrition_Analytics.py")
     admin_data_quality_check()
 
     setFooter()

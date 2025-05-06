@@ -15,6 +15,35 @@ UNIQUE_ID_CHECK_ENDPOINT = f"{API_BASE_URL}/unique_id_check"
 def handle_click(newSelection):
     st.session_state.option_selection = newSelection
 
+@st.fragment
+def unique_id_creation_fragment(df, columns):
+    with st.expander("Create New Unique ID Column from Selected Columns", expanded=True):
+        new_col_name = st.text_input(
+            "Enter name for new Unique ID column", 
+            value="Unique_ID", 
+            key="unique_col_name"
+        )
+        delimiter = st.text_input(
+            "Enter delimiter to join columns", 
+            value="_", 
+            key="unique_col_delimiter"
+        )
+
+        if st.button("Create Unique ID Column", key="create_uid_btn"):
+            if not new_col_name.strip():
+                st.error("Column name cannot be empty.")
+            if new_col_name in df.columns:
+                df.drop(columns=[new_col_name], inplace=True)
+            else:
+                try:
+                    df[new_col_name] = df[columns].astype(str).agg(delimiter.join, axis=1)
+                    st.success(f"New column '{new_col_name}' added to the dataset.")
+                    df.index.name = 'SN'
+                    df.index = df.index + 1
+                    st.dataframe(df, use_container_width=True, hide_index=False)
+                except Exception as e:
+                    st.error(f"Failed to create unique ID column: {str(e)}")
+
 def check_specific_columns_as_unique_id(df):
     customcss = """
         <style>
@@ -61,22 +90,35 @@ def check_specific_columns_as_unique_id(df):
     
 
     selectField, updateBtn = st.columns([2,1])
-    columns = selectField.multiselect("Select column(s) to verify [multiple selections are allowed - up to 4]", options=df.columns.tolist(),key="uidCol")
+    columns = selectField.multiselect("Select column(s) to verify [multiple selections are allowed - up to 4]",max_selections=4, options=[str(col) for col in df.columns.tolist()],key="uidCol")
     
     if columns and updateBtn.button("Check Unique ID",key="functioncall"):
-        with st.spinner("Checking unique ID..."):
+        with st.spinner(f"Checking if {', '.join(columns)} form a unique ID..."):
             df_clean = df.replace([np.inf, -np.inf], np.nan).dropna()
             data = df_clean.where(pd.notnull(df_clean), None).to_dict('records')
             payload = {"data": data, "columns": columns}
             response = requests.post(UNIQUE_ID_CHECK_ENDPOINT, json=payload)
             
             if response.status_code == 200:
-                result = response.json()['result']
+                try:
+                    result = response.json()['result']
+                except ValueError:
+                    st.error("Received invalid JSON response from the server.")
+                    return
+                
                 if result[1]:
-                    st.success("Yes, the selected column(s) can work as a Unique ID")
-                    st.write(result[0])
+                    #st.success("Yes, the selected column(s) can work as a Unique ID")
+                    st.success(result[0])
+                    unique_id_creation_fragment(df, columns)
                 else:
-                    st.error("No, the select column(s) cannot work as a Unique ID")
+                    #st.error("No, the select column(s) cannot work as a Unique ID")
+                    st.error(result[0])
+
+                    with st.expander("Show/Export the duplicates"):
+                        duplicate_rows = df[df.duplicated(subset=columns, keep=False)]
+                        duplicate_rows.index.name = 'SN'
+                        duplicate_rows.index = duplicate_rows.index + 1
+                        st.dataframe(duplicate_rows, use_container_width=True, hide_index=False)
 
                     paraField, colBtn = st.columns([2,1])
                     paraField.write("In case you want to drop/export the duplicate entries from the column(s), you can use the Inspect Duplicate Entries function")

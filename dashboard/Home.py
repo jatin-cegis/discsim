@@ -11,8 +11,8 @@ if __name__ == "__main__":
           st.switch_page("pages/1_Pre_Survey.py")
     if selectedNav == "Admin Data Diagnostic":
           st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
-    if selectedNav == "Post Survey Nutrition":
-          st.switch_page("pages/4_Pseudo_Code.py")
+    if selectedNav == "Nutrition Analytics":
+          st.switch_page("pages/3_Nutrition_Analytics.py")
     setFooter()
 
     with st.container():
@@ -119,7 +119,7 @@ if __name__ == "__main__":
                                     ''')
                   
                   with postsurvey:
-                        st.page_link("pages/4_Pseudo_Code.py", label="Go to Module Page",icon=":material/display_external_input:")
+                        st.page_link("pages/3_Nutrition_Analytics.py", label="Go to Module Page",icon=":material/display_external_input:")
                         with st.expander("ECD Nested Supervision"):
                               st.write('''
                                     demo

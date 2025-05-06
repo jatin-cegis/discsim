@@ -14,6 +14,8 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 
 ZERO_ENTRIES_ENDPOINT = f"{API_BASE_URL}/zero_entries"
 
+def handle_click(newSelection):
+    st.session_state.option_selection = newSelection
 def zero_entries_analysis(uploaded_file, df):
     customcss = """
         <style>
@@ -23,12 +25,14 @@ def zero_entries_analysis(uploaded_file, df):
         .stHorizontalBlock{
             //margin-top:-30px;
         }
-        .st-key-processBtn button{
+        .st-key-processBtn button,.st-key-dropentryBtn button, .st-key-dropentryBtns button{
             background-color:#3b8e51;
             color:#fff;
             border:none;
         }
-        .st-key-processBtn button:hover,.st-key-processBtn button:active,.st-key-processBtn button:focus,st-key-processBtn button:focus:not(:active){
+        .st-key-processBtn button:hover,.st-key-processBtn button:active,.st-key-processBtn button:focus,st-key-processBtn button:focus:not(:active),
+        .st-key-dropentryBtn button:hover,.st-key-dropentryBtn button:active,.st-key-dropentryBtn button:focus,st-key-dropentryBtn button:focus:not(:active),
+        .st-key-dropentryBtns button:hover,.st-key-dropentryBtns button:active,.st-key-dropentryBtns button:focus,st-key-dropentryBtns button:focus:not(:active){
             color:#fff!important;
             border:none;
         }
@@ -158,6 +162,15 @@ def zero_entries_analysis(uploaded_file, df):
                         if column_to_analyze in zero_entries_df.columns:
                             zero_entries_df = zero_entries_df.sort_values(column_to_analyze, ascending=False)
                             with st.expander("Show/export rows with zero entries:"):
+
+                                st.write("")
+                                paraField, colBtn = st.columns([3,1])
+                                paraField.write("To further deep-dive into this data, download the file, upload it to the module, and use the Generate Frequency Table function")
+                                dropentry = "Generate frequency table"
+                                colBtn.button(dropentry, on_click=handle_click, args=[dropentry],key="dropentryBtns")
+                                st.write("")
+                                st.write("")
+
                                 zero_entries_df.index.name = 'SN'
                                 zero_entries_df.index = zero_entries_df.index + 1
                                 st.dataframe(zero_entries_df, use_container_width=True, hide_index=False)
