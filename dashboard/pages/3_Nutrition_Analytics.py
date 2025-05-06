@@ -696,7 +696,7 @@ def pseudo_code_analysis():
                         barcornerradius=5,
                         margin=dict(t=0, b=0),
                         height=400,
-                        xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=True),
+                        xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
                         yaxis=dict(title=None,showgrid=False,showticklabels=True),
                         legend=dict(title=None,orientation='h'),
                         bargap=0.2
@@ -713,7 +713,8 @@ def pseudo_code_analysis():
                 if 'underweightLevels' in data['sectorLevelInsights']:
                     container = st.container(border=True)
                     sectorUnderweightLevels = pd.DataFrame(data['sectorLevelInsights']['underweightLevels'])
-                    container.markdown("<h6 style='text-align:center;'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
+                    container.markdown("<h6 style='text-align:center;padding:0px'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>10 sectors with the highest difference between AWT and Supervisor Underweight %'", unsafe_allow_html=True)
                     categories = ['AWT_SUW_%', 'Sup_SUW_%', 'AWT_Underweight_%', 'Sup_Underweight_%']
                     colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
                     top_10_sector_analysis = sectorUnderweightLevels.nlargest(10, 'Sup-AWT_Difference_%')
