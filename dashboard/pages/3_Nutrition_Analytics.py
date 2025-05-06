@@ -31,7 +31,8 @@ def pseudo_code_analysis():
             response = requests.post(PSEUDO_CODE_ENDPOINT,files=files)
 
         if response.status_code == 200:
-            st.markdown("<h3 style='text-align:center'>Nested Supervision :: Nutrition", unsafe_allow_html=True)
+            st.markdown("<h2 style='text-align:center;color:#136a9a;font-weight:800;padding:0;margin:0'>Insights from the Nested Supervision intervention", unsafe_allow_html=True)
+            st.markdown("<h4 style='text-align:center;color:#34a853;margin-bottom:20px;font-weight:300'>District Collector / District Welfare Officer view", unsafe_allow_html=True)
             status,message,data = response.json()
             if 'summary' in data:
                 a,c,d,e = st.columns(4)
@@ -637,10 +638,12 @@ def pseudo_code_analysis():
                 if 'wastingLevels' in data['sectorLevelInsights']:
                     container = st.container(border=True)
                     sectorWastingLevels = pd.DataFrame(data['sectorLevelInsights']['wastingLevels'])
-                    container.markdown("<h6 style='text-align:center;'>Difference in Wasting levels between AWTs and Supervisors", unsafe_allow_html=True)
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference in Wasting levels between AWTs and Supervisors", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>10 sectors with the highest difference between AWT and Supervisor Wasting %", unsafe_allow_html=True)
                     categories = ['AWT_SAM_%', 'AWT_Wasting_%','Supervisor_SAM_%', 'Supervisor_Wasting_%']
                     colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
-                    wasting_table_melted = sectorWastingLevels.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    top_10_sector_analysis = sectorWastingLevels.nlargest(10, 'Sup-AWT_Difference_%')
+                    wasting_table_melted = top_10_sector_analysis.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
                     fig_wasting_levels = px.bar(
                         wasting_table_melted,
                         x='Sec_Name',
@@ -667,10 +670,20 @@ def pseudo_code_analysis():
                 if 'wastingClassification' in data['sectorLevelInsights']:
                     container = st.container(border=True)
                     sectorWastingClassification = pd.DataFrame(data['sectorLevelInsights']['wastingClassification'])
-                    container.markdown("<h6 style='text-align:center;'>Difference between AWT and Supervisor in Wasting Classification", unsafe_allow_html=True)
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference between AWT and Supervisor in Wasting Classification", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>10 sectors with the highest misclassification", unsafe_allow_html=True)
                     categories = ['AWT_Normal_Sup_SAM_%', 'AWT_Normal_Sup_MAM_%', 'AWT_MAM_Sup_SAM_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
                     colors = ['darkred', 'red', 'lightcoral', 'gold', 'green']
-                    sector_analysis_melted = sectorWastingClassification.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    #top_10_sector_analysis = sectorWastingClassification.sort_values(by='Same_Classifications_%',ascending=True)
+                    top_10_sector_analysis = sectorWastingClassification.nsmallest(10, 'Same_Classifications_%')
+                    sector_analysis_melted = top_10_sector_analysis.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    sector_analysis_melted['Percentage'] = sector_analysis_melted.groupby('Sec_Name')['Percentage'].transform(
+                        lambda x: x / x.sum() * 100
+                    )
+                    sector_analysis_melted['Percentage'] = sector_analysis_melted['Percentage'].round(0)
+                    sector_analysis_melted['Percentage_label'] = sector_analysis_melted['Percentage'].apply(
+                        lambda x: f"{x:.1f}%"  # Ensures 1 decimal place even for values < 1
+                    )
                     fig_sectorWastingClassification = px.bar(
                         sector_analysis_melted,
                         x='Percentage',
@@ -703,8 +716,8 @@ def pseudo_code_analysis():
                     container.markdown("<h6 style='text-align:center;'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
                     categories = ['AWT_SUW_%', 'Sup_SUW_%', 'AWT_Underweight_%', 'Sup_Underweight_%']
                     colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
-                    sector_analysis_melted = sectorUnderweightLevels.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
-                    #sector_analysis_melted = sector_analysis_melted.nlargest(10, 'Percentage')
+                    top_10_sector_analysis = sectorUnderweightLevels.nlargest(10, 'Sup-AWT_Difference_%')
+                    sector_analysis_melted = top_10_sector_analysis.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
                     fig_uw_levels = px.bar(
                         sector_analysis_melted,
                         x='Sec_Name',
@@ -731,10 +744,20 @@ def pseudo_code_analysis():
                 if 'underweightClassification' in data['sectorLevelInsights']:
                     container = st.container(border=True)
                     sectorUnderweightClassification = pd.DataFrame(data['sectorLevelInsights']['underweightClassification'])
-                    container.markdown("<h6 style='text-align:center;'>Difference between AWT and Supervisor in Underweight Classification", unsafe_allow_html=True)
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference between AWT and Supervisor in Underweight Classification", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>10 sectors with the highest misclassification", unsafe_allow_html=True)
                     categories = ['AWT_Normal_Sup_SUW_%', 'AWT_Normal_Sup_MUW_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
                     colors = ['darkred', 'red', 'gold', 'green']
-                    project_analysis_melted = sectorUnderweightClassification.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    top_10_sector_analysis = sectorUnderweightClassification.nsmallest(10, 'Same_Classifications_%')
+                    project_analysis_melted = top_10_sector_analysis.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    #top_10_sector_analysis = sectorWastingClassification.sort_values(by='Same_Classifications_%',ascending=True)
+                    project_analysis_melted['Percentage'] = project_analysis_melted.groupby('Sec_Name')['Percentage'].transform(
+                        lambda x: x / x.sum() * 100
+                    )
+                    project_analysis_melted['Percentage'] = project_analysis_melted['Percentage'].round(0)
+                    project_analysis_melted['Percentage_label'] = project_analysis_melted['Percentage'].apply(
+                        lambda x: f"{x:.1f}%"  # Ensures 1 decimal place even for values < 1
+                    )
                     fig_sectorUnderweightClassification = px.bar(
                         project_analysis_melted,
                         x='Percentage',
