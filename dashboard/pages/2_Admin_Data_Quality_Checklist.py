@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from src.utils.state_management import initialize_states, reset_session_states, reset_upload
-from src.utils.admin_data_quality_checklist.helpers.file_upload import handle_file_upload
+from src.utils.helpers.file_upload import handle_file_upload
 from src.utils.admin_data_quality_checklist.helpers.functionality_map import execute_functionality, sidebar_functionality_select
 from src.utils.utility_functions import set_page_config,setFooter,setheader
 from src.utils.admin_data_quality_checklist.helpers.about_the_data import abouthepage
