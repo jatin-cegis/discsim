@@ -4,6 +4,9 @@ from PIL import Image
 from streamlit_navigation_bar import st_navbar
 from dotenv import load_dotenv
 load_dotenv()
+import requests
+from urllib.parse import urlparse
+import time
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -108,3 +111,39 @@ def clearAllSessions():
         if key != "user_name":
             del st.session_state[key]
     st.success("Sessions cleared!")
+
+def read_uploaded_file(uploaded_file):
+    """Read uploaded file and return bytes and filename."""
+    start_time = time.perf_counter()
+    try:
+        if not uploaded_file:
+            raise ValueError("No file uploaded.")
+        if not uploaded_file.name.lower().endswith(('.csv', '.xlsx')):
+            raise ValueError("Only CSV and XLSX files are supported.")
+        uploaded_file.seek(0)
+        file_bytes = uploaded_file.read()
+        if not file_bytes:
+            raise ValueError("Uploaded file is empty.")
+        end_time = time.perf_counter()
+        return file_bytes, uploaded_file.name, end_time - start_time
+    except Exception as e:
+        st.error(f"Failed to read uploaded file: {str(e)}")
+        raise
+@st.cache_data(max_entries=10)
+def callAPI(file_bytes: bytes, filename: str, url: str):
+    start_time = time.perf_counter()
+    try:
+        parsed_url = urlparse(url)
+        if not parsed_url.scheme or not parsed_url.netloc:
+            raise ValueError("Invalid API URL.")
+        files = {"file": (filename, file_bytes, "text/csv")}
+        response = requests.post(url, files=files)
+        response.raise_for_status()
+        end_time = time.perf_counter()
+        return response, end_time - start_time
+    except requests.RequestException as e:
+        st.error(f"API request failed: {str(e)}")
+        raise
+    except ValueError as e:
+        st.error(f"Invalid input: {str(e)}")
+        raise
