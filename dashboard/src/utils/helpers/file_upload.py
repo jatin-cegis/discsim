@@ -3,7 +3,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from src.utils.post_survey_analysis.helpers.fetch_files import fetch_file_from_api
+from src.utils.helpers.fetch_files import fetch_file_from_api
 
 load_dotenv()
 

@@ -5,7 +5,7 @@ import requests
 import os
 from src.utils.utility_functions import set_page_config,setFooter,setheader
 import json
-from src.utils.pseudo_code.helpers.file_upload import handle_file_upload
+from src.utils.helpers.file_upload import handle_file_upload
 set_page_config()
 
 API_BASE_URL = os.getenv("API_BASE_URL")
