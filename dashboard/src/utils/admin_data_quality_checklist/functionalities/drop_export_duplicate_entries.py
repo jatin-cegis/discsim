@@ -81,7 +81,7 @@ def drop_export_duplicate_entries(uploaded_file, df):
             st.error("Please select column")
             return 
         else:
-            total_start_time = time.perf_counter()
+            # total_start_time = time.perf_counter()
             with st.spinner("Processing..."):
                 try:
                     file_bytes, filename, file_read_time = read_uploaded_file(uploaded_file)
@@ -95,18 +95,18 @@ def drop_export_duplicate_entries(uploaded_file, df):
                     response, api_call_end = callAPIWithFileParam(file_bytes,payload,DROP_EXPORT_DUPLICATES_ENDPOINT)
 
                     if response.status_code == 200:
-                        dataframe_start = time.perf_counter()
+                        # dataframe_start = time.perf_counter()
                         result = response.json()
                         st.session_state.drop_export_entries_complete = True
 
-                        api_call_start_1 = time.perf_counter()
+                        # api_call_start_1 = time.perf_counter()
                         unique_df = fetch_dataframe('unique',GET_DATAFRAME_ENDPOINT)
-                        api_call_end_1 = time.perf_counter() - api_call_start_1
+                        # api_call_end_1 = time.perf_counter() - api_call_start_1
 
-                        api_call_start_2 = time.perf_counter()
+                        # api_call_start_2 = time.perf_counter()
                         duplicate_df = fetch_dataframe('duplicate',GET_DATAFRAME_ENDPOINT)
-                        api_call_end_2 = time.perf_counter() - api_call_start_2
-                        
+                        # api_call_end_2 = time.perf_counter() - api_call_start_2
+
                         # Visualize the results
                         unique_rows = len(unique_df)
                         duplicate_rows = len(duplicate_df)
@@ -154,17 +154,17 @@ def drop_export_duplicate_entries(uploaded_file, df):
                                     st.error(f"Error displaying duplicate rows: {str(e)}")
                         else:
                             col4.warning("No Duplicate Entries")
-                        dataframe_end = time.perf_counter() - dataframe_start
+                        # dataframe_end = time.perf_counter() - dataframe_start
                     else:
                         st.error(f"Error: {response.status_code} - {response.text}")
 
-                    total_end_time = time.perf_counter()
+                    # total_end_time = time.perf_counter()
 
-                    st.info("**Performance Metrics:**")
-                    st.write(f"- File Reading: {(file_read_time):.3f} seconds")
-                    st.write(f"- API Response Time (Server): {(api_call_end + api_call_end_1 + api_call_end_2):.3f} seconds")
-                    st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
-                    st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")
+                    # st.info("**Performance Metrics:**")
+                    # st.write(f"- File Reading: {(file_read_time):.3f} seconds")
+                    # st.write(f"- API Response Time (Server): {(api_call_end + api_call_end_1 + api_call_end_2):.3f} seconds")
+                    # st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
+                    # st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")
                 except Exception as e:
                     st.error(f"An error occurred: {str(e)}")
 

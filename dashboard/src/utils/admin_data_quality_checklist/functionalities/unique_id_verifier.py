@@ -53,10 +53,10 @@ def unique_id_verifier(uploaded_file):
     if col2.button("Find Unique ID(s)",key="functioncall"):
         with st.spinner("Finding unique IDs..."):
             try:
-                total_start_time = time.perf_counter()
+                # total_start_time = time.perf_counter()
                 file_details, filename, file_read_time = read_uploaded_file(uploaded_file)
                 response , api_call_time = callAPI(file_details,filename,FIND_UNIQUE_IDS_ENDPOINT)
-                dataframe_start_time = time.perf_counter()
+                # dataframe_start_time = time.perf_counter()
                 if response.status_code == 200:
                     unique_ids = response.json()
                     
@@ -73,7 +73,7 @@ def unique_id_verifier(uploaded_file):
                     else:
                         st.warning("No unique identifiers found. All columns or combinations have at least one duplicate.")
 
-                    dataframe_end_time = time.perf_counter()  - dataframe_start_time
+                    # dataframe_end_time = time.perf_counter()  - dataframe_start_time
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
                     st.write("Response content:", response.content)
@@ -82,10 +82,10 @@ def unique_id_verifier(uploaded_file):
                 st.error(f"An error occurred: {str(e)}")
                 st.write("Traceback:", traceback.format_exc())
 
-            total_end_time = time.perf_counter()
+            # total_end_time = time.perf_counter()
                         
-            st.info("**Performance Metrics:**")
-            st.write(f"- File Reading: {file_read_time:.3f} seconds")
-            st.write(f"- API Response Time - Server Side: {api_call_time:.3f} seconds")
-            st.write(f"- DataFrame Processing - Client Side: {(dataframe_end_time):.3f} seconds")
-            st.write(f"- Total Execution: {(total_end_time - total_start_time):.3f} seconds")
+            # st.info("**Performance Metrics:**")
+            # st.write(f"- File Reading: {file_read_time:.3f} seconds")
+            # st.write(f"- API Response Time - Server Side: {api_call_time:.3f} seconds")
+            # st.write(f"- DataFrame Processing - Client Side: {(dataframe_end_time):.3f} seconds")
+            # st.write(f"- Total Execution: {(total_end_time - total_start_time):.3f} seconds")

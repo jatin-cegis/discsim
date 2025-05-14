@@ -80,7 +80,7 @@ def missing_entries_analysis(uploaded_file, df):
 
     # Analyze Missing Entries
     if st.button("Analyze Missing Entries",key="processBtn"):
-        total_start_time = time.perf_counter()
+        # total_start_time = time.perf_counter()
         with st.spinner("Analyzing missing entries..."):
             try:
                 file_bytes, filename, file_read_time = read_uploaded_file(uploaded_file)
@@ -94,7 +94,7 @@ def missing_entries_analysis(uploaded_file, df):
                 response, api_call_end = callAPIWithFileParam(file_bytes,payload,MISSING_ENTRIES_ENDPOINT)
                                                     
                 if response.status_code == 200:
-                    dataframe_start = time.perf_counter()
+                    # dataframe_start = time.perf_counter()
                     result = response.json()
                     st.success(f"Missing entries analysed for column: '{column_to_analyze}'")
 
@@ -207,7 +207,7 @@ def missing_entries_analysis(uploaded_file, df):
                     else:
                         st.error("The 'missing_entries_table' key is not present in the API response.")
 
-                    dataframe_end = time.perf_counter() - dataframe_start
+                    # dataframe_end = time.perf_counter() - dataframe_start
                 else:
                     error_detail = response.json().get("detail", "Unknown error")
                     st.error(f"Error: {response.status_code} - {error_detail}")
@@ -215,10 +215,10 @@ def missing_entries_analysis(uploaded_file, df):
                 st.error(f"An error occurred: {str(e)}")
                 st.write("Traceback:", traceback.format_exc())
 
-            total_end_time = time.perf_counter()
+            # total_end_time = time.perf_counter()
 
-            st.info("**Performance Metrics:**")
-            st.write(f"- File Reading: {(file_read_time):.3f} seconds")
-            st.write(f"- API Response Time (Server): {(api_call_end):.3f} seconds")
-            st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
-            st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")
+            # st.info("**Performance Metrics:**")
+            # st.write(f"- File Reading: {(file_read_time):.3f} seconds")
+            # st.write(f"- API Response Time (Server): {(api_call_end):.3f} seconds")
+            # st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
+            # st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")

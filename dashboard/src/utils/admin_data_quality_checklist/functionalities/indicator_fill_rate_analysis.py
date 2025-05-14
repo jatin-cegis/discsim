@@ -192,7 +192,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
             invalid_conditions = None
 
     if st.button("Analyse the indicator values",key="processBtn"):
-        total_start_time = time.perf_counter()
+        # total_start_time = time.perf_counter()
         with st.spinner("Analyzing indicator fill rate..."):
             try:
 
@@ -209,7 +209,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                 response, api_call_end = callAPIWithFileParam(file_bytes,payload,INDICATOR_FILL_RATE_ENDPOINT)
                 
                 if response.status_code == 200:
-                    dataframe_start = time.perf_counter()
+                    # dataframe_start = time.perf_counter()
                     result = response.json()
                     invalid_labels = [cond["label"] for cond in invalid_conditions] if invalid_conditions else []
                     
@@ -298,17 +298,17 @@ def indicator_fill_rate_analysis(uploaded_file, df):
 
                         display_detailed_data(result["detailed_data"],invalid_labels,include_zero_as_separate_category)
                     
-                    dataframe_end = time.perf_counter() - dataframe_start
+                    # dataframe_end = time.perf_counter() - dataframe_start
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
                 st.write("Traceback:", traceback.format_exc())
 
-            total_end_time = time.perf_counter()
+            # total_end_time = time.perf_counter()
 
-            st.info("**Performance Metrics:**")
-            st.write(f"- File Reading: {(file_read_time):.3f} seconds")
-            st.write(f"- API Response Time (Server): {(api_call_end):.3f} seconds")
-            st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
-            st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")
+            # st.info("**Performance Metrics:**")
+            # st.write(f"- File Reading: {(file_read_time):.3f} seconds")
+            # st.write(f"- API Response Time (Server): {(api_call_end):.3f} seconds")
+            # st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
+            # st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")

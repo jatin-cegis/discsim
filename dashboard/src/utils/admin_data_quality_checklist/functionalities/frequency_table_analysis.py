@@ -78,7 +78,7 @@ def frequency_table_analysis(uploaded_file, df):
         filter_by_value = col5.selectbox("Enter value for which you want to restrict the analysis", df[filter_by_col].unique().tolist(),key="duplicateValue")
 
     if st.button("Generate Frequency Table",key="processBtn"):
-        total_start_time = time.perf_counter()
+        # total_start_time = time.perf_counter()
         with st.spinner("Generating frequency table..."):
             try:
 
@@ -195,17 +195,17 @@ def frequency_table_analysis(uploaded_file, df):
                         with st.expander("Show/Export Data:"):
                             st.dataframe(display_df, use_container_width=True, hide_index=False)
 
-                    dataframe_end = time.perf_counter() - dataframe_start
+                    # dataframe_end = time.perf_counter() - dataframe_start
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
                 st.write("Traceback:", traceback.format_exc())
 
-            total_end_time = time.perf_counter()
+            # total_end_time = time.perf_counter()
 
-            st.info("**Performance Metrics:**")
-            st.write(f"- File Reading: {(file_read_time):.3f} seconds")
-            st.write(f"- API Response Time (Server): {(api_call_end):.3f} seconds")
-            st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
-            st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")
+            # st.info("**Performance Metrics:**")
+            # st.write(f"- File Reading: {(file_read_time):.3f} seconds")
+            # st.write(f"- API Response Time (Server): {(api_call_end):.3f} seconds")
+            # st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
+            # st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")

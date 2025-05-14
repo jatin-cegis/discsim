@@ -111,19 +111,19 @@ def check_specific_columns_as_unique_id(df):
         submit = st.form_submit_button("Check Unique ID")
     
     if columns and submit:
-        total_start_time = time.perf_counter()
+        # total_start_time = time.perf_counter()
         with st.spinner(f"Checking if {', '.join(columns)} form a unique ID..."):
 
-            file_read_start = time.perf_counter()
+            # file_read_start = time.perf_counter()
             df_clean = df.replace([np.inf, -np.inf], np.nan).dropna()
-            file_read_time = time.perf_counter() - file_read_start
+            # file_read_time = time.perf_counter() - file_read_start
 
             data = df_clean.where(pd.notnull(df_clean), None).to_dict('records')
             payload = {"data": data, "columns": columns}
 
             response, api_call_time = callAPIWithParam(payload, UNIQUE_ID_CHECK_ENDPOINT)
             
-            dataframe_start_time = time.perf_counter()
+            # dataframe_start_time = time.perf_counter()
             if response.status_code == 200:
                 try:
                     result = response.json()['result']
@@ -156,11 +156,11 @@ def check_specific_columns_as_unique_id(df):
             else:
                 error_detail = response.json().get("detail", "Unknown error")
                 st.error(f"Error: {response.status_code} - {error_detail}")
-            dataframe_end_time = time.perf_counter()
+            # dataframe_end_time = time.perf_counter()
 
-            total_end_time = time.perf_counter()
-            st.info("**Performance Metrics:**")
-            st.write(f"- Data Cleaning & Prep: {file_read_time:.3f} seconds")
-            st.write(f"- API Response Time (Server): {api_call_time:.3f} seconds")
-            st.write(f"- DataFrame Handling (Client): {(dataframe_end_time - dataframe_start_time):.3f} seconds")
-            st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")
+            # total_end_time = time.perf_counter()
+            # st.info("**Performance Metrics:**")
+            # st.write(f"- Data Cleaning & Prep: {file_read_time:.3f} seconds")
+            # st.write(f"- API Response Time (Server): {api_call_time:.3f} seconds")
+            # st.write(f"- DataFrame Handling (Client): {(dataframe_end_time - dataframe_start_time):.3f} seconds")
+            # st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")
