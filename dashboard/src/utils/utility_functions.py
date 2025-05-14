@@ -147,3 +147,22 @@ def callAPI(file_bytes: bytes, filename: str, url: str):
     except ValueError as e:
         st.error(f"Invalid input: {str(e)}")
         raise
+
+@st.cache_data(max_entries=10)
+def callAPIWithParam(payload: dict, url: str):
+    start_time = time.perf_counter()
+    try:
+        parsed_url = urlparse(url)
+        if not parsed_url.scheme or not parsed_url.netloc:
+            raise ValueError("Invalid API URL.")
+        payload = payload
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        end_time = time.perf_counter()
+        return response, end_time - start_time
+    except requests.RequestException as e:
+        st.error(f"API request failed: {str(e)}")
+        raise
+    except ValueError as e:
+        st.error(f"Invalid input: {str(e)}")
+        raise
