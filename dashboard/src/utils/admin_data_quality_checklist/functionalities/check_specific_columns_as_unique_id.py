@@ -16,19 +16,36 @@ UNIQUE_ID_CHECK_ENDPOINT = f"{API_BASE_URL}/unique_id_check"
 def customCss():
     customcss = """
         <style>
-        button[data-testid="stBaseButton-secondaryFormSubmit"], .st-key-dropentryBtn button, .st-key-verifyIDBtn button, .st-key-create_uid_btn button{
+        button[data-testid="stBaseButton-secondaryFormSubmit"], 
+        .st-key-dropentryBtn button, 
+        .st-key-verifyIDBtn button, 
+        .st-key-create_uid_btn button{
             background-color:#3b8e51;
             color:#fff;
             border:none;
         }
-        button[data-testid="stBaseButton-secondaryFormSubmit"]:hover,button[data-testid="stBaseButton-secondaryFormSubmit"]:active,button[data-testid="stBaseButton-secondaryFormSubmit"]:focus,st-key-functioncall button:focus:not(:active),
-        .st-key-dropentryBtn button:hover,.st-key-dropentryBtn button:active,.st-key-dropentryBtn button:focus,st-key-dropentryBtn button:focus:not(:active),
-        .st-key-verifyIDBtn button:hover,.st-key-verifyIDBtn button:active,.st-key-verifyIDBtn button:focus,st-key-verifyIDBtn button:focus:not(:active),
-        .st-key-create_uid_btn button:hover,.st-key-create_uid_btn button:active,.st-key-create_uid_btn button:focus,st-key-create_uid_btn button:focus:not(:active){
+        button[data-testid="stBaseButton-secondaryFormSubmit"]:hover,
+        button[data-testid="stBaseButton-secondaryFormSubmit"]:active,
+        button[data-testid="stBaseButton-secondaryFormSubmit"]:focus,
+        button[data-testid="stBaseButton-secondaryFormSubmit"]:focus:not(:active),
+        .st-key-dropentryBtn button:hover,
+        .st-key-dropentryBtn button:active,
+        .st-key-dropentryBtn button:focus,
+        .st-key-dropentryBtn button:focus:not(:active),
+        .st-key-verifyIDBtn button:hover,
+        .st-key-verifyIDBtn button:active,
+        .st-key-verifyIDBtn button:focus,
+        .st-key-verifyIDBtn button:focus:not(:active),
+        .st-key-create_uid_btn button:hover,
+        .st-key-create_uid_btn button:active,
+        .st-key-create_uid_btn button:focus,
+        .st-key-create_uid_btn button:focus:not(:active){
             color:#fff!important;
             border:none;
         }
-        .st-key-uidCol label p::after, .st-key-unique_col_name label p::after, .st-key-unique_col_delimiter label p::after{ 
+        .st-key-uidCol label p::after, 
+        .st-key-unique_col_name label p::after, 
+        .st-key-unique_col_delimiter label p::after{ 
             content: " *";
             color: red;
         }
@@ -104,9 +121,7 @@ def check_specific_columns_as_unique_id(df):
             data = df_clean.where(pd.notnull(df_clean), None).to_dict('records')
             payload = {"data": data, "columns": columns}
 
-            api_call_start = time.perf_counter()
             response, api_call_time = callAPIWithParam(payload, UNIQUE_ID_CHECK_ENDPOINT)
-            api_call_end = time.perf_counter()
             
             dataframe_start_time = time.perf_counter()
             if response.status_code == 200:

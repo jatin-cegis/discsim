@@ -16,12 +16,6 @@ FIND_UNIQUE_IDS_ENDPOINT = f"{API_BASE_URL}/find_unique_ids"
 def customCss():
     customcss = """
         <style>
-        div[data-testid="stExpander"] summary{
-            padding:0.4rem 1rem;
-        }
-        .stHorizontalBlock{
-            //margin-top:-30px;
-        }
         .stHorizontalBlock .stColumn:nth-child(2){
             display:flex;
             align-items: flex-end;
@@ -31,7 +25,10 @@ def customCss():
             color:#fff;
             border:none;
         }
-        .st-key-functioncall button:hover,.st-key-functioncall button:active,.st-key-functioncall button:focus,st-key-functioncall button:focus:not(:active){
+        .st-key-functioncall button:hover,
+        .st-key-functioncall button:active,
+        .st-key-functioncall button:focus,
+        .st-key-functioncall button:focus:not(:active){
             color:#fff!important;
             border:none;
         }
@@ -57,8 +54,8 @@ def unique_id_verifier(uploaded_file):
         with st.spinner("Finding unique IDs..."):
             try:
                 total_start_time = time.perf_counter()
-                file_bytes, filename, file_read_time = read_uploaded_file(uploaded_file)
-                response , api_call_time = callAPI(file_bytes,filename,FIND_UNIQUE_IDS_ENDPOINT)
+                file_details, filename, file_read_time = read_uploaded_file(uploaded_file)
+                response , api_call_time = callAPI(file_details,filename,FIND_UNIQUE_IDS_ENDPOINT)
                 dataframe_start_time = time.perf_counter()
                 if response.status_code == 200:
                     unique_ids = response.json()
@@ -73,17 +70,10 @@ def unique_id_verifier(uploaded_file):
                         df.index = df.index + 1
                         st.dataframe(df['Unique ID (data type)'], use_container_width=True,key="uniquedatatable")
 
-                        dataframe_end_time = time.perf_counter()
-                        total_end_time = time.perf_counter()
-                        
-                        # Display timing results
-                        st.info("**Performance Metrics:**")
-                        st.write(f"- File Reading: {file_read_time:.3f} seconds")
-                        st.write(f"- API Response Time - Server Side: {api_call_time:.3f} seconds")
-                        st.write(f"- DataFrame Processing - Client Side: {(dataframe_end_time - dataframe_start_time):.3f} seconds")
-                        st.write(f"- Total Execution: {(total_end_time - total_start_time):.3f} seconds")
                     else:
                         st.warning("No unique identifiers found. All columns or combinations have at least one duplicate.")
+
+                    dataframe_end_time = time.perf_counter()  - dataframe_start_time
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
                     st.write("Response content:", response.content)
@@ -91,3 +81,11 @@ def unique_id_verifier(uploaded_file):
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
                 st.write("Traceback:", traceback.format_exc())
+
+            total_end_time = time.perf_counter()
+                        
+            st.info("**Performance Metrics:**")
+            st.write(f"- File Reading: {file_read_time:.3f} seconds")
+            st.write(f"- API Response Time - Server Side: {api_call_time:.3f} seconds")
+            st.write(f"- DataFrame Processing - Client Side: {(dataframe_end_time):.3f} seconds")
+            st.write(f"- Total Execution: {(total_end_time - total_start_time):.3f} seconds")

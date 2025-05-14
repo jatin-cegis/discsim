@@ -7,6 +7,9 @@ load_dotenv()
 import requests
 from urllib.parse import urlparse
 import time
+import json
+import pandas as pd
+import io
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -118,26 +121,27 @@ def read_uploaded_file(uploaded_file):
     try:
         if not uploaded_file:
             raise ValueError("No file uploaded.")
-        if not uploaded_file.name.lower().endswith(('.csv', '.xlsx')):
-            raise ValueError("Only CSV and XLSX files are supported.")
+        if not uploaded_file.name.lower().endswith(('.csv')):
+            raise ValueError("Only CSV files are supported.")
         uploaded_file.seek(0)
         file_bytes = uploaded_file.read()
         if not file_bytes:
             raise ValueError("Uploaded file is empty.")
+        file_io = io.BytesIO(file_bytes)
         end_time = time.perf_counter()
-        return file_bytes, uploaded_file.name, end_time - start_time
+        return {"file": (uploaded_file.name, file_io, "text/csv")}, uploaded_file.name, end_time - start_time
     except Exception as e:
         st.error(f"Failed to read uploaded file: {str(e)}")
         raise
+
 @st.cache_data(max_entries=10)
-def callAPI(file_bytes: bytes, filename: str, url: str):
+def callAPI(file_details: dict, filename: str, url: str):
     start_time = time.perf_counter()
     try:
         parsed_url = urlparse(url)
         if not parsed_url.scheme or not parsed_url.netloc:
             raise ValueError("Invalid API URL.")
-        files = {"file": (filename, file_bytes, "text/csv")}
-        response = requests.post(url, files=files)
+        response = requests.post(url, files=file_details)
         response.raise_for_status()
         end_time = time.perf_counter()
         return response, end_time - start_time
@@ -166,3 +170,30 @@ def callAPIWithParam(payload: dict, url: str):
     except ValueError as e:
         st.error(f"Invalid input: {str(e)}")
         raise
+
+@st.cache_data(max_entries=10)
+def callAPIWithFileParam(file_details: dict, payload: dict, url: str):
+    start_time = time.perf_counter()
+    try:
+        parsed_url = urlparse(url)
+        if not parsed_url.scheme or not parsed_url.netloc:
+            raise ValueError("Invalid API URL")
+        input_data = json.dumps(payload)
+        response = requests.post(
+            url,
+            files=file_details,
+            data={"input_data": input_data}
+        )
+        response.raise_for_status()
+        end_time = time.perf_counter()
+        return response, end_time - start_time
+    except requests.RequestException as e:
+        st.error(f"API request failed: {str(e)}")
+        raise
+    except ValueError as e:
+        st.error(f"Invalid input: {str(e)}")
+        raise
+
+@st.cache_data
+def fetch_dataframe(data_type: str, url: str):
+    return pd.DataFrame(requests.get(f"{url}?data_type={data_type}").json())

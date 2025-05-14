@@ -1,5 +1,8 @@
+import pandas as pd
+import streamlit as st
 import plotly.express as px
 
+@st.cache_data
 def plot_pie_chart(labels, values, title):
     # Sort values and labels in descending order
     sorted_data = sorted(zip(values, labels), reverse=True)
@@ -26,7 +29,8 @@ def plot_pie_chart(labels, values, title):
         textinfo='none')
     return fig
 
-def plot_100_stacked_bar_chart(data, x, y, color, title, x_label, y_label):
+@st.cache_data
+def plot_100_stacked_bar_chart(data: pd.DataFrame, x: str, y: str, color: str, title: str, x_label: str, y_label: str):
     fig = px.bar(data, x=x, y=y, color=color, title=title, 
                 labels={x: x_label, 'value': y_label},
                 barmode='relative')  # This makes it a 100% stacked bar chart
