@@ -9,13 +9,28 @@ if __name__ == "__main__":
     selectedNav = setheader()
     if selectedNav == "Intervention Design":
           st.switch_page("pages/1_Intervention_Design.py")
+    if selectedNav == "Intervention Design":
+          st.switch_page("pages/1_Intervention_Design.py")
     if selectedNav == "Admin Data Diagnostic":
           st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
+    if selectedNav == "Intervention Analytics":
     if selectedNav == "Intervention Analytics":
           st.switch_page("pages/3_Nutrition_Analytics.py")
     setFooter()
 
     with st.container():
+      addOncss = """
+        <style>
+        div[data-testid="stElementToolbar"]{
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+        </style>
+      """
+      st.markdown(addOncss, unsafe_allow_html=True)
+      st.markdown("<h1 style='text-align: center;color:#136a9a;font-weight:800;padding:0;margin:0'>Welcome to VALIData", unsafe_allow_html=True)
+      st.markdown("<h5 style='text-align:center;color:#34a853;margin-bottom:-50px;font-weight:400'>CEGIS’ Digital Public Good offering", unsafe_allow_html=True)
+      
       addOncss = """
         <style>
         div[data-testid="stElementToolbar"]{
@@ -34,6 +49,10 @@ if __name__ == "__main__":
             with middle:
                   st.write('----')
                   st.markdown("<span style='color:#34a853;font-weight:700;font-size:22px'>VALIData</span> is a Digital Public Good offering by the <a href='https://cegis.org/about' target='_blank'>Centre for Effective Governance of Indian States</a>. It is intended to be a one stop platform for all things data analytics geared towards enhancing the state governments’ ability for data-driven decision-making, especially in the sectors of Health, Education, and Nutrition.",unsafe_allow_html=True)
+                  st.write('----')
+                  st.markdown("<span style='color:#34a853;font-weight:700;font-size:22px'>VALIData</span> is a Digital Public Good offering by the <a href='https://cegis.org/about' target='_blank'>Centre for Effective Governance of Indian States</a>. It is intended to be a one stop platform for all things data analytics geared towards enhancing the state governments’ ability for data-driven decision-making, especially in the sectors of Health, Education, and Nutrition.",unsafe_allow_html=True)
+                  
+                  st.markdown("<span style='color:#34a853;font-weight:600;font-size:20px'>VALIData Features</span>: VALIData contains a plethora of analytical packages that shall help in different stages of data systems strengthening",unsafe_allow_html=True)
                   
                   st.markdown("<span style='color:#34a853;font-weight:600;font-size:20px'>VALIData Features</span>: VALIData contains a plethora of analytical packages that shall help in different stages of data systems strengthening",unsafe_allow_html=True)
                   
@@ -78,3 +97,9 @@ if __name__ == "__main__":
                   image, desc = st.columns([1,12])
                   image.image(os.path.join(script_dir, "images/gov_stakeholders.png"))
                   desc.markdown("<span style='font-weight:700'>Government stakeholders</span> who can benefit from VALIData’s automated analytical templates to improve data quality, service delivery performance, and enhance data-driven decision-making within the government",unsafe_allow_html=True)
+
+                  st.write("")
+                  st.write("")
+                  st.write("VALIData is being built brick-by-brick, with new and useful features, thanks to the useful feedback we are receiving from all these stakeholders. This is intended to be a public good for anyone interested in enhancing the state capacity and data-driven decision-making ability of India’s state governments. Please try out the tool, and reach out to us with your ideas on what more we can build. We would be extremely happy to hear from you! ")
+                  st.write("")
+                  st.write("")
