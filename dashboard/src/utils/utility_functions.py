@@ -63,7 +63,7 @@ def setheader(SelectedNav = None):
             "justify-content": "center",
         },
         "div": {
-            "max-width": "38rem",
+            "max-width": "50rem",
         },
         "span": {
             "color": "#fff",
@@ -80,7 +80,7 @@ def setheader(SelectedNav = None):
         "fix_shadow":False,
         "hide_nav":False
     }
-    return st_navbar(["Pre Survey", "Admin Data Diagnostic", "Nutrition Analytics"],selected=SelectedNav,styles=navStyles,options=navOptions) # type: ignore
+    return st_navbar(["Intervention Design", "Admin Data Diagnostic", "Intervention Analytics"],selected=SelectedNav,styles=navStyles,options=navOptions) # type: ignore
 
 def setFooter():
          # Footer using markdown with custom HTML

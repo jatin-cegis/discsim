@@ -24,10 +24,10 @@ def pre_survey_analysis():
 
 
 if __name__ == "__main__":
-    selectedNav = setheader("Pre Survey")
+    selectedNav = setheader("Intervention Design")
     if selectedNav == "Admin Data Diagnostic":
           st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
-    if selectedNav == "Nutrition Analytics":
-          st.switch_page("pages/3_Nutrition_Analytics.py")
+    if selectedNav == "Intervention Analytics":
+          st.switch_page("pages/3_Intervention_Analytics.py")
     pre_survey_analysis()
     setFooter()
