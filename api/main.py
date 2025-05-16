@@ -47,8 +47,12 @@ from api.utils.pseudo_code import anganwadi_center_data_anaylsis
 from api.database import get_db, UploadedFile
 from api.database import engine, Base
 import chardet
+import logging
+import csv
+from io import StringIO
 
 app = FastAPI()
+logger = logging.getLogger(__name__)
 
 # Global variable to store the last processed data
 last_processed_data = {"unique_rows": None, "duplicate_rows": None}
@@ -69,6 +73,11 @@ async def startup_event():
 async def health():
     return {"status": "ok"}
 
+def detect_delimiter(sample_text: str) -> str:
+    """Detect whether comma or semicolon is the most likely delimiter."""
+    comma_count = sample_text.count(',')
+    semicolon_count = sample_text.count(';')
+    return ',' if comma_count >= semicolon_count else ';'
 @app.post("/upload_file")
 async def upload_file(
     file: UploadFile = File(...),
@@ -76,38 +85,70 @@ async def upload_file(
     db: Session = Depends(get_db)
 ):
     contents = await file.read()
-    encoding = chardet.detect(contents)["encoding"]
+    detection = chardet.detect(contents)
+    encoding = detection["encoding"]
     encoding = encoding.lower() if encoding else None
-    if encoding not in ['utf-8', 'utf-8-sig']:
-        return JSONResponse(
-            status_code=400, 
-            content={
-                "message": "File is not UTF-8 encoded",
-            },
+    logger.info(f"Detected file encoding: '{encoding}'")
+    try:
+        if encoding not in ['utf-8', 'utf-8-sig', 'iso-8859-1', 'windows-1252', 'ascii']:
+            logger.warning(f"Unsupported file encoding: {file.filename} (Detected: {encoding})")
+            return JSONResponse(
+                status_code=400, 
+                content={"message": f"Unsupported file encoding: {encoding}"},
+            )
+        
+        # Decode contents
+        text_data = contents.decode(encoding)
+        df_raw = pd.read_csv(io.StringIO(contents.decode(encoding)), header=None)
+
+        # If only one column exists, try splitting it
+        if df_raw.shape[1] == 1:
+            logger.warning(f"Only one column detected in {file.filename}. Attempting to split.")
+
+            sample = text_data[:1000]  # Use first 1000 characters for detection
+            detected_delim = detect_delimiter(sample)
+            logger.warning(f"Detected delimiter: '{detected_delim}'")
+            # Split the single column into columns
+            split_df = df_raw[0].str.split(detected_delim, expand=True)
+            # Use first row as header -> include explicitly headers
+            split_df.columns = split_df.iloc[0].astype(str)
+            # Drop the header row from data
+            df = split_df.iloc[1:].reset_index(drop=True)
+
+        # Convert DataFrame back to CSV
+        processed_csv = df.to_csv(index=False)
+        
+
+        # Check if a file with the same name and category already exists
+        existing_file = (
+            db.query(UploadedFile)
+            .filter(UploadedFile.filename == file.filename, UploadedFile.category == category)
+            .first()
         )
 
-    # Check if a file with the same name and category already exists
-    existing_file = (
-        db.query(UploadedFile)
-        .filter(UploadedFile.filename == file.filename, UploadedFile.category == category)
-        .first()
-    )
+        if existing_file:
+            return JSONResponse(
+                status_code=409,  # Conflict
+                content={
+                    "message": f"'{file.filename}' already exists in category '{category}'.",
+                    "id": existing_file.id,
+                },
+            )
 
-    if existing_file:
+        db_file = UploadedFile(filename=file.filename, content=processed_csv.encode(encoding), category=category)
+        db.add(db_file)
+        db.commit()
+        db.refresh(db_file)
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error saving file: {file.filename}. Error: {e}")
         return JSONResponse(
-            status_code=409,  # Conflict
-            content={
-                "message": f"'{file.filename}' already exists in category '{category}'.",
-                "id": existing_file.id,
-            },
+            status_code=500,
+            content={"message": "Internal server error", "details": str(e)},
         )
 
-    # Proceed with saving the file if it doesn't exist
-    db_file = UploadedFile(filename=file.filename, content=contents, category=category)
-    db.add(db_file)
-    db.commit()
-    db.refresh(db_file)
-
+    logger.info(f"File uploaded successfully: {file.filename}")
     return {"message": "File uploaded successfully", "id": db_file.id}
 
 

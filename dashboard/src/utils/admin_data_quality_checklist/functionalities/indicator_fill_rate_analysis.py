@@ -5,8 +5,9 @@ import streamlit as st
 import pandas as pd
 import requests
 from dotenv import load_dotenv
-from src.utils.admin_data_quality_checklist.helpers.graph_functions import plot_100_stacked_bar_chart, plot_pie_chart
 import plotly.express as px
+import time
+from src.utils.utility_functions import read_uploaded_file,callAPIWithFileParam
 
 load_dotenv()
 
@@ -14,12 +15,15 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 
 INDICATOR_FILL_RATE_ENDPOINT = f"{API_BASE_URL}/indicator_fill_rate"
 
+@st.cache_data
 def is_numeric_column(series):
     return pd.api.types.is_numeric_dtype(series) or series.dtype == 'object' and series.str.isnumeric().all()
 
+@st.cache_data
 def is_string_column(series):
     return pd.api.types.is_string_dtype(series)
 
+@st.cache_data
 def is_datetime_column(series: pd.Series) -> bool:
     """
     Check if a pandas Series is of datetime type or can be interpreted as datetime.
@@ -35,38 +39,58 @@ def is_datetime_column(series: pd.Series) -> bool:
         except (ValueError, TypeError):
             continue
     return False
-
+@st.cache_data
 def get_numeric_operations():
     return ['<', '<=', '>', '>=', '==', '!=']
-
+@st.cache_data
 def get_string_operations():
     return ['Contains', 'Does not contain', 'Equals', 'Not equals']
 
-def indicator_fill_rate_analysis(uploaded_file, df):
+def display_detailed_data(data: dict, invalid_labels: list = [None], include_zero_as_separate_category_flag: bool = False):
+    categories = ["missing", "valid"]
+    if include_zero_as_separate_category_flag:
+        categories.insert(1, "zero")
+    for label in reversed(invalid_labels):
+        categories.insert(-1, label)
+    for category in categories:
+        entries = data.get(category, None)
+        if entries is not None and len(entries) > 0:
+            category_df = pd.DataFrame(entries)
+            with st.expander(f"Show/Export {category.capitalize()} Entries:"):
+                category_df.index.name = 'SN'
+                category_df.index = category_df.index + 1
+                st.dataframe(category_df, use_container_width=True, hide_index=False)
+        else:
+            st.warning(f"No {category.capitalize()} entries found.")
+
+@st.cache_data
+def customCss():
     customcss = """
         <style>
-        div[data-testid="stExpander"] summary{
-            padding:0.4rem 1rem;
-        }
-        .stHorizontalBlock{
-            //margin-top:-30px;
-        }
         .st-key-processBtn button{
             background-color:#3b8e51;
             color:#fff;
             border:none;
         }
-        .st-key-processBtn button:hover,.st-key-processBtn button:active,.st-key-processBtn button:focus,st-key-processBtn button:focus:not(:active){
+        .st-key-processBtn button:hover,
+        .st-key-processBtn button:active,
+        .st-key-processBtn button:focus,
+        .st-key-processBtn button:focus:not(:active){
             color:#fff!important;
             border:none;
         }
-        .st-key-uidCol label p::after,.st-key-duplicateKeep label p::after,.st-key-duplicateValue label p::after { 
+        .st-key-uidCol label p::after,
+        .st-key-duplicateKeep label p::after,
+        .st-key-duplicateValue label p::after { 
             content: " *";
             color: red;
         }
         </style>
     """
     st.markdown(customcss, unsafe_allow_html=True)
+
+def indicator_fill_rate_analysis(uploaded_file, df):
+    customCss()
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
     title_info_markdown = """
@@ -168,10 +192,12 @@ def indicator_fill_rate_analysis(uploaded_file, df):
             invalid_conditions = None
 
     if st.button("Analyse the indicator values",key="processBtn"):
+        # total_start_time = time.perf_counter()
         with st.spinner("Analyzing indicator fill rate..."):
             try:
-                uploaded_file.seek(0)  # Reset file pointer
-                files = {"file": ("uploaded_file.csv", uploaded_file, "text/csv")}
+
+                file_bytes, filename, file_read_time = read_uploaded_file(uploaded_file)
+
                 payload = {
                     "column_to_analyze": column_to_analyze,
                     "group_by": group_by if group_by != "None" else None,
@@ -179,31 +205,13 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                     "invalid_conditions": invalid_conditions,
                     "include_zero_as_separate_category": include_zero_as_separate_category
                 }
-                response = requests.post(
-                    INDICATOR_FILL_RATE_ENDPOINT,
-                    files=files,
-                    data={"input_data": json.dumps(payload)}
-                )
+
+                response, api_call_end = callAPIWithFileParam(file_bytes,payload,INDICATOR_FILL_RATE_ENDPOINT)
                 
                 if response.status_code == 200:
+                    # dataframe_start = time.perf_counter()
                     result = response.json()
                     invalid_labels = [cond["label"] for cond in invalid_conditions] if invalid_conditions else []
-                    def display_detailed_data(data: dict, invalid_labels: list = None):
-                        categories = ["missing", "valid"]
-                        if include_zero_as_separate_category:
-                            categories.insert(1, "zero")
-                        for label in reversed(invalid_labels):
-                            categories.insert(-1, label)
-                        for category in categories:
-                            entries = data.get(category, None)
-                            if entries is not None and len(entries) > 0:
-                                category_df = pd.DataFrame(entries)
-                                with st.expander(f"Show/Export {category.capitalize()} Entries:"):
-                                    category_df.index.name = 'SN'
-                                    category_df.index = category_df.index + 1
-                                    st.dataframe(category_df, use_container_width=True, hide_index=False)
-                            else:
-                                st.warning(f"No {category.capitalize()} entries found.")
                     
                     if result["grouped"]:
                         st.info("Indicator Fill Rate Report by Group:")
@@ -242,7 +250,7 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                             analysis_df["Number of observations"] = analysis_df["Number of observations"].apply(lambda x: f"{int(x):,}")
                             analysis_df["Percentage of observations"]=analysis_df["Percentage of observations"].astype(str)+' %'
                             st.dataframe(analysis_df, use_container_width=True, hide_index=True)
-                            display_detailed_data(result["detailed_data"][group],invalid_labels)
+                            display_detailed_data(result["detailed_data"][group],invalid_labels,include_zero_as_separate_category)
                             st.write("---")
                     else:
                         st.info("Indicator Fill Rate Result:")
@@ -288,10 +296,19 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                             invalid_desc = ", ".join([f"{col['label']}: {col['operation']} {col['value']}" for col in invalid_conditions])
                             st.info(f"Custom invalid conditions applied to column `{column_to_analyze}`: {invalid_desc}")
 
-                        display_detailed_data(result["detailed_data"],invalid_labels)
+                        display_detailed_data(result["detailed_data"],invalid_labels,include_zero_as_separate_category)
                     
+                    # dataframe_end = time.perf_counter() - dataframe_start
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
                 st.write("Traceback:", traceback.format_exc())
+
+            # total_end_time = time.perf_counter()
+
+            # st.info("**Performance Metrics:**")
+            # st.write(f"- File Reading: {(file_read_time):.3f} seconds")
+            # st.write(f"- API Response Time (Server): {(api_call_end):.3f} seconds")
+            # st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
+            # st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")

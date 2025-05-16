@@ -5,7 +5,7 @@ import requests
 import os
 from src.utils.utility_functions import set_page_config,setFooter,setheader
 import json
-from src.utils.pseudo_code.helpers.file_upload import handle_file_upload
+from src.utils.helpers.file_upload import handle_file_upload
 set_page_config()
 
 API_BASE_URL = os.getenv("API_BASE_URL")
@@ -539,6 +539,7 @@ def pseudo_code_analysis():
                 if 'discrepancy' in data['projectLevelInsights']:
                     container = st.container(border=True)
                     container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>The following graph categorises the projects into red, yellow, and green zones, based on their percentile distribution vis-a-vis discrepancy rates. <br>Projects with the lowest discrepancy rates are likely to be in the green zone, those with the highest discrepancy rates are likely to be in the red zone,<br> and those in-between are likely to be in the yellow-zone", unsafe_allow_html=True)
                     projectDisc = pd.DataFrame(data['projectLevelInsights']['discrepancy'])
                     fig_treemap = px.treemap(
                         projectDisc, 
@@ -565,7 +566,7 @@ def pseudo_code_analysis():
                             "Discp. Rate: %{customdata[1]:.1f}%<br>"
                             "Percentile Rank: %{customdata[2]:.1f}%"
                         ),
-                        textinfo='label+value'
+                        texttemplate="%{label} <br>Discrepancy Rate: %{value:.1f}%"
                     )
                     container.plotly_chart(fig_treemap)
                     with container.expander("Show Data"):
@@ -786,6 +787,7 @@ def pseudo_code_analysis():
                 if 'discrepancy' in data['sectorLevelInsights']:
                     container = st.container(border=True)
                     container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>The following graph categorises the projects into red, yellow, and green zones, based on their percentile distribution vis-a-vis discrepancy rates. <br>Projects with the lowest discrepancy rates are likely to be in the green zone, those with the highest discrepancy rates are likely to be in the red zone,<br> and those in-between are likely to be in the yellow-zone", unsafe_allow_html=True)
                     sectorDisc = pd.DataFrame(data['sectorLevelInsights']['discrepancy'])
                     fig_treemap = px.treemap(
                         sectorDisc, 
@@ -811,7 +813,8 @@ def pseudo_code_analysis():
                             "Total Measurements: %{customdata[0]}<br>"
                             "Discp. Rate: %{customdata[1]:.1f}%<br>"
                             "Percentile Rank: %{customdata[2]:.1f}%"
-                        )
+                        ),
+                        texttemplate="%{label} <br>Discrepancy Rate: %{value:.1f}%"
                     )
                     container.plotly_chart(fig_treemap)
                     with container.expander("Show Data"):
@@ -824,6 +827,7 @@ def pseudo_code_analysis():
                 if 'discrepancy' in data['awcLevelInsights']:
                     container = st.container(border=True)
                     container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>The following graph categorises the projects into red, yellow, and green zones, based on their percentile distribution vis-a-vis discrepancy rates. <br>Projects with the lowest discrepancy rates are likely to be in the green zone, those with the highest discrepancy rates are likely to be in the red zone,<br> and those in-between are likely to be in the yellow-zone", unsafe_allow_html=True)
                     awcDisc = pd.DataFrame(data['awcLevelInsights']['discrepancy'])
                     fig_treemap = px.treemap(
                         awcDisc, 
@@ -838,7 +842,7 @@ def pseudo_code_analysis():
                             'Zone': True
                         }
                     )
-                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0))
+                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0),height=600)
                     fig_treemap.update_traces(
                         marker=dict(
                             cornerradius=5,
@@ -849,7 +853,8 @@ def pseudo_code_analysis():
                             "Total Measurements: %{customdata[0]}<br>"
                             "Discp. Rate: %{customdata[1]:.1f}%<br>"
                             "Percentile Rank: %{customdata[2]:.1f}%"
-                        )
+                        ),
+                        texttemplate="%{label} <br>Discrepancy Rate: %{value:.1f}%"
                     )
                     container.plotly_chart(fig_treemap)
                     with container.expander("Show Data"):
@@ -865,9 +870,9 @@ def pseudo_code_analysis():
         st.info("Please upload a CSV file (UTF-8 encoded) to begin.")
 
 if __name__ == "__main__":
-    selectedNav = setheader("Nutrition Analytics")
-    if selectedNav == "Pre Survey":
-          st.switch_page("pages/1_Pre_Survey.py")
+    selectedNav = setheader("Intervention Analytics")
+    if selectedNav == "Intervention Design":
+          st.switch_page("pages/1_Intervention_Design.py")
     if selectedNav == "Admin Data Diagnostic":
           st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
     pseudo_code_analysis()

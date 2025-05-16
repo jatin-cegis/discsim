@@ -1,9 +1,10 @@
 import os
 import streamlit as st
 import pandas as pd
-import requests
 import traceback
 from dotenv import load_dotenv
+from src.utils.utility_functions import read_uploaded_file,callAPI
+import time
 
 load_dotenv()
 
@@ -11,16 +12,10 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 
 FIND_UNIQUE_IDS_ENDPOINT = f"{API_BASE_URL}/find_unique_ids"
 
-def unique_id_verifier(uploaded_file):
-
+@st.cache_data
+def customCss():
     customcss = """
         <style>
-        div[data-testid="stExpander"] summary{
-            padding:0.4rem 1rem;
-        }
-        .stHorizontalBlock{
-            //margin-top:-30px;
-        }
         .stHorizontalBlock .stColumn:nth-child(2){
             display:flex;
             align-items: flex-end;
@@ -30,7 +25,10 @@ def unique_id_verifier(uploaded_file):
             color:#fff;
             border:none;
         }
-        .st-key-functioncall button:hover,.st-key-functioncall button:active,.st-key-functioncall button:focus,st-key-functioncall button:focus:not(:active){
+        .st-key-functioncall button:hover,
+        .st-key-functioncall button:active,
+        .st-key-functioncall button:focus,
+        .st-key-functioncall button:focus:not(:active){
             color:#fff!important;
             border:none;
         }
@@ -38,8 +36,8 @@ def unique_id_verifier(uploaded_file):
     """
     st.markdown(customcss, unsafe_allow_html=True)
 
-    st.session_state.drop_export_rows_complete = False
-    st.session_state.drop_export_entries_complete = False
+def unique_id_verifier(uploaded_file):
+    customCss()
     title_info_markdown = """
         Use this feature to let the system identify the list of unique IDs in the dataset.
         - Numerical columns, or combinations which are comprised of more numerical columns, will be given precedence while displaying the output.
@@ -55,10 +53,10 @@ def unique_id_verifier(uploaded_file):
     if col2.button("Find Unique ID(s)",key="functioncall"):
         with st.spinner("Finding unique IDs..."):
             try:
-                uploaded_file.seek(0)
-                files = {"file": ("uploaded_file.csv", uploaded_file, "text/csv")}
-                response = requests.post(FIND_UNIQUE_IDS_ENDPOINT, files=files)
-                
+                # total_start_time = time.perf_counter()
+                file_details, filename, file_read_time = read_uploaded_file(uploaded_file)
+                response , api_call_time = callAPI(file_details,filename,FIND_UNIQUE_IDS_ENDPOINT)
+                # dataframe_start_time = time.perf_counter()
                 if response.status_code == 200:
                     unique_ids = response.json()
                     
@@ -71,8 +69,11 @@ def unique_id_verifier(uploaded_file):
                         df.index.name = 'SN'
                         df.index = df.index + 1
                         st.dataframe(df['Unique ID (data type)'], use_container_width=True,key="uniquedatatable")
+
                     else:
                         st.warning("No unique identifiers found. All columns or combinations have at least one duplicate.")
+
+                    # dataframe_end_time = time.perf_counter()  - dataframe_start_time
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
                     st.write("Response content:", response.content)
@@ -80,3 +81,11 @@ def unique_id_verifier(uploaded_file):
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
                 st.write("Traceback:", traceback.format_exc())
+
+            # total_end_time = time.perf_counter()
+                        
+            # st.info("**Performance Metrics:**")
+            # st.write(f"- File Reading: {file_read_time:.3f} seconds")
+            # st.write(f"- API Response Time - Server Side: {api_call_time:.3f} seconds")
+            # st.write(f"- DataFrame Processing - Client Side: {(dataframe_end_time):.3f} seconds")
+            # st.write(f"- Total Execution: {(total_end_time - total_start_time):.3f} seconds")

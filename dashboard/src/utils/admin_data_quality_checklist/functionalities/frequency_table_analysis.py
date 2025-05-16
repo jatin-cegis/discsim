@@ -6,6 +6,8 @@ import pandas as pd
 import requests
 from dotenv import load_dotenv
 import plotly.express as px
+import time
+from src.utils.utility_functions import read_uploaded_file,callAPIWithFileParam
 
 load_dotenv()
 
@@ -13,31 +15,34 @@ API_BASE_URL = os.getenv("API_BASE_URL")
 
 FREQUENCY_TABLE_ENDPOINT = f"{API_BASE_URL}/frequency_table"
 
-def frequency_table_analysis(uploaded_file, df):
+@st.cache_data
+def customCss():
     customcss = """
         <style>
-        div[data-testid="stExpander"] summary{
-            padding:0.4rem 1rem;
-        }
-        .stHorizontalBlock{
-            //margin-top:-30px;
-        }
         .st-key-processBtn button{
             background-color:#3b8e51;
             color:#fff;
             border:none;
         }
-        .st-key-processBtn button:hover,.st-key-processBtn button:active,.st-key-processBtn button:focus,st-key-processBtn button:focus:not(:active){
+        .st-key-processBtn button:hover,
+        .st-key-processBtn button:active,
+        .st-key-processBtn button:focus,
+        .st-key-processBtn button:focus:not(:active){
             color:#fff!important;
             border:none;
         }
-        .st-key-uidCol label p::after,.st-key-duplicateKeep label p::after,.st-key-duplicateValue label p::after { 
+        .st-key-uidCol label p::after,
+        .st-key-duplicateKeep label p::after,
+        .st-key-duplicateValue label p::after { 
             content: " *";
             color: red;
         }
         </style>
     """
     st.markdown(customcss, unsafe_allow_html=True)
+
+def frequency_table_analysis(uploaded_file, df):
+    customCss()
     title_info_markdown = '''
         This function takes a variable as a user input and returns the frequency table of number and share of observations of each unique value present in the variable.
         - Generates a frequency table for a specified column in the dataset.
@@ -73,19 +78,23 @@ def frequency_table_analysis(uploaded_file, df):
         filter_by_value = col5.selectbox("Enter value for which you want to restrict the analysis", df[filter_by_col].unique().tolist(),key="duplicateValue")
 
     if st.button("Generate Frequency Table",key="processBtn"):
+        # total_start_time = time.perf_counter()
         with st.spinner("Generating frequency table..."):
             try:
-                uploaded_file.seek(0)  # Reset file pointer
-                files = {"file": ("uploaded_file.csv", uploaded_file, "text/csv")}
+
+                file_bytes, filename, file_read_time = read_uploaded_file(uploaded_file)
+
                 payload = {
                     "column_to_analyze": column_to_analyze,
                     "top_n": top_n,
                     "group_by": group_by if group_by != "None" else None,
                     "filter_by": {filter_by_col: filter_by_value} if filter_by_col != "None" else None,
                 }
-                response = requests.post(FREQUENCY_TABLE_ENDPOINT, files=files, data={"input_data": json.dumps(payload)})
+
+                response, api_call_end = callAPIWithFileParam(file_bytes,payload,FREQUENCY_TABLE_ENDPOINT)
 
                 if response.status_code == 200:
+                    dataframe_start = time.perf_counter()
                     result = response.json()
 
                     st.metric(f"Total number of rows analysed",format(result['total'],',d'),border=True)
@@ -186,8 +195,17 @@ def frequency_table_analysis(uploaded_file, df):
                         with st.expander("Show/Export Data:"):
                             st.dataframe(display_df, use_container_width=True, hide_index=False)
 
+                    # dataframe_end = time.perf_counter() - dataframe_start
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
                 st.write("Traceback:", traceback.format_exc())
+
+            # total_end_time = time.perf_counter()
+
+            # st.info("**Performance Metrics:**")
+            # st.write(f"- File Reading: {(file_read_time):.3f} seconds")
+            # st.write(f"- API Response Time (Server): {(api_call_end):.3f} seconds")
+            # st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
+            # st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")

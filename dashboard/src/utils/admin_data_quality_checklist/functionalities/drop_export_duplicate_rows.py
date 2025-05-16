@@ -5,6 +5,9 @@ import streamlit as st
 import pandas as pd
 import requests
 from dotenv import load_dotenv
+import time
+from src.utils.utility_functions import read_uploaded_file,callAPI,fetch_dataframe
+
 
 load_dotenv()
 
@@ -17,29 +20,29 @@ GET_DATAFRAME_ENDPOINT = f"{API_BASE_URL}/get_dataframe"
 def handle_click(newSelection):
     st.session_state.option_selection = newSelection
 
-def drop_export_duplicate_rows(uploaded_file):
+@st.cache_data
+def customCss():
     customcss = """
         <style>
-        div[data-testid="stExpander"] summary{
-            padding:0.4rem 1rem;
-        }
-        .stHorizontalBlock{
-            //margin-top:-30px;
-        }
         .st-key-processBtn button,.st-key-dropentryBtn button, .st-key-dropentryBtns button{
             background-color:#3b8e51;
             color:#fff;
             border:none;
         }
-        .st-key-processBtn button:hover,.st-key-processBtn button:active,.st-key-processBtn button:focus,st-key-processBtn button:focus:not(:active),
-        .st-key-dropentryBtn button:hover,.st-key-dropentryBtn button:active,.st-key-dropentryBtn button:focus,st-key-dropentryBtn button:focus:not(:active),
-        .st-key-dropentryBtns button:hover,.st-key-dropentryBtns button:active,.st-key-dropentryBtns button:focus,st-key-dropentryBtns button:focus:not(:active){
+        .st-key-processBtn button:hover,
+        .st-key-processBtn button:active,
+        .st-key-processBtn button:focus,
+        .st-key-processBtn button:focus:not(:active){
             color:#fff!important;
             border:none;
         }
         </style>
     """
     st.markdown(customcss, unsafe_allow_html=True)
+
+
+def drop_export_duplicate_rows(uploaded_file):
+    customCss()
     st.session_state.drop_export_entries_complete = False
     title_info_markdown = """
         This function checks for fully duplicate rows in the dataset and returns the unique and the duplicate DataFrames individually.
@@ -55,29 +58,27 @@ def drop_export_duplicate_rows(uploaded_file):
     col1.markdown("<h2 style='text-align: center;font-weight:800;color:#136a9a;margin-top:-15px;'>Inspect Duplicate Rows</h2>", unsafe_allow_html=True, help=title_info_markdown)
     st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>The function helps you to inspect if any duplicate rows exist in the dataset. You can get a modified dataset with unique rows only</p>", unsafe_allow_html=True)
 
-    # kept_row = st.selectbox("Which duplicate to keep", ["first", "last", "none"], help="first(keeps the first occurrence), last(keeps the last occurrence), or none(removes all occurrences)")
-
     if col2.button("Check for duplicate rows",key="processBtn"):
+        # total_start_time = time.perf_counter()
         with st.spinner("Processing..."):
             try:
-                uploaded_file.seek(0)
-                files = {"file": ("uploaded_file.csv", uploaded_file, "text/csv")}
-                # payload = {
-                #     "keptRow": kept_row,
-                # }
-                # input_data = json.dumps(payload)
-                response = requests.post(
-                    DROP_EXPORT_DUPLICATE_ROWS_ENDPOINT,
-                    files=files,
-                    # data={"input_data": input_data}
-                )
+
+                file_bytes, filename, file_read_time = read_uploaded_file(uploaded_file)
+
+                response, api_call_time = callAPI(file_bytes, filename, DROP_EXPORT_DUPLICATE_ROWS_ENDPOINT)
 
                 if response.status_code == 200:
+                    # dataframe_start = time.perf_counter()
                     result = response.json()
                     st.session_state.drop_export_rows_complete = True
 
-                    unique_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=unique").json())
-                    duplicate_df = pd.DataFrame(requests.get(f"{GET_DATAFRAME_ENDPOINT}?data_type=duplicate").json())
+                    # api_call_start_1 = time.perf_counter()
+                    unique_df = fetch_dataframe('unique',GET_DATAFRAME_ENDPOINT)
+                    # api_call_end_1 = time.perf_counter() - api_call_start_1
+
+                    # api_call_start_2 = time.perf_counter()
+                    duplicate_df = fetch_dataframe('duplicate',GET_DATAFRAME_ENDPOINT)
+                    # api_call_end_2 = time.perf_counter() - api_call_start_2
                     
                     # Visualize the results
                     unique_rows = len(unique_df)
@@ -117,7 +118,16 @@ def drop_export_duplicate_rows(uploaded_file):
                             duplicate_df.index.name = 'SN'
                             duplicate_df.index = duplicate_df.index + 1
                             st.dataframe(duplicate_df, hide_index=False)
+                    # dataframe_end = time.perf_counter() - dataframe_start
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
+
+            # total_end_time = time.perf_counter()
+
+            # st.info("**Performance Metrics:**")
+            # st.write(f"- File Reading: {(file_read_time):.3f} seconds")
+            # st.write(f"- API Response Time (Server): {(api_call_time + api_call_end_1 + api_call_end_2):.3f} seconds")
+            # st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
+            # st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")

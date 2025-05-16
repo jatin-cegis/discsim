@@ -6,7 +6,9 @@ import pandas as pd
 import requests
 import plotly.express as px
 from dotenv import load_dotenv
-from src.utils.admin_data_quality_checklist.helpers.graph_functions import plot_pie_chart
+import time
+from src.utils.utility_functions import read_uploaded_file,callAPIWithFileParam
+
 
 load_dotenv()
 
@@ -16,33 +18,32 @@ ZERO_ENTRIES_ENDPOINT = f"{API_BASE_URL}/zero_entries"
 
 def handle_click(newSelection):
     st.session_state.option_selection = newSelection
-def zero_entries_analysis(uploaded_file, df):
+@st.cache_data
+def customCss():
     customcss = """
         <style>
-        div[data-testid="stExpander"] summary{
-            padding:0.4rem 1rem;
-        }
-        .stHorizontalBlock{
-            //margin-top:-30px;
-        }
-        .st-key-processBtn button,.st-key-dropentryBtn button, .st-key-dropentryBtns button{
+        .st-key-processBtn button{
             background-color:#3b8e51;
             color:#fff;
             border:none;
         }
-        .st-key-processBtn button:hover,.st-key-processBtn button:active,.st-key-processBtn button:focus,st-key-processBtn button:focus:not(:active),
-        .st-key-dropentryBtn button:hover,.st-key-dropentryBtn button:active,.st-key-dropentryBtn button:focus,st-key-dropentryBtn button:focus:not(:active),
-        .st-key-dropentryBtns button:hover,.st-key-dropentryBtns button:active,.st-key-dropentryBtns button:focus,st-key-dropentryBtns button:focus:not(:active){
+        .st-key-processBtn button:hover,
+        .st-key-processBtn button:active,
+        .st-key-processBtn button:focus,
+        .st-key-processBtn button:focus:not(:active){
             color:#fff!important;
             border:none;
         }
-        .st-key-uidCol label p::after,.st-key-duplicateKeep label p::after { 
+        .st-key-uidCol label p::after,
+        .st-key-duplicateKeep label p::after { 
             content: " *";
             color: red;
         }
         </style>
     """
     st.markdown(customcss, unsafe_allow_html=True)
+def zero_entries_analysis(uploaded_file, df):
+    customCss()
     st.session_state.drop_export_rows_complete = False
     st.session_state.drop_export_entries_complete = False
     title_info_markdown = """
@@ -79,22 +80,22 @@ def zero_entries_analysis(uploaded_file, df):
             st.write("")
         
     if st.button("Analyze Zero Entries",key="processBtn"):
+        # total_start_time = time.perf_counter()
         with st.spinner("Analyzing zero entries..."):
             try:
-                uploaded_file.seek(0)  # Reset file pointer
-                files = {"file": ("uploaded_file.csv", uploaded_file, "text/csv")}
+
+                file_bytes, filename, file_read_time = read_uploaded_file(uploaded_file)
+
                 payload = {
                     "column_to_analyze": column_to_analyze,
                     "group_by": group_by if group_by != "None" else None,
                     "filter_by": {filter_by_col: filter_by_value} if filter_by_col != "None" else None
                 }
-                response = requests.post(
-                    ZERO_ENTRIES_ENDPOINT,
-                    files=files,
-                    data={"input_data": json.dumps(payload)}
-                )
-                
+
+                response, api_call_end = callAPIWithFileParam(file_bytes,payload,ZERO_ENTRIES_ENDPOINT)
+
                 if response.status_code == 200:
+                    # dataframe_start = time.perf_counter()
                     result = response.json()
                     if result["grouped"]:
                         a,b = st.columns(2)
@@ -185,8 +186,18 @@ def zero_entries_analysis(uploaded_file, df):
 
                         else:
                             st.warning(f"Zero entries not found.")
+
+                        # dataframe_end = time.perf_counter() - dataframe_start
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
                 st.write("Traceback:", traceback.format_exc())
+
+            # total_end_time = time.perf_counter()
+
+            # st.info("**Performance Metrics:**")
+            # st.write(f"- File Reading: {(file_read_time):.3f} seconds")
+            # st.write(f"- API Response Time (Server): {(api_call_end):.3f} seconds")
+            # st.write(f"- DataFrame Processing (Client): {(dataframe_end):.3f} seconds")
+            # st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")

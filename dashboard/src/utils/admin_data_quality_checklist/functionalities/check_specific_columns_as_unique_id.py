@@ -4,12 +4,54 @@ import pandas as pd
 import numpy as np
 import requests
 from dotenv import load_dotenv
+import time
+from src.utils.utility_functions import callAPIWithParam
 
 load_dotenv()
 
 API_BASE_URL = os.getenv("API_BASE_URL")
 
 UNIQUE_ID_CHECK_ENDPOINT = f"{API_BASE_URL}/unique_id_check"
+@st.cache_data
+def customCss():
+    customcss = """
+        <style>
+        button[data-testid="stBaseButton-secondaryFormSubmit"], 
+        .st-key-dropentryBtn button, 
+        .st-key-verifyIDBtn button, 
+        .st-key-create_uid_btn button{
+            background-color:#3b8e51;
+            color:#fff;
+            border:none;
+        }
+        button[data-testid="stBaseButton-secondaryFormSubmit"]:hover,
+        button[data-testid="stBaseButton-secondaryFormSubmit"]:active,
+        button[data-testid="stBaseButton-secondaryFormSubmit"]:focus,
+        button[data-testid="stBaseButton-secondaryFormSubmit"]:focus:not(:active),
+        .st-key-dropentryBtn button:hover,
+        .st-key-dropentryBtn button:active,
+        .st-key-dropentryBtn button:focus,
+        .st-key-dropentryBtn button:focus:not(:active),
+        .st-key-verifyIDBtn button:hover,
+        .st-key-verifyIDBtn button:active,
+        .st-key-verifyIDBtn button:focus,
+        .st-key-verifyIDBtn button:focus:not(:active),
+        .st-key-create_uid_btn button:hover,
+        .st-key-create_uid_btn button:active,
+        .st-key-create_uid_btn button:focus,
+        .st-key-create_uid_btn button:focus:not(:active){
+            color:#fff!important;
+            border:none;
+        }
+        .st-key-uidCol label p::after, 
+        .st-key-unique_col_name label p::after, 
+        .st-key-unique_col_delimiter label p::after{ 
+            content: " *";
+            color: red;
+        }
+        </style>
+    """
+    st.markdown(customcss, unsafe_allow_html=True)
 
 #Updates the session before relaoding the page -> helps to redirect page
 def handle_click(newSelection):
@@ -28,55 +70,26 @@ def unique_id_creation_fragment(df, columns):
             value="_", 
             key="unique_col_delimiter"
         )
-
         if st.button("Create Unique ID Column", key="create_uid_btn"):
             if not new_col_name.strip():
                 st.error("Column name cannot be empty.")
-            if new_col_name in df.columns:
-                df.drop(columns=[new_col_name], inplace=True)
             else:
-                try:
-                    df[new_col_name] = df[columns].astype(str).agg(delimiter.join, axis=1)
-                    st.success(f"New column '{new_col_name}' added to the dataset.")
-                    df.index.name = 'SN'
-                    df.index = df.index + 1
-                    st.dataframe(df, use_container_width=True, hide_index=False)
-                except Exception as e:
-                    st.error(f"Failed to create unique ID column: {str(e)}")
+                if new_col_name in df.columns:
+                    df.drop(columns=[new_col_name], inplace=True)
+                else:
+                    with st.spinner("Generating unique ID column..."):
+                        try:
+                            df[new_col_name] = df[columns].astype(str).agg(delimiter.join, axis=1)
+                            st.success(f"New column '{new_col_name}' added to the dataset.")
+                            st.info(f"Download this new set and upload again to check the frequency table to generate visuals")
+                            df.index.name = 'SN'
+                            df.index = df.index + 1
+                            st.dataframe(df, use_container_width=True, hide_index=False)
+                        except Exception as e:
+                            st.error(f"Failed to create unique ID column: {str(e)}")
 
 def check_specific_columns_as_unique_id(df):
-    customcss = """
-        <style>
-        div[data-testid="stExpander"] summary{
-            padding:0.4rem 1rem;
-        }
-        .stHorizontalBlock{
-            //margin-top:-30px;
-        }
-        .st-key-functioncall button{
-        margin-top:28px;
-        }
-        .st-key-functioncall button,.st-key-dropentryBtn button,.st-key-verifyIDBtn button{
-            background-color:#3b8e51;
-            color:#fff;
-            border:none;
-        }
-        .st-key-functioncall button:hover,.st-key-functioncall button:active,.st-key-functioncall button:focus,st-key-functioncall button:focus:not(:active),
-        .st-key-dropentryBtn button:hover,.st-key-dropentryBtn button:active,.st-key-dropentryBtn button:focus,st-key-dropentryBtn button:focus:not(:active),
-        .st-key-verifyIDBtn button:hover,.st-key-verifyIDBtn button:active,.st-key-verifyIDBtn button:focus,st-key-verifyIDBtn button:focus:not(:active){
-            color:#fff!important;
-            border:none;
-        }
-        .st-key-uidCol label p::after{ 
-            content: " *";
-            color: red;
-        }
-        </style>
-    """
-    st.markdown(customcss, unsafe_allow_html=True)
-
-    st.session_state.drop_export_rows_complete = False
-    st.session_state.drop_export_entries_complete = False
+    customCss()
     title_info_markdown = """
         Use this feature to check whether the column(s) you think form the unique ID is indeed the unique ID.
         - Verifies if selected column(s) can serve as a unique identifier for the dataset.
@@ -88,17 +101,29 @@ def check_specific_columns_as_unique_id(df):
     st.markdown("<h2 style='text-align: center;font-weight:800;color:#136a9a;margin-top:-15px'>Verify Unique ID(s)</h2>", unsafe_allow_html=True, help=title_info_markdown)
     st.markdown("<p style='color:#3b8e51;margin-bottom:20px'>This function helps you verify if the column(s) that you selected serve(s) as a unique ID for your dataset. If you expect some column(s) to be a unique ID in your dataset, this function helps you verify the same.</p>", unsafe_allow_html=True)
     
-
-    selectField, updateBtn = st.columns([2,1])
-    columns = selectField.multiselect("Select column(s) to verify [multiple selections are allowed - up to 4]",max_selections=4, options=[str(col) for col in df.columns.tolist()],key="uidCol")
+    with st.form("unique_id_verification_form"):
+        columns = st.multiselect(
+            "Select column(s) to verify [up to 4]",
+            max_selections=4,
+            options=[str(col) for col in df.columns.tolist()],
+            key="uidCol"
+        )
+        submit = st.form_submit_button("Check Unique ID")
     
-    if columns and updateBtn.button("Check Unique ID",key="functioncall"):
+    if columns and submit:
+        # total_start_time = time.perf_counter()
         with st.spinner(f"Checking if {', '.join(columns)} form a unique ID..."):
+
+            # file_read_start = time.perf_counter()
             df_clean = df.replace([np.inf, -np.inf], np.nan).dropna()
+            # file_read_time = time.perf_counter() - file_read_start
+
             data = df_clean.where(pd.notnull(df_clean), None).to_dict('records')
             payload = {"data": data, "columns": columns}
-            response = requests.post(UNIQUE_ID_CHECK_ENDPOINT, json=payload)
+
+            response, api_call_time = callAPIWithParam(payload, UNIQUE_ID_CHECK_ENDPOINT)
             
+            # dataframe_start_time = time.perf_counter()
             if response.status_code == 200:
                 try:
                     result = response.json()['result']
@@ -131,3 +156,11 @@ def check_specific_columns_as_unique_id(df):
             else:
                 error_detail = response.json().get("detail", "Unknown error")
                 st.error(f"Error: {response.status_code} - {error_detail}")
+            # dataframe_end_time = time.perf_counter()
+
+            # total_end_time = time.perf_counter()
+            # st.info("**Performance Metrics:**")
+            # st.write(f"- Data Cleaning & Prep: {file_read_time:.3f} seconds")
+            # st.write(f"- API Response Time (Server): {api_call_time:.3f} seconds")
+            # st.write(f"- DataFrame Handling (Client): {(dataframe_end_time - dataframe_start_time):.3f} seconds")
+            # st.write(f"- Total Execution Time: {(total_end_time - total_start_time):.3f} seconds")

@@ -7,122 +7,99 @@ set_page_config("collapsed")
 
 if __name__ == "__main__":
     selectedNav = setheader()
-    if selectedNav == "Pre Survey":
-          st.switch_page("pages/1_Pre_Survey.py")
+    if selectedNav == "Intervention Design":
+          st.switch_page("pages/1_Intervention_Design.py")
+    if selectedNav == "Intervention Design":
+          st.switch_page("pages/1_Intervention_Design.py")
     if selectedNav == "Admin Data Diagnostic":
           st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
-    if selectedNav == "Nutrition Analytics":
+    if selectedNav == "Intervention Analytics":
+    if selectedNav == "Intervention Analytics":
           st.switch_page("pages/3_Nutrition_Analytics.py")
     setFooter()
 
     with st.container():
-      st.markdown("<h1 style='text-align: center;'>VALIData | A CEGIS Project", unsafe_allow_html=True)
+      addOncss = """
+        <style>
+        div[data-testid="stElementToolbar"]{
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+        </style>
+      """
+      st.markdown(addOncss, unsafe_allow_html=True)
+      st.markdown("<h1 style='text-align: center;color:#136a9a;font-weight:800;padding:0;margin:0'>Welcome to VALIData", unsafe_allow_html=True)
+      st.markdown("<h5 style='text-align:center;color:#34a853;margin-bottom:-50px;font-weight:400'>CEGIS’ Digital Public Good offering", unsafe_allow_html=True)
+      
+      addOncss = """
+        <style>
+        div[data-testid="stElementToolbar"]{
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+        </style>
+      """
+      st.markdown(addOncss, unsafe_allow_html=True)
+      st.markdown("<h1 style='text-align: center;color:#136a9a;font-weight:800;padding:0;margin:0'>Welcome to VALIData", unsafe_allow_html=True)
+      st.markdown("<h5 style='text-align:center;color:#34a853;margin-bottom:-50px;font-weight:400'>CEGIS’ Digital Public Good offering", unsafe_allow_html=True)
+      
 
       with st.container():
             left, middle, right = st.columns([1,3,1])
             with middle:
-                  st.write("VALIData is a simulation tool developed for the Center for Effective Governance of Indian States (CEGIS), an organization dedicated to assisting state governments in India to achieve better development outcomes.")
+                  st.write('----')
+                  st.markdown("<span style='color:#34a853;font-weight:700;font-size:22px'>VALIData</span> is a Digital Public Good offering by the <a href='https://cegis.org/about' target='_blank'>Centre for Effective Governance of Indian States</a>. It is intended to be a one stop platform for all things data analytics geared towards enhancing the state governments’ ability for data-driven decision-making, especially in the sectors of Health, Education, and Nutrition.",unsafe_allow_html=True)
+                  st.write('----')
+                  st.markdown("<span style='color:#34a853;font-weight:700;font-size:22px'>VALIData</span> is a Digital Public Good offering by the <a href='https://cegis.org/about' target='_blank'>Centre for Effective Governance of Indian States</a>. It is intended to be a one stop platform for all things data analytics geared towards enhancing the state governments’ ability for data-driven decision-making, especially in the sectors of Health, Education, and Nutrition.",unsafe_allow_html=True)
                   
-                  st.subheader("Overview")
-                  st.write("An important goal of CEGIS is to improve the quality of administrative data collected by state governments. One approach is to re-sample a subset of the data and measure deviations from the original samples collected. These deviations are quantified as **discrepancy scores**, and significant scores are flagged for third-party intervention.")
-                  st.write("Often, it's unclear which re-sampling strategy yields the most accurate and reliable discrepancy scores. The goal of this project is to create a simulator that predicts discrepancy scores and assesses their statistical accuracy across different re-sampling strategies.")
-                  st.write("VALIData comprises a backend API built with FastAPI and a frontend interface developed using Streamlit. The project utilizes PostgreSQL for database management and is containerized with Docker for easy deployment.")
-
-                  st.subheader("About CEGIS")
-                  desc, image = st.columns([3,1])
-                  desc.write("The Centre for Effective Governance of Indian States (CEGIS Foundation) is dedicated to enabling transformative improvement in the functioning of the Indian state.")
+                  st.markdown("<span style='color:#34a853;font-weight:600;font-size:20px'>VALIData Features</span>: VALIData contains a plethora of analytical packages that shall help in different stages of data systems strengthening",unsafe_allow_html=True)
+                  
+                  st.markdown("<span style='color:#34a853;font-weight:600;font-size:20px'>VALIData Features</span>: VALIData contains a plethora of analytical packages that shall help in different stages of data systems strengthening",unsafe_allow_html=True)
+                  
                   script_dir = os.path.dirname(os.path.abspath(__file__))
-                  image.image(os.path.join(script_dir, "logo_page.png"))
-                  st.write("Our work is informed by research, evidence and a practical orientation towards implementable ideas. We partner with state governments to improve the tools they need to design effective governance reforms, while also offering strategic implementation support. Our focus is on strengthening governance by improving four core functions of the government - outcome measurement, personnel management, strategic financial management and leveraging markets for improved public service delivery.")
 
-                  tab1, tab2, tab3 = st.tabs(["Our Mission", "Our Approach", "Our Values"])
-                  with tab1:
-                        st.write('''
-                              We aim to improve lives by helping state governments deliver better development outcomes.
-                                 
-                              CEGIS believes that strengthening the capacity of state governments is the most cost-effective way of improving development outcomes at scale.''')
-                  with tab2:
-                        st.write('''
-                        At CEGIS, we believe that governments should function as high-performing organisations with the following four features: the ability to measure developmental outcomes precisely, to manage personnel effectively, to employ strategic public finance in order to maximise return on investment and welfare, and finally to be able to manage market interfaces for optimal public service delivery. 
-                        ''')
+                  image, desc = st.columns([1,12])
+                  image.image(os.path.join(script_dir, "images/add_module.png"))
+                  desc.markdown("<span style='font-weight:700'>Admin Data Diagnostic</span> module consists of features that shall help users assess the quality of admin data and identify various issues present in it. For example, one of the features this module/package contains is calculating the percentage of data points that are valid, accurate, and reliable, for any specific indicator",unsafe_allow_html=True)
 
-                        with st.expander("Outcome Measurement"):
-                              st.write('''
-                                    State governments in India often focus on implementing programs based on inputs like budgetary allocations and workforce utilisation rather than expected outcomes such as the experience of beneficiaries of programs. One of the reasons for this is the limited availability of precise, consistent and comprehensive data regarding outcomes. Our Outcome Measurement team is working to address this gap by assisting governments in evaluating the quantity, quality and usability of administrative data. Our work in this area is divided into four key streams:
+                  image, desc = st.columns([1,12])
+                  image.image(os.path.join(script_dir, "images/intervention_design.png"))
+                  desc.markdown("<span style='font-weight:700'>Intervention Design</span> module consists of features that shall help users design any intervention to improve Health/Education/Nutrition data quality or strengthen their data systems. For example, one of the features this module/package contains is a sample size calculator that takes in different contextual specifications and constraints from the user and throws out an optimal sample size for the intervention",unsafe_allow_html=True)
 
-                                    1. Setting systems for conducting annual citizen-level Key Performance Indicators (KPI) surveys for slow-moving outcome indicators
-                                    2. Setting systems for High Frequency Measurement (HFM) of citizen and official-level  fast-moving output indicators of quality of public services
-                                    3. Strengthening government’s own administrative data quality (ADQ)
-                                    4. Strengthening data use strategy
+                  image, desc = st.columns([1,12])
+                  image.image(os.path.join(script_dir, "images/intervention_analytics.png"))
+                  desc.markdown("<span style='font-weight:700'>Intervention Analytics</span> module consists of features that shall help users view analytical insights from the intervention. For example, one of the packages in this module is the nested supervision analytics package which shall help in generating insights from a nested supervision intervention, at different levels to the corresponding layers of staff",unsafe_allow_html=True)
 
-                                    Together, these initiatives will build the capacity of  governments to gather precise, consistent, and comprehensive data to evaluate the effectiveness of services and make informed decisions, thus leading to better public service delivery and positive experiences for end beneficiaries.
-                              ''')
-                        
-                        with st.expander("Personnel Measurement"):
-                              st.write('''
-                                    In high-performing organisations, frontline staff and managers are held accountable for achieving desired outcomes but are also granted autonomy in determining how they carry out their responsibilities. The opposite is often true in government settings, which leads to rule-based administration rather than role-based administration, affecting service delivery according to  the stated objectives. 
+                  st.markdown("<span style='color:#34a853;font-weight:600;font-size:20px'>Three sectoral VALIData tools</span>: We are building three parallel VALIData tools which shall contain analytical packages under all the three modules mentioned above.",unsafe_allow_html=True)
 
-                                    Our Personnel Management team addresses this gap by employing a competency-driven approach to managing human resources in government. The team works with central, state and local governments to actualise their human capital by improving human resource management practices and organisational effectiveness. We believe that supporting governments in undertaking these reforms will result in improved execution capacity and a fulfilling career journey for government officials. Our work in this area is divided into three key streams: 
+                  image, desc = st.columns([1,12])
+                  image.image(os.path.join(script_dir, "images/validata_health.png"))
+                  desc.markdown("<span style='font-weight:700'>VALIData Health</span> shall consist of analytical packages under Admin Data Diagnostic, Intervention Design, Intervention Analytics modules, with some common cross-sectoral features and other features specifically developed for Health sector data",unsafe_allow_html=True)
 
-                                    1. Competency-based recruitment
-                                    2. Competency-based capacity building (learning and development)
-                                    3. Performance measurement and management
-                                    
-                                    Together, these initiatives will bring more clarity to the work done by government officials, enhance workplace effectiveness and enable the officials to demonstrate accountability for outcomes, leading to empowered, equipped and future ready government officials that is a key to achieving citizen-centric service delivery.
-                              ''')
+                  image, desc = st.columns([1,12])
+                  image.image(os.path.join(script_dir, "images/validata_education.png"))
+                  desc.markdown("<span style='font-weight:700'>VALIData Education</span> shall consist of analytical packages under Admin Data Diagnostic, Intervention Design, Intervention Analytics modules, with some common cross-sectoral features and other features specifically developed for analysing Education sector data",unsafe_allow_html=True)
 
-                        with st.expander("Strategic Public Finance"):
-                              st.write('''
-                                    Governments in India often face challenges in each of the four stages of the annual cycle of public financial management - planning and allocation, release and expenditure, accounting and audit, and utilisation of current year data as input for planning for the subsequent year. The planning stage is hampered by the lack of outcome data, which restricts the effective allocation of funds to areas with the greatest need. Allocations and releases are also restricted by liquidity constraints, caused by suboptimal revenue collections. These limitations, compounded by inefficient fund flow channels, often result in funds not reaching the right destination at the right time impacting expenditure pertaining to complex activities associated with public service delivery. In addition, the dense and inconsistent accounting systems in government make it difficult to leverage it for analysis and planning. Finally, there is limited possibility of triangulating expenditure data with outcomes in order to plan correctly for the next year. 
+                  image, desc = st.columns([1,12])
+                  image.image(os.path.join(script_dir, "images/validata_nutrition.png"))
+                  desc.markdown("<span style='font-weight:700'>VALIData Nutrition</span> shall consist of analytical packages under Admin Data Diagnostic, Intervention Design, Intervention Analytics modules, with some common cross-sectoral features and other features specifically developed for analysing Nutrition sector data",unsafe_allow_html=True)
+            
+                  st.markdown("<span style='color:#34a853;font-weight:600;font-size:20px'>Target audience for VALIData</span>: We are building a plethora of data analytics packages on VALIData for:",unsafe_allow_html=True)
 
-                                    Our Strategic Public Finance team supports the governments in strengthening public financial management by adopting a budgetary life cycle approach, addressing issues from planning and allocation to auditing by solving key problems in the budgeting process, improving sufficiency and efficiency, and ensuring smooth funds flow. Our work in this area is divided in four key streams:
+                  image, desc = st.columns([1,12])
+                  image.image(os.path.join(script_dir, "images/cegis_project.jpg"))
+                  desc.markdown("<span style='font-weight:700'>Project delivery teams in CEGIS</span> who work with the Health, Education, and Nutrition departments in different states",unsafe_allow_html=True)
 
-                                    1. Strengthening revenue systems
-                                    2. Fiscal exchange systems
-                                    3. Quality of expenditure
-                                    4. Macro fiscal and economic policy
-                                    
-                                    These initiatives will ensure efficient fund allocation and flow, thereby improving financial efficiency and public service delivery. 
-                              ''')
+                  image, desc = st.columns([1,12])
+                  image.image(os.path.join(script_dir, "images/partner_registeration.png"))
+                  desc.markdown("<span style='font-weight:700'>Partner organisations</span> working with the government in Health, Education, and Nutrition space to improve state capacity, service delivery, admin data quality, data-driven governance, etc. through their own interventions",unsafe_allow_html=True)
 
-                        with st.expander("States and Markets"):
-                              st.write('''
-                                    Governments have three distinct roles in the ecosystem for service delivery to its citizens  – direct provision, managing interface with market through regulation, and policy. Traditionally, government focus has been more on the “direct provision” function. However, a combination of fiscal constraints, market-based efficiencies and incentive mismatches makes it necessary for governments to judiciously engage with non-state actors (both for-profit and non-profit) to ensure access to affordable and high-quality services.
+                  image, desc = st.columns([1,12])
+                  image.image(os.path.join(script_dir, "images/gov_stakeholders.png"))
+                  desc.markdown("<span style='font-weight:700'>Government stakeholders</span> who can benefit from VALIData’s automated analytical templates to improve data quality, service delivery performance, and enhance data-driven decision-making within the government",unsafe_allow_html=True)
 
-                                    To create effective “service ecosystems”, the State and Markets team supports governments in measuring cost-effectiveness of delivery across different forms of provision, and in defining and implementing mechanisms to better coordinate actions across public and private sectors. Our approach includes identifying the right combination of these three levers - provision, regulation and policy - while considering market and government (in)efficiencies, building government and market capacities, defining and implementing incentives to drive performance, and instituting high-quality monitoring to complete the feedback loop.
-
-                                    By facilitating the engagement between states and non-state actors, the State and Markets team strives to overcome traditional constraints, enhance market efficiencies and ensure access to high-quality, affordable services. Our mission is to create low-friction service ecosystems that enhance government and market efficiency and, ultimately, the quality of life of common citizens.
-                              ''')
-
-                  with tab3:
-                        st.video("https://cegis.org/sites/default/files/2024-05/CEGIS%20Shared%20Values%20Video%20_%20Short%20Cut%20_%20Aparna%20VO.mp4")
-
-                  st.subheader("Modules")
-                  presurvey, admindata, postsurvey = st.tabs(["Pre Survey", "Admin Data Quality Checks", "Post Survey"])
-
-                  with presurvey:
-                        st.page_link("pages/1_Pre_Survey.py", label="Go to Module Page",icon=":material/display_external_input:")
-                        with st.expander("Third Party Sampling Strategy"):
-                              st.write('''
-                                    demo
-                                          ''')
-                        
-                  with admindata:
-                        st.page_link("pages/2_Admin_Data_Quality_Checklist.py", label="Go to Module Page",icon=":material/display_external_input:")
-                        with st.expander("Unique Identifier"):
-                              st.write('''
-                                    demo
-                                    ''')
-                        with st.expander("Remove Duplicates"):
-                              st.write('''
-                                    demo
-                                    ''')
-                  
-                  with postsurvey:
-                        st.page_link("pages/3_Nutrition_Analytics.py", label="Go to Module Page",icon=":material/display_external_input:")
-                        with st.expander("ECD Nested Supervision"):
-                              st.write('''
-                                    demo
-                                    ''')
-      
-      
+                  st.write("")
+                  st.write("")
+                  st.write("VALIData is being built brick-by-brick, with new and useful features, thanks to the useful feedback we are receiving from all these stakeholders. This is intended to be a public good for anyone interested in enhancing the state capacity and data-driven decision-making ability of India’s state governments. Please try out the tool, and reach out to us with your ideas on what more we can build. We would be extremely happy to hear from you! ")
+                  st.write("")
+                  st.write("")
