@@ -871,10 +871,12 @@ def pseudo_code_analysis():
 
 if __name__ == "__main__":
     selectedNav = setheader("Intervention Analytics")
+    if selectedNav == "Home":
+            st.switch_page("Home.py")
     if selectedNav == "Intervention Design":
-          st.switch_page("pages/1_Intervention_Design.py")
+            st.switch_page("pages/1_Intervention_Design.py")
     if selectedNav == "Admin Data Diagnostic":
-          st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
+            st.switch_page("pages/2_Admin_Data_Quality_Checklist.py")
     pseudo_code_analysis()
 
     setFooter()
