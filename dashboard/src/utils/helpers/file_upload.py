@@ -49,7 +49,7 @@ def handle_file_upload(file_option, category):
             st.warning(f"No files have been uploaded yet in {category}.")
             return None
         
-        default_option = "select a file"
+        default_option = "Select a file"
         # Format file names with upload datetime
         file_options = [default_option] + [
             f"{file['filename']}: {(datetime.fromisoformat(file['upload_datetime']) + timedelta(hours=5, minutes=30)).strftime('%Y-%m-%d')}"
