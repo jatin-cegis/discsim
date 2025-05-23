@@ -115,6 +115,9 @@ async def upload_file(
             # Drop the header row from data
             df = split_df.iloc[1:].reset_index(drop=True)
 
+        else:
+            df = df_raw
+
         # Convert DataFrame back to CSV
         processed_csv = df.to_csv(index=False)
         
