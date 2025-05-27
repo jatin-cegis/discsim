@@ -54,44 +54,45 @@ def pseudo_code_analysis():
                 with col1:
                     if 'districtLevelInsights' in data:
                         container = st.container(border=True)
-                        sameHeightWeight = pd.DataFrame(data['districtLevelInsights']['sameHeightWeight'])
-                        container.markdown("<h6 style='text-align:center'>Cases with Exact Same Height and Weight Measurements", unsafe_allow_html=True)
-                        fig_same_values = px.bar(
-                            sameHeightWeight, 
-                            x=sameHeightWeight["Metric"].astype(str) + " %",
-                            y="Percentage (%)", 
-                            color="Metric", 
-                            text=sameHeightWeight["Percentage (%)"].astype(str) + " %",
-                            color_discrete_map = {'Exact same height': '#4285f4', 'Exact same weight': '#34a853'}
-                        )
-                        fig_same_values.update_layout(
-                            barcornerradius=5,
-                            showlegend=False,
-                            margin=dict(t=0, b=0),
-                            height=300,
-                            xaxis=dict(title=None,showgrid=False,showticklabels=True),
-                            yaxis=dict(title="% Remeasurements",showgrid=False,showticklabels=False)
-                        )
-                        container.plotly_chart(fig_same_values)
-                        with container.expander("Show Data"):
-                            sameHeightWeight['Percentage (%)'] = sameHeightWeight['Percentage (%)'].apply(lambda x: f'{x} %')
-                            sameHeightWeight.index.name = 'SN'
-                            sameHeightWeight.index = sameHeightWeight.index + 1
-                            st.dataframe(sameHeightWeight,hide_index=False,use_container_width=True)
-                        with container.expander("Show/export cases with exact same height"):
-                            sameHeight = pd.DataFrame(json.loads(data['districtLevelInsights']['sameHeightRecords']))
-                            sameHeight.index.name = 'SN'
-                            sameHeight.index = sameHeight.index + 1
-                            st.dataframe(sameHeight,hide_index=False,use_container_width=True)
-                        with container.expander("Show/export cases with exact same weight"):
-                            sameWeight = pd.DataFrame(json.loads(data['districtLevelInsights']['sameWeightRecords']))
-                            sameWeight.index.name = 'SN'
-                            sameWeight.index = sameWeight.index + 1
-                            st.dataframe(sameWeight,hide_index=False,use_container_width=True)
+                        if 'sameHeightWeight' in data['districtLevelInsights']:
+                            sameHeightWeight = pd.DataFrame(data['districtLevelInsights']['sameHeightWeight'])
+                            container.markdown("<h6 style='text-align:center'>Cases with Exact Same Height and Weight Measurements", unsafe_allow_html=True)
+                            fig_same_values = px.bar(
+                                sameHeightWeight, 
+                                x=sameHeightWeight["Metric"].astype(str) + " %",
+                                y="Percentage (%)", 
+                                color="Metric", 
+                                text=sameHeightWeight["Percentage (%)"].astype(str) + " %",
+                                color_discrete_map = {'Exact same height': '#4285f4', 'Exact same weight': '#34a853'}
+                            )
+                            fig_same_values.update_layout(
+                                barcornerradius=5,
+                                showlegend=False,
+                                margin=dict(t=0, b=0),
+                                height=300,
+                                xaxis=dict(title=None,showgrid=False,showticklabels=True),
+                                yaxis=dict(title="% Remeasurements",showgrid=False,showticklabels=False)
+                            )
+                            container.plotly_chart(fig_same_values)
+                            with container.expander("Show Data"):
+                                sameHeightWeight['Percentage (%)'] = sameHeightWeight['Percentage (%)'].apply(lambda x: f'{x} %')
+                                sameHeightWeight.index.name = 'SN'
+                                sameHeightWeight.index = sameHeightWeight.index + 1
+                                st.dataframe(sameHeightWeight,hide_index=False,use_container_width=True)
+                            with container.expander("Show/export cases with exact same height"):
+                                sameHeight = pd.DataFrame(json.loads(data['districtLevelInsights']['sameHeightRecords']))
+                                sameHeight.index.name = 'SN'
+                                sameHeight.index = sameHeight.index + 1
+                                st.dataframe(sameHeight,hide_index=False,use_container_width=True)
+                            with container.expander("Show/export cases with exact same weight"):
+                                sameWeight = pd.DataFrame(json.loads(data['districtLevelInsights']['sameWeightRecords']))
+                                sameWeight.index.name = 'SN'
+                                sameWeight.index = sameWeight.index + 1
+                                st.dataframe(sameWeight,hide_index=False,use_container_width=True)
                 with col2:
                     if 'childrenCategory' in data['districtLevelInsights']:
                         container = st.container(border=True)
-                        childrenCategory = pd.DataFrame(data['districtLevelInsights']['childrenCategory'])
+                        childrenCategory = pd.DataFrame(json.loads(data['districtLevelInsights']['childrenCategory']))
                         container.markdown("<h6 style='text-align:center'>Average Difference in Height & Weight Measurement", unsafe_allow_html=True)
                         fig_combined = px.bar(
                             childrenCategory.melt(
@@ -834,7 +835,7 @@ def pseudo_code_analysis():
                 with col1:
                     if 'sameHeight' in data['awcLevelInsights']:
                         container = st.container(border=True)
-                        awcSameHeight = pd.DataFrame(data['awcLevelInsights']['sameHeight'])
+                        awcSameHeight = pd.DataFrame(json.loads(data['awcLevelInsights']['sameHeight']))
                         container.markdown("<h6 style='text-align:center;padding-bottom:0'>Remeasurements with Exact Same AWT and Supervisor Height Measurements", unsafe_allow_html=True)
                         container.markdown("<p style='text-align:center;color:grey;font-size:12px'>Top 10 AWC", unsafe_allow_html=True)
                         top_12_awcSameHeight = awcSameHeight.nlargest(10, 'Exact_Same_Height_%')
@@ -862,7 +863,7 @@ def pseudo_code_analysis():
                 with col2:
                     if 'sameWeight' in data['awcLevelInsights']:
                         container = st.container(border=True)
-                        awcSameWeight = pd.DataFrame(data['awcLevelInsights']['sameWeight'])
+                        awcSameWeight = pd.DataFrame(json.loads(data['awcLevelInsights']['sameWeight']))
                         container.markdown("<h6 style='text-align:center;padding-bottom:0'>Remeasurements with Exact Same AWT and Supervisor Weight Measurements", unsafe_allow_html=True)
                         container.markdown("<p style='text-align:center;color:grey;font-size:12px'>Top 10 AWC", unsafe_allow_html=True)
                         top_12_awcSameWeight = awcSameWeight.nlargest(10, 'Exact_Same_Weight_%')
