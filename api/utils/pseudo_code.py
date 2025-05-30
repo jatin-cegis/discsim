@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 def error_handling(params):
     # This function can be expanded for more specific error logging or custom error responses
@@ -112,7 +115,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                 df['AWT_Normal_Sup_MUW']
             )
         except Exception as e:
-            return (0, f"Error during mismatch classification calculations: {e}", [])
+            logger.error(f"Error during mismatch classification calculations: {e}")
+            return (0, f"Error during mismatch classification calculations", [])
 
         # --- Wasting Conditions ---
         try:
@@ -124,7 +128,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             df['AWT_Sup_Other_Misclassifications_Wasting'] = (
                 (df['AWT_Sup_Same_Wasting'] == 0) & (df['AWT_Normal_Sup_SAM'] == 0) & (df['AWT_Normal_Sup_MAM'] == 0) & (df['AWT_MAM_Sup_SAM'] == 0)) * 1
         except Exception as e:
-            return (0, f"Error during wasting status calculations: {e}", [])
+            logger.error(f"Error during wasting status calculations: {e}")
+            return (0, f"Error during wasting status calculations", [])
         
         # --- Underweight Conditions ---
         try:
@@ -135,7 +140,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             df['AWT_Sup_Same_Underweight'] = (df['Status_UW'] == df['Sup_Status_UW']) * 1
             df['AWT_Sup_Other_Misclassifications_Underweight'] = ((df['AWT_Sup_Same_Underweight'] == 0) & (df['AWT_Normal_Sup_SUW'] == 0) & (df['AWT_Normal_Sup_MUW'] == 0)) * 1
         except Exception as e:
-            return (0, f"Error during underweight status calculations: {e}", [])
+            logger.error(f"Error during underweight status calculations: {e}")
+            return (0, f"Error during underweight status calculations", [])
 
         # --- Date Conversions ---
         try:
@@ -144,7 +150,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             df['Sup_WeightDate'] = pd.to_datetime(df['Sup_WeightDate'], format='%d/%m/%Y', errors='coerce')
             df['Gap between AWT Sup Measurements'] = (df['Sup_WeightDate'] - df['WeightDate']).dt.days
         except Exception as e:
-            return (0, f"Error during date conversions and gap calculation: {e}", [])
+            logger.error(f"Error during date conversions and gap calculation: {e}")
+            return (0, f"Error during date conversions and gap calculation", [])
 
         # --- Stunting Conditions ---
         try:
@@ -160,7 +167,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                 (df['AWT_Normal_Sup_Stunt_SAM'] == 0)
             ) * 1
         except Exception as e:
-            return (0, f"Error during stunting status calculations: {e}", [])
+            logger.error(f"Error during stunting status calculations: {e}")
+            return (0, f"Error during stunting status calculations:", [])
         
         # --- Height-Weight Diff ---
         try:
@@ -178,14 +186,16 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                 abs(df['Weight'] - df['Sup_Weight']), np.nan
             )
         except Exception as e:
-            return (0, f"Error calculating height/weight differences: {e}", [])
+            logger.error(f"Error calculating height/weight differences: {e}")
+            return (0, f"Error calculating height/weight differences", [])
 
         # --- Children Classifications ---
         try:
             df['0-3 years old'] = (df['AgeinMonthsAsDate'] < 36) * 1
             df['3-6 years old'] = np.where(df['0-3 years old'] == 0, 1, 0)
         except Exception as e:
-            return (0, f"Error during children age classification: {e}", [])
+            logger.error(f"Error during children age classification: {e}")
+            return (0, f"Error during children age classification", [])
 
         # --- Numeric Column Differences (Height, Weight, Muac) ---
         try:
@@ -200,7 +210,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                 else:
                     print(f"Warning: Missing column for {col}_Diff calculation.") # Or handle more strictly
         except Exception as e:
-            return (0, f"Error calculating numeric column differences (Height, Weight, Muac): {e}", [])
+            logger.error(f"Error calculating numeric column differences (Height, Weight, Muac): {e}")
+            return (0, f"Error calculating numeric column differences (Height, Weight, Muac)", [])
 
         # --- Sample Size Check ---
         num_remeasurements = df.shape[0]
@@ -221,7 +232,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             same_height_data = df[df['Height'] == df['Sup_Height']]
             same_weight_data = df[df['Weight'] == df['Sup_Weight']]
         except Exception as e:
-            return (0, f"Error calculating exact same height/weight metrics: {e}", [])
+            logger.error(f"Error calculating exact same height/weight metrics: {e}")
+            return (0, f"Error calculating exact same height/weight metrics", [])
 
         # --- Children Classifications Metrics ---
         try:
@@ -252,7 +264,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                 ]
             })
         except Exception as e:
-            return (0, f"Error calculating children category metrics: {e}", [])
+            logger.error(f"Error calculating children category metrics: {e}")
+            return (0, f"Error calculating children category metrics", [])
             
         # --- Wasting Levels ---
         try:
@@ -268,7 +281,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             wasting_metrics_df = pd.DataFrame(wasting_metrics_data)
             wasting_metrics_df['Percentage (%)'] = round((wasting_metrics_df['Value'] / num_remeasurements) * 100, 1)
         except Exception as e:
-            return (0, f"Error calculating wasting levels: {e}", [])
+            logger.error(f"Error calculating wasting levels: {e}")
+            return (0, f"Error calculating wasting levels", [])
 
         # --- Wasting Classifications ---
         try:
@@ -287,7 +301,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             misclassification_wasting_AWT_Normal_Supervisor_SAM = df[(df['Status_Wasting'] == "Normal") & (df['Sup_Status_Wasting'] == "SAM")]
             misclassification_wasting_AWT_Normal_Supervisor_MAM = df[(df['Status_Wasting'] == "Normal") & (df['Sup_Status_Wasting'] == "MAM")]
         except Exception as e:
-            return (0, f"Error calculating wasting misclassifications: {e}", [])
+            logger.error(f"Error calculating wasting misclassifications: {e}")
+            return (0, f"Error calculating wasting misclassifications", [])
 
         # --- UnderWeight Levels ---
         try:
@@ -303,7 +318,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             underweight_metrics_df = pd.DataFrame(underweight_metrics_data)
             underweight_metrics_df['Percentage (%)'] = round((underweight_metrics_df['Value'] / num_remeasurements) * 100, 1)
         except Exception as e:
-            return (0, f"Error calculating underweight levels: {e}", [])
+            logger.error(f"Error calculating underweight levels: {e}")
+            return (0, f"Error calculating underweight levels", [])
 
         # --- Underweight Misclassification ---
         try:
@@ -326,7 +342,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             underweight_classification_AWT_Normal_Supervisor_SUW = df[(df['Status_UW'] == "Normal") & (df['Sup_Status_UW'] == "SUW")]
             underweight_classification_AWT_Normal_Supervisor_MUW = df[(df['Status_UW'] == "Normal") & (df['Sup_Status_UW'] == "MUW")]
         except Exception as e:
-            return (0, f"Error calculating underweight misclassifications: {e}", [])
+            logger.error(f"Error calculating underweight misclassifications: {e}")
+            return (0, f"Error calculating underweight misclassifications", [])
 
         # --- Stunting Levels ---
         try:
@@ -355,7 +372,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             misclassification_stunting_df = pd.DataFrame(misclassification_stunting_data)
             misclassification_stunting_df['Percentage (%)'] = round((misclassification_stunting_df['Value'] / num_remeasurements) * 100, 1)
         except Exception as e:
-            return (0, f"Error calculating stunting levels/misclassifications: {e}", [])
+            logger.error(f"Error calculating stunting levels/misclassifications: {e}")
+            return (0, f"Error calculating stunting levels/misclassifications", [])
 
         # --- Project Level Analysis ---
         try:
@@ -459,7 +477,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                     project_level_disc['Percentile_Rank (%)'] <= 25 #red threshold
                 ], ['Green', 'Red'],default='Yellow'),'')
         except Exception as e:
-            return (0, f"Error during Project Level Analysis: {e}", [])
+            logger.error(f"Error during Project Level Analysis: {e}")
+            return (0, f"Error during Project Level Analysis", [])
 
         # --- Sector Level Analysis ---
         try:
@@ -564,7 +583,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                     sector_level_disc['Percentile_Rank (%)'] <= 25 #red threshold
                 ], ['Green', 'Red'],default='Yellow'),'')
         except Exception as e:
-            return (0, f"Error during Sector Level Analysis: {e}", [])
+            logger.error(f"Error during Sector Level Analysis: {e}")
+            return (0, f"Error during Sector Level Analysis", [])
             
         # --- AWC Level Analysis ---
         try:
@@ -681,7 +701,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                     awc_level_disc['Percentile_Rank (%)'] <= 25 #red threshold
                 ], ['Green', 'Red'],default='Yellow'),'')
         except Exception as e:
-            return (0, f"Error during AWC Level Analysis: {e}", [])
+            logger.error(f"Error during AWC Level Analysis: {e}")
+            return (0, f"Error during AWC Level Analysis", [])
 
         # --- Prepare Response Data ---
         try:
@@ -739,10 +760,12 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                 }
             }
         except Exception as e:
-            return (0, f"Error preparing final response data: {e}", [])
+            logger.error(f"Error preparing final response data: {e}")
+            return (0, f"Error preparing final response data", [])
 
         return (1, "Success", response_data)
 
     except Exception as e:
+        logger.error(f"An unexpected error occurred during data analysis: {e}. Please check the input data and column names.")
         # Catch any unexpected errors during the overall function execution
-        return (0, f"An unexpected error occurred during data analysis: {e}. Please check the input data and column names.", [])
+        return (0, f"An unexpected error occurred during data analysis. Please check the input data and column names.", [])
