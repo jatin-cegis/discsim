@@ -54,44 +54,45 @@ def pseudo_code_analysis():
                 with col1:
                     if 'districtLevelInsights' in data:
                         container = st.container(border=True)
-                        sameHeightWeight = pd.DataFrame(data['districtLevelInsights']['sameHeightWeight'])
-                        container.markdown("<h6 style='text-align:center'>Cases with Exact Same Height and Weight Measurements", unsafe_allow_html=True)
-                        fig_same_values = px.bar(
-                            sameHeightWeight, 
-                            x=sameHeightWeight["Metric"].astype(str) + " %",
-                            y="Percentage (%)", 
-                            color="Metric", 
-                            text=sameHeightWeight["Percentage (%)"].astype(str) + " %",
-                            color_discrete_map = {'Exact same height': '#4285f4', 'Exact same weight': '#34a853'}
-                        )
-                        fig_same_values.update_layout(
-                            barcornerradius=5,
-                            showlegend=False,
-                            margin=dict(t=0, b=0),
-                            height=300,
-                            xaxis=dict(title=None,showgrid=False,showticklabels=True),
-                            yaxis=dict(title="% Remeasurements",showgrid=False,showticklabels=False)
-                        )
-                        container.plotly_chart(fig_same_values)
-                        with container.expander("Show Data"):
-                            sameHeightWeight['Percentage (%)'] = sameHeightWeight['Percentage (%)'].apply(lambda x: f'{x} %')
-                            sameHeightWeight.index.name = 'SN'
-                            sameHeightWeight.index = sameHeightWeight.index + 1
-                            st.dataframe(sameHeightWeight,hide_index=False,use_container_width=True)
-                        with container.expander("Show/export cases with exact same height"):
-                            sameHeight = pd.DataFrame(json.loads(data['districtLevelInsights']['sameHeightRecords']))
-                            sameHeight.index.name = 'SN'
-                            sameHeight.index = sameHeight.index + 1
-                            st.dataframe(sameHeight,hide_index=False,use_container_width=True)
-                        with container.expander("Show/export cases with exact same weight"):
-                            sameWeight = pd.DataFrame(json.loads(data['districtLevelInsights']['sameWeightRecords']))
-                            sameWeight.index.name = 'SN'
-                            sameWeight.index = sameWeight.index + 1
-                            st.dataframe(sameWeight,hide_index=False,use_container_width=True)
+                        if 'sameHeightWeight' in data['districtLevelInsights']:
+                            sameHeightWeight = pd.DataFrame(data['districtLevelInsights']['sameHeightWeight'])
+                            container.markdown("<h6 style='text-align:center'>Cases with Exact Same Height and Weight Measurements", unsafe_allow_html=True)
+                            fig_same_values = px.bar(
+                                sameHeightWeight, 
+                                x=sameHeightWeight["Metric"].astype(str) + " %",
+                                y="Percentage (%)", 
+                                color="Metric", 
+                                text=sameHeightWeight["Percentage (%)"].astype(str) + " %",
+                                color_discrete_map = {'Exact same height': '#4285f4', 'Exact same weight': '#34a853'}
+                            )
+                            fig_same_values.update_layout(
+                                barcornerradius=5,
+                                showlegend=False,
+                                margin=dict(t=0, b=0),
+                                height=300,
+                                xaxis=dict(title=None,showgrid=False,showticklabels=True),
+                                yaxis=dict(title="% Remeasurements",showgrid=False,showticklabels=False)
+                            )
+                            container.plotly_chart(fig_same_values)
+                            with container.expander("Show Data"):
+                                sameHeightWeight['Percentage (%)'] = sameHeightWeight['Percentage (%)'].apply(lambda x: f'{x} %')
+                                sameHeightWeight.index.name = 'SN'
+                                sameHeightWeight.index = sameHeightWeight.index + 1
+                                st.dataframe(sameHeightWeight,hide_index=False,use_container_width=True)
+                            with container.expander("Show/export cases with exact same height"):
+                                sameHeight = pd.DataFrame(json.loads(data['districtLevelInsights']['sameHeightRecords']))
+                                sameHeight.index.name = 'SN'
+                                sameHeight.index = sameHeight.index + 1
+                                st.dataframe(sameHeight,hide_index=False,use_container_width=True)
+                            with container.expander("Show/export cases with exact same weight"):
+                                sameWeight = pd.DataFrame(json.loads(data['districtLevelInsights']['sameWeightRecords']))
+                                sameWeight.index.name = 'SN'
+                                sameWeight.index = sameWeight.index + 1
+                                st.dataframe(sameWeight,hide_index=False,use_container_width=True)
                 with col2:
                     if 'childrenCategory' in data['districtLevelInsights']:
                         container = st.container(border=True)
-                        childrenCategory = pd.DataFrame(data['districtLevelInsights']['childrenCategory'])
+                        childrenCategory = pd.DataFrame(json.loads(data['districtLevelInsights']['childrenCategory']))
                         container.markdown("<h6 style='text-align:center'>Average Difference in Height & Weight Measurement", unsafe_allow_html=True)
                         fig_combined = px.bar(
                             childrenCategory.melt(
@@ -467,7 +468,7 @@ def pseudo_code_analysis():
                     container = st.container(border=True)
                     projectUnderweightLevels = pd.DataFrame(data['projectLevelInsights']['underweightLevels'])
                     container.markdown("<h6 style='text-align:center;padding:0'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
-                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px;padding:10px'>Note: AWT SUW and AWT Underweight figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px;padding-bottom:10px'>Note: AWT SUW and AWT Underweight figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
                     categories = ['AWT_SUW_%', 'Sup_SUW_%', 'AWT_Underweight_%', 'Sup_Underweight_%']
                     colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
                     project_analysis_melted = projectUnderweightLevels.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
@@ -645,7 +646,9 @@ def pseudo_code_analysis():
                     container = st.container(border=True)
                     sectorWastingLevels = pd.DataFrame(data['sectorLevelInsights']['wastingLevels'])
                     container.markdown("<h6 style='text-align:center;padding:0'>Difference in Wasting levels between AWTs and Supervisors", unsafe_allow_html=True)
-                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>10 sectors with the highest difference between AWT and Supervisor Wasting %", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:0px'>10 sectors with the highest difference between AWT and Supervisor Wasting %", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;padding-top:0px;padding-bottom:10px'>Note: AWT SAM and AWT Wasting figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
+
                     categories = ['AWT_SAM_%', 'AWT_Wasting_%','Supervisor_SAM_%', 'Supervisor_Wasting_%']
                     colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
                     top_10_sector_analysis = sectorWastingLevels.nlargest(10, 'Sup-AWT_Difference_%')
@@ -677,7 +680,8 @@ def pseudo_code_analysis():
                     container = st.container(border=True)
                     sectorWastingClassification = pd.DataFrame(data['sectorLevelInsights']['wastingClassification'])
                     container.markdown("<h6 style='text-align:center;padding:0'>Difference between AWT and Supervisor in Wasting Classification", unsafe_allow_html=True)
-                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>10 sectors with the highest misclassification", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:0px'>10 sectors with the highest misclassification", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;padding-bottom:10px'>SAM - Severely acutely malnourished [>3 SD],<br> MAM = Moderately acutely malnourished [2-3 SD]", unsafe_allow_html=True)
                     categories = ['AWT_Normal_Sup_SAM_%', 'AWT_Normal_Sup_MAM_%', 'AWT_MAM_Sup_SAM_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
                     colors = ['darkred', 'red', 'lightcoral', 'gold', 'green']
                     #top_10_sector_analysis = sectorWastingClassification.sort_values(by='Same_Classifications_%',ascending=True)
@@ -720,7 +724,8 @@ def pseudo_code_analysis():
                     container = st.container(border=True)
                     sectorUnderweightLevels = pd.DataFrame(data['sectorLevelInsights']['underweightLevels'])
                     container.markdown("<h6 style='text-align:center;padding:0px'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
-                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>10 sectors with the highest difference between AWT and Supervisor Underweight %'", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:0px'>10 sectors with the highest difference between AWT and Supervisor Underweight %'", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;padding-bottom:10px'>Note: AWT SUW and AWT Underweight figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
                     categories = ['AWT_SUW_%', 'Sup_SUW_%', 'AWT_Underweight_%', 'Sup_Underweight_%']
                     colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
                     top_10_sector_analysis = sectorUnderweightLevels.nlargest(10, 'Sup-AWT_Difference_%')
@@ -752,7 +757,8 @@ def pseudo_code_analysis():
                     container = st.container(border=True)
                     sectorUnderweightClassification = pd.DataFrame(data['sectorLevelInsights']['underweightClassification'])
                     container.markdown("<h6 style='text-align:center;padding:0'>Difference between AWT and Supervisor in Underweight Classification", unsafe_allow_html=True)
-                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>10 sectors with the highest misclassification", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:0px'>10 sectors with the highest misclassification", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;padding-bottom:10px'>SUW - Severely underweight [>3 SD],<br> MUW = Moderately Underweight [2-3 SD]", unsafe_allow_html=True)
                     categories = ['AWT_Normal_Sup_SUW_%', 'AWT_Normal_Sup_MUW_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
                     colors = ['darkred', 'red', 'gold', 'green']
                     top_10_sector_analysis = sectorUnderweightClassification.nsmallest(10, 'Same_Classifications_%')
@@ -807,7 +813,7 @@ def pseudo_code_analysis():
                             'Zone': True
                         }
                     )
-                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0))
+                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0),height=len(sectorDisc) * 15)
                     fig_treemap.update_traces(
                         marker=dict(
                             cornerradius=5,
@@ -834,7 +840,7 @@ def pseudo_code_analysis():
                 with col1:
                     if 'sameHeight' in data['awcLevelInsights']:
                         container = st.container(border=True)
-                        awcSameHeight = pd.DataFrame(data['awcLevelInsights']['sameHeight'])
+                        awcSameHeight = pd.DataFrame(json.loads(data['awcLevelInsights']['sameHeight']))
                         container.markdown("<h6 style='text-align:center;padding-bottom:0'>Remeasurements with Exact Same AWT and Supervisor Height Measurements", unsafe_allow_html=True)
                         container.markdown("<p style='text-align:center;color:grey;font-size:12px'>Top 10 AWC", unsafe_allow_html=True)
                         top_12_awcSameHeight = awcSameHeight.nlargest(10, 'Exact_Same_Height_%')
@@ -862,7 +868,7 @@ def pseudo_code_analysis():
                 with col2:
                     if 'sameWeight' in data['awcLevelInsights']:
                         container = st.container(border=True)
-                        awcSameWeight = pd.DataFrame(data['awcLevelInsights']['sameWeight'])
+                        awcSameWeight = pd.DataFrame(json.loads(data['awcLevelInsights']['sameWeight']))
                         container.markdown("<h6 style='text-align:center;padding-bottom:0'>Remeasurements with Exact Same AWT and Supervisor Weight Measurements", unsafe_allow_html=True)
                         container.markdown("<p style='text-align:center;color:grey;font-size:12px'>Top 10 AWC", unsafe_allow_html=True)
                         top_12_awcSameWeight = awcSameWeight.nlargest(10, 'Exact_Same_Weight_%')
@@ -888,15 +894,43 @@ def pseudo_code_analysis():
                             awcSameWeight.index = awcSameWeight.index + 1
                             st.dataframe(awcSameWeight,hide_index=False,use_container_width=True)
 
+                if 'sameHeightWeight' in data['awcLevelInsights']:
+                    container = st.container(border=True)
+                    awcSameHeightWeight = pd.DataFrame(json.loads(data['awcLevelInsights']['sameHeightWeight']))
+                    container.markdown("<h6 style='text-align:center;padding-bottom:0'>Remeasurements with Exact Same AWT and Supervisor Height and Weight Measurements", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px'>Top 10 AWC", unsafe_allow_html=True)
+                    top_12_awcSameHeightWeight = awcSameHeightWeight.nlargest(10, 'Same_Height_Weight_%')
+                    fig_top_12_awcSameHeightWeight = px.bar(
+                            top_12_awcSameHeightWeight,
+                            x='Same_Height_Weight_%', 
+                            y='AWC_Name',
+                            orientation='h',
+                            text=top_12_awcSameHeightWeight["Same_Height_Weight_%"].astype(str) + " %",
+                        )
+                    fig_top_12_awcSameHeightWeight.update_layout(
+                            barcornerradius=5,
+                            showlegend=False,
+                            height=300,
+                            margin=dict(t=0, b=0,l=0,r=0),
+                            xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=False),
+                            yaxis=dict(title=None,showgrid=False,showticklabels=True)
+                        )
+                    container.plotly_chart(fig_top_12_awcSameHeightWeight)
+                    with container.expander("Show Data"):
+                        awcSameHeightWeight.index.name = 'SN'
+                        awcSameHeightWeight.index = awcSameHeightWeight.index + 1
+                        st.dataframe(awcSameHeightWeight,hide_index=False,use_container_width=True)
+
                 st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>WASTING [WEIGHT-FOR-HEIGHT]", unsafe_allow_html=True)
 
                 if 'wastingLevels' in data['awcLevelInsights']:
                     container = st.container(border=True)
                     awcWastingLevels = pd.DataFrame(data['awcLevelInsights']['wastingLevels'])
                     container.markdown("<h6 style='text-align:center;padding:0'>Difference in Wasting levels between AWTs and Supervisors", unsafe_allow_html=True)
-                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>10 awc with the highest difference between AWT and Supervisor Wasting %", unsafe_allow_html=True)
-                    categories = ['AWT_SAM_%', 'AWT_Wasting_%','Supervisor_SAM_%', 'Supervisor_Wasting_%']
-                    colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;paading-bottom:0px;margin-bottom:0'>10 awc with the highest difference between AWT and Supervisor Wasting %", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;padding-top:0px;padding-bottom:10px'>Note: AWT SAM and AWT Wasting figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
+                    categories = ['AWT_Wasting_%', 'Supervisor_Wasting_%']
+                    colors = [ '#0b5394', '#cc0000']
                     top_10_sector_analysis = awcWastingLevels.nlargest(10, 'Sup-AWT_Difference_%')
                     wasting_table_melted = top_10_sector_analysis.melt(id_vars=['AWC_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
                     fig_wasting_levels = px.bar(
@@ -969,8 +1003,8 @@ def pseudo_code_analysis():
                     awcUnderweightLevels = pd.DataFrame(data['awcLevelInsights']['underweightLevels'])
                     container.markdown("<h6 style='text-align:center;padding:0px'>Difference in Underweight levels between AWTs and Supervisor", unsafe_allow_html=True)
                     container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>10 awc with the highest difference between AWT and Supervisor Underweight %'", unsafe_allow_html=True)
-                    categories = ['AWT_SUW_%', 'Sup_SUW_%', 'AWT_Underweight_%', 'Sup_Underweight_%']
-                    colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
+                    categories = ['AWT_Underweight_%', 'Sup_Underweight_%']
+                    colors = [ '#0b5394', '#cc0000']
                     top_10_awc_analysis = awcUnderweightLevels.nlargest(10, 'Sup-AWT_Difference_%')
                     sector_analysis_melted = top_10_awc_analysis.melt(id_vars=['AWC_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
                     fig_uw_levels = px.bar(
@@ -1055,7 +1089,7 @@ def pseudo_code_analysis():
                             'Zone': True
                         }
                     )
-                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0),height=600)
+                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0),height=800)
                     fig_treemap.update_traces(
                         marker=dict(
                             cornerradius=5,

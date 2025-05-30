@@ -153,7 +153,7 @@ async def upload_file(
         logger.error(f"Error saving file: {file.filename}. Error: {e}")
         return JSONResponse(
             status_code=500,
-            content={"message": "Internal server error", "details": str(e)},
+            content={"message": "Internal server error", "details": "Error saving file in DB"},
         )
 
     logger.info(f"File uploaded successfully: {file.filename}")
