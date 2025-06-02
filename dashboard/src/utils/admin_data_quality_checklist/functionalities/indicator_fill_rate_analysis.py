@@ -41,7 +41,7 @@ def is_datetime_column(series: pd.Series) -> bool:
     return False
 @st.cache_data
 def get_numeric_operations():
-    return ['<', '<=', '>', '>=', '==', '!=']
+    return ['<', '<=', '>', '>=', '==', '!=', 'between']
 @st.cache_data
 def get_string_operations():
     return ['Contains', 'Does not contain', 'Equals', 'Not equals']
@@ -140,8 +140,16 @@ def indicator_fill_rate_analysis(uploaded_file, df):
                     label = st.text_input(f"Criteria Name (spaces will be removed)", f"Invalid{i+1}", max_chars=15)
                 with col2:
                     operation = st.selectbox(f"Operation", get_numeric_operations(), key=f"op{i}")
-                with col3:
-                    value = st.number_input(f"Value", key=f"val{i}")
+                if operation == "between":
+                    col4, col5 = col3.columns(2)
+                    with col4:
+                        lower = st.number_input(f"Lower bound (inclusive)", key=f"between_low_{i}")
+                    with col5:
+                        upper = st.number_input(f"Upper bound (inclusive)", key=f"between_high_{i}")
+                    value = (lower, upper)
+                else:
+                    with col3:
+                        value = st.number_input(f"Value", key=f"val{i}")
 
                 invalid_conditions.append({
                     "label": label.strip().replace(" ", ""),
