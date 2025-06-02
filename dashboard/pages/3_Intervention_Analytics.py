@@ -862,6 +862,7 @@ def pseudo_code_analysis():
                         )
                         container.plotly_chart(fig_top_12_awcSameHeight)
                         with container.expander("Show Data"):
+                            awcSameHeight = awcSameHeight.sort_values(by='Exact_Same_Height_%', ascending=False).reset_index(drop=True)
                             awcSameHeight.index.name = 'SN'
                             awcSameHeight.index = awcSameHeight.index + 1
                             st.dataframe(awcSameHeight,hide_index=False,use_container_width=True)
@@ -890,6 +891,7 @@ def pseudo_code_analysis():
                         )
                         container.plotly_chart(fig_top_12_awcSameWeight)
                         with container.expander("Show Data"):
+                            awcSameWeight = awcSameWeight.sort_values(by='Exact_Same_Weight_%', ascending=False).reset_index(drop=True)
                             awcSameWeight.index.name = 'SN'
                             awcSameWeight.index = awcSameWeight.index + 1
                             st.dataframe(awcSameWeight,hide_index=False,use_container_width=True)
@@ -917,6 +919,7 @@ def pseudo_code_analysis():
                         )
                     container.plotly_chart(fig_top_12_awcSameHeightWeight)
                     with container.expander("Show Data"):
+                        awcSameHeightWeight = awcSameHeightWeight.sort_values(by='Same_Height_Weight_%', ascending=False).reset_index(drop=True)
                         awcSameHeightWeight.index.name = 'SN'
                         awcSameHeightWeight.index = awcSameHeightWeight.index + 1
                         st.dataframe(awcSameHeightWeight,hide_index=False,use_container_width=True)
@@ -952,6 +955,7 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_wasting_levels)
                     with container.expander("Show Data"):
+                        awcWastingLevels = awcWastingLevels.sort_values(by='Sup-AWT_Difference_%', ascending=False).reset_index(drop=True)
                         awcWastingLevels.index.name = 'SN'
                         awcWastingLevels.index = awcWastingLevels.index + 1
                         st.dataframe(awcWastingLevels,hide_index=False,use_container_width=True)
@@ -1026,6 +1030,7 @@ def pseudo_code_analysis():
                     )
                     container.plotly_chart(fig_uw_levels)
                     with container.expander("Show Data"):
+                        awcUnderweightLevels = awcUnderweightLevels.sort_values(by='Sup-AWT_Difference_%', ascending=False).reset_index(drop=True)
                         awcUnderweightLevels.index.name = 'SN'
                         awcUnderweightLevels.index = awcUnderweightLevels.index + 1
                         st.dataframe(awcUnderweightLevels,hide_index=False,use_container_width=True)
@@ -1076,38 +1081,36 @@ def pseudo_code_analysis():
                     container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
                     container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>The following graph categorises the projects into red, yellow, and green zones, based on their percentile distribution vis-a-vis discrepancy rates. <br>Projects with the lowest discrepancy rates are likely to be in the green zone, those with the highest discrepancy rates are likely to be in the red zone,<br> and those in-between are likely to be in the yellow-zone", unsafe_allow_html=True)
                     awcDisc = pd.DataFrame(data['awcLevelInsights']['discrepancy'])
-                    fig_treemap = px.treemap(
-                        awcDisc, 
-                        path=['AWC_Name'], 
-                        values='Discrepancy Rate (%)', 
-                        color='Zone',
-                        color_discrete_map={'Green': 'green', 'Yellow': 'yellow', 'Red': 'red'},
-                        hover_data={
-                            'Total_Remeasurements': True,
-                            'Discrepancy Rate (%)': True,
-                            'Percentile_Rank (%)': True,
-                            'Zone': True
-                        }
-                    )
-                    fig_treemap.update_layout(margin=dict(t=0, l=0, r=0, b=0),height=800)
-                    fig_treemap.update_traces(
-                        marker=dict(
-                            cornerradius=5,
-                            line=dict(width=1, color='black')
-                        ),
-                        hovertemplate=(
-                            "<b>%{label}</b><br>"
-                            "Total Measurements: %{customdata[0]}<br>"
-                            "Discp. Rate: %{customdata[1]:.1f}%<br>"
-                            "Percentile Rank: %{customdata[2]:.1f}%"
-                        ),
-                        texttemplate="%{label} <br>Discrepancy Rate: %{value:.1f}%"
-                    )
-                    container.plotly_chart(fig_treemap)
-                    with container.expander("Show Data"):
-                        awcDisc.index.name = 'SN'
-                        awcDisc.index = awcDisc.index + 1
-                        st.dataframe(awcDisc,hide_index=False,use_container_width=True)    
+                    col1, col2, col3 = st.columns(3)
+
+                    with col1:
+                        red_zone_df = awcDisc[awcDisc['Zone'] == 'Red'].sort_values(by='Percentile_Rank (%)', ascending=False).reset_index(drop=True)
+                        red_zone_df.index = red_zone_df.index + 1
+                        red_zone_df.index.name = 'SN'
+                        with container.expander(f"🔴 Red Zone - {red_zone_df.shape[0]} AWCs"):
+                            st.dataframe(red_zone_df, hide_index=False, use_container_width=True)
+
+                    with col2:
+                        yellow_zone_df = awcDisc[awcDisc['Zone'] == 'Yellow'].sort_values(by='Percentile_Rank (%)', ascending=False).reset_index(drop=True)
+                        yellow_zone_df.index = yellow_zone_df.index + 1
+                        yellow_zone_df.index.name = 'SN'
+                        with container.expander(f"🟡 Yellow Zone - {yellow_zone_df.shape[0]} AWCs"):
+                            st.dataframe(yellow_zone_df, hide_index=False, use_container_width=True)
+
+                    with col3:
+                        green_zone_df = awcDisc[awcDisc['Zone'] == 'Green'].sort_values(by='Percentile_Rank (%)', ascending=False).reset_index(drop=True)
+                        green_zone_df.index = green_zone_df.index + 1
+                        green_zone_df.index.name = 'SN'
+                        with container.expander(f"🟢 Green Zone - {green_zone_df.shape[0]} AWCs"):
+                            st.dataframe(green_zone_df, hide_index=False, use_container_width=True)
+
+                    # No Zone – sorted by Total Remeasurements as Percentile_Rank is 0
+                    no_zone_df = awcDisc[awcDisc['Zone'] == ''].sort_values(by='Total_Remeasurements', ascending=False).reset_index(drop=True)
+                    no_zone_df.index = no_zone_df.index + 1
+                    no_zone_df.index.name = 'SN'
+                    with container.expander(f"⚪ No Zone (0% Discrepancy) - {no_zone_df.shape[0]} AWCs"):
+                        st.dataframe(no_zone_df, hide_index=False, use_container_width=True)
+                        
                         
         else:
             st.error(f"Error: {response.json()['detail']}")
