@@ -44,7 +44,7 @@ def pseudo_code_analysis():
                 a.metric("Children remeasured", format(data['summary']['totalSampleSize'],',d'), border=True)
                 c.metric("Projects Covered", format(data['summary']['projects'],',d'), border=True)
                 d.metric("Sectors Covered", format(data['summary']['sectors'],',d'), border=True)
-                e.metric("AWCs Visited", format(data['summary']['AWC'],',d'), border=True)
+                e.metric("Unique AWCs Visited", format(data['summary']['AWC'],',d'), border=True)
 
             district, project, sector,awc = st.tabs(["District Level", "Project Level", "Sector Level", "AWC Level"])
 
@@ -542,6 +542,88 @@ def pseudo_code_analysis():
                         projectUnderweightClassification.index = projectUnderweightClassification.index + 1
                         st.dataframe(projectUnderweightClassification,hide_index=False,use_container_width=True)
 
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>STUNTING [HEIGHT-FOR-AGE]", unsafe_allow_html=True)
+
+                if 'stuntingLevels' in data['projectLevelInsights']:
+                    container = st.container(border=True)
+                    stuntingLevels = pd.DataFrame(data['projectLevelInsights']['stuntingLevels'])
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference in Stunting Level between AWTs and Supervisors", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>Note: AWT SS and AWT Stunting figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
+                    categories = ['AWT_SS_%', 'Sup_SS_%', 'AWT_Stunting_%', 'Sup_Stunting_%']
+                    colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
+                    stuntingLevels_melted = stuntingLevels.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    fig_ss_levels = px.bar(
+                        stuntingLevels_melted,
+                        x='Proj_Name',
+                        y='Percentage',
+                        color='Category',
+                        text=stuntingLevels_melted['Percentage'].astype(str) + '%',
+                        barmode='group',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_ss_levels.update_traces(
+                        textposition='outside',
+                        textangle=0,
+                        textfont=dict(
+                            color='black',
+                            size=14,
+                        )
+                    )
+                    fig_ss_levels.update_layout(
+                        barcornerradius=2,
+                        margin=dict(t=0, b=0),
+                        xaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=False),
+                        legend=dict(title=None,orientation='h'),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_ss_levels)
+                    with container.expander("Show Data"):
+                        stuntingLevels.index.name = 'SN'
+                        stuntingLevels.index = stuntingLevels.index + 1
+                        st.dataframe(stuntingLevels,hide_index=False,use_container_width=True)
+
+                if 'stuntingClassification' in data['projectLevelInsights']:
+                    container = st.container(border=True)
+                    stuntingClassification = pd.DataFrame(data['projectLevelInsights']['stuntingClassification'])
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference in Stunting classification between AWTs and Supervisors", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>SS - Severely stunted [>3 SD],<br> MS = Moderately stunted [2-3 SD]", unsafe_allow_html=True)
+                    categories = ['AWT_Normal_Sup_SS_%', 'AWT_Normal_Sup_MS_%', 'AWT_MS_Sup_SS_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
+                    colors = ['darkred', 'red', 'yellow', 'gold', 'green']
+                    project_analysis_melted = stuntingClassification.melt(id_vars=['Proj_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    project_analysis_melted['Percentage'] = project_analysis_melted.groupby('Proj_Name')['Percentage'].transform(
+                        lambda x: x / x.sum() * 100
+                    )
+                    project_analysis_melted['Percentage'] = project_analysis_melted['Percentage'].round(0)
+                    project_analysis_melted['Percentage_label'] = project_analysis_melted['Percentage'].apply(
+                        lambda x: f"{x:.1f}%"  # Ensures 1 decimal place even for values < 1
+                    )
+                    fig_stunting_classify_metrics = px.bar(
+                        project_analysis_melted,
+                        x='Percentage',
+                        y='Proj_Name',
+                        color='Category',
+                        orientation='h',
+                        text=project_analysis_melted['Percentage'].astype(str) + '%',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_stunting_classify_metrics.update_layout(
+                        barcornerradius=5,
+                        margin=dict(t=0, b=0),
+                        height=400,
+                        xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        legend=dict(orientation='h', yanchor='bottom', y=-0.25, xanchor='center', x=0.4,title=None),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_stunting_classify_metrics)
+                    with container.expander("Show Data"):
+                        stuntingClassification.index.name = 'SN'
+                        stuntingClassification.index = stuntingClassification.index + 1
+                        st.dataframe(stuntingClassification,hide_index=False,use_container_width=True)
+
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>DISCREPANCY", unsafe_allow_html=True)
+
                 if 'discrepancy' in data['projectLevelInsights']:
                     container = st.container(border=True)
                     container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
@@ -794,6 +876,92 @@ def pseudo_code_analysis():
                         sectorUnderweightClassification.index.name = 'SN'
                         sectorUnderweightClassification.index = sectorUnderweightClassification.index + 1
                         st.dataframe(sectorUnderweightClassification,hide_index=False,use_container_width=True)
+
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>STUNTING [HEIGHT-FOR-AGE]", unsafe_allow_html=True)
+
+                if 'stuntingLevels' in data['sectorLevelInsights']:
+                    container = st.container(border=True)
+                    stuntingLevels = pd.DataFrame(data['sectorLevelInsights']['stuntingLevels'])
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference in Stunting Level between AWTs and Supervisors", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:0px'>10 sectors with the highest Supervisor Stunting %", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>Note: AWT SS and AWT Stunting figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
+                    top_10_sector_analysis = stuntingLevels.nlargest(10, 'Sup_Stunting_%')
+                    categories = ['AWT_SS_%', 'Sup_SS_%', 'AWT_Stunting_%', 'Sup_Stunting_%']
+                    colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
+                    stuntingLevels_melted = top_10_sector_analysis.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    fig_ss_levels = px.bar(
+                        stuntingLevels_melted,
+                        x='Sec_Name',
+                        y='Percentage',
+                        color='Category',
+                        text=stuntingLevels_melted['Percentage'].astype(str) + '%',
+                        barmode='group',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_ss_levels.update_traces(
+                        textposition='outside',
+                        textangle=0,
+                        textfont=dict(
+                            color='black',
+                            size=14,
+                        )
+                    )
+                    fig_ss_levels.update_layout(
+                        barcornerradius=2,
+                        margin=dict(t=0, b=0),
+                        xaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=False),
+                        legend=dict(title=None,orientation='h'),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_ss_levels)
+                    with container.expander("Show Data"):
+                        stuntingLevels.index.name = 'SN'
+                        stuntingLevels.index = stuntingLevels.index + 1
+                        st.dataframe(stuntingLevels,hide_index=False,use_container_width=True)
+
+                if 'stuntingClassification' in data['sectorLevelInsights']:
+                    container = st.container(border=True)
+                    stuntingClassification = pd.DataFrame(data['sectorLevelInsights']['stuntingClassification'])
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference in Stunting classification between AWTs and Supervisors", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:0px'>10 sectors with the highest misclassification", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>SS - Severely stunted [>3 SD],<br> MS = Moderately stunted [2-3 SD]", unsafe_allow_html=True)
+                    top_10_sector_analysis = stuntingClassification.nsmallest(10, 'Same_Classifications_%')
+                    categories = ['AWT_Normal_Sup_SS_%', 'AWT_Normal_Sup_MS_%', 'AWT_MS_Sup_SS_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
+                    colors = ['darkred', 'red', 'yellow', 'gold', 'green']
+                    project_analysis_melted = top_10_sector_analysis.melt(id_vars=['Sec_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    project_analysis_melted['Percentage'] = project_analysis_melted.groupby('Sec_Name')['Percentage'].transform(
+                        lambda x: x / x.sum() * 100
+                    )
+                    project_analysis_melted['Percentage'] = project_analysis_melted['Percentage'].round(0)
+                    project_analysis_melted['Percentage_label'] = project_analysis_melted['Percentage'].apply(
+                        lambda x: f"{x:.1f}%"  # Ensures 1 decimal place even for values < 1
+                    )
+                    fig_stunting_classify_metrics = px.bar(
+                        project_analysis_melted,
+                        x='Percentage',
+                        y='Sec_Name',
+                        color='Category',
+                        orientation='h',
+                        text=project_analysis_melted['Percentage'].astype(str) + '%',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_stunting_classify_metrics.update_layout(
+                        barcornerradius=5,
+                        margin=dict(t=0, b=0),
+                        height=400,
+                        xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        legend=dict(orientation='h', yanchor='bottom', y=-0.25, xanchor='center', x=0.4,title=None),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_stunting_classify_metrics)
+                    with container.expander("Show Data"):
+                        stuntingClassification.index.name = 'SN'
+                        stuntingClassification.index = stuntingClassification.index + 1
+                        st.dataframe(stuntingClassification,hide_index=False,use_container_width=True)
+
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>DISCREPANCY", unsafe_allow_html=True)
 
                 if 'discrepancy' in data['sectorLevelInsights']:
                     container = st.container(border=True)
@@ -1075,6 +1243,92 @@ def pseudo_code_analysis():
                         awcUnderweightClassification.index.name = 'SN'
                         awcUnderweightClassification.index = awcUnderweightClassification.index + 1
                         st.dataframe(awcUnderweightClassification,hide_index=False,use_container_width=True)
+
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>STUNTING [HEIGHT-FOR-AGE]", unsafe_allow_html=True)
+
+                if 'stuntingLevels' in data['awcLevelInsights']:
+                    container = st.container(border=True)
+                    stuntingLevels = pd.DataFrame(data['awcLevelInsights']['stuntingLevels'])
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference in Stunting Level between AWTs and Supervisors", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:0px'>10 awc with the highest Supervisor Stunting %", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>Note: AWT SS and AWT Stunting figures are for the re-measurement<br> subset only and not for the entire universe of AWC children", unsafe_allow_html=True)
+                    top_10_sector_analysis = stuntingLevels.nlargest(10, 'Sup_Stunting_%')
+                    categories = ['AWT_SS_%', 'Sup_SS_%', 'AWT_Stunting_%', 'Sup_Stunting_%']
+                    colors = ['#4285f4', '#0b5394', '#e06666', '#cc0000']
+                    stuntingLevels_melted = top_10_sector_analysis.melt(id_vars=['AWC_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    fig_ss_levels = px.bar(
+                        stuntingLevels_melted,
+                        x='AWC_Name',
+                        y='Percentage',
+                        color='Category',
+                        text=stuntingLevels_melted['Percentage'].astype(str) + '%',
+                        barmode='group',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_ss_levels.update_traces(
+                        textposition='outside',
+                        textangle=0,
+                        textfont=dict(
+                            color='black',
+                            size=14,
+                        )
+                    )
+                    fig_ss_levels.update_layout(
+                        barcornerradius=2,
+                        margin=dict(t=0, b=0),
+                        xaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=False),
+                        legend=dict(title=None,orientation='h'),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_ss_levels)
+                    with container.expander("Show Data"):
+                        stuntingLevels.index.name = 'SN'
+                        stuntingLevels.index = stuntingLevels.index + 1
+                        st.dataframe(stuntingLevels,hide_index=False,use_container_width=True)
+
+                if 'stuntingClassification' in data['awcLevelInsights']:
+                    container = st.container(border=True)
+                    stuntingClassification = pd.DataFrame(data['awcLevelInsights']['stuntingClassification'])
+                    container.markdown("<h6 style='text-align:center;padding:0'>Difference in Stunting classification between AWTs and Supervisors", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:0px'>10 awc with the highest misclassification", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:12px;margin:1px'>SS - Severely stunted [>3 SD],<br> MS = Moderately stunted [2-3 SD]", unsafe_allow_html=True)
+                    top_10_sector_analysis = stuntingClassification.nsmallest(10, 'Same_Classifications_%')
+                    categories = ['AWT_Normal_Sup_SS_%', 'AWT_Normal_Sup_MS_%', 'AWT_MS_Sup_SS_%', 'Other_Misclassifications_%', 'Same_Classifications_%']
+                    colors = ['darkred', 'red', 'yellow', 'gold', 'green']
+                    project_analysis_melted = top_10_sector_analysis.melt(id_vars=['AWC_Name'], value_vars=categories, var_name='Category', value_name='Percentage')
+                    project_analysis_melted['Percentage'] = project_analysis_melted.groupby('AWC_Name')['Percentage'].transform(
+                        lambda x: x / x.sum() * 100
+                    )
+                    project_analysis_melted['Percentage'] = project_analysis_melted['Percentage'].round(0)
+                    project_analysis_melted['Percentage_label'] = project_analysis_melted['Percentage'].apply(
+                        lambda x: f"{x:.1f}%"  # Ensures 1 decimal place even for values < 1
+                    )
+                    fig_stunting_classify_metrics = px.bar(
+                        project_analysis_melted,
+                        x='Percentage',
+                        y='AWC_Name',
+                        color='Category',
+                        orientation='h',
+                        text=project_analysis_melted['Percentage'].astype(str) + '%',
+                        color_discrete_sequence=colors,
+                    )
+                    fig_stunting_classify_metrics.update_layout(
+                        barcornerradius=5,
+                        margin=dict(t=0, b=0),
+                        height=400,
+                        xaxis=dict(range=[0,100],title=None,showgrid=False,showticklabels=True),
+                        yaxis=dict(title=None,showgrid=False,showticklabels=True),
+                        legend=dict(orientation='h', yanchor='bottom', y=-0.25, xanchor='center', x=0.4,title=None),
+                        bargap=0.2
+                    )
+                    container.plotly_chart(fig_stunting_classify_metrics)
+                    with container.expander("Show Data"):
+                        stuntingClassification.index.name = 'SN'
+                        stuntingClassification.index = stuntingClassification.index + 1
+                        st.dataframe(stuntingClassification,hide_index=False,use_container_width=True)
+
+                st.markdown("<h4 style='text-align:center;background-color:#34a853;color:white;margin-bottom:10px;border-radius:10px'>DISCREPANCY", unsafe_allow_html=True)
 
                 if 'discrepancy' in data['awcLevelInsights']:
                     container = st.container(border=True)
