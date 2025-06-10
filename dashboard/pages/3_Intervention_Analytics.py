@@ -628,6 +628,7 @@ def pseudo_code_analysis():
                     container = st.container(border=True)
                     container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
                     container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>The following graph categorises the projects into red, yellow, and green zones, based on their percentile distribution vis-a-vis discrepancy rates. <br>Projects with the lowest discrepancy rates are likely to be in the green zone, those with the highest discrepancy rates are likely to be in the red zone,<br> and those in-between are likely to be in the yellow-zone", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:15px'>All the cases where the AWT has reported a child to be normal but the Supervisor has reported them to be SAM/MAM/SUW/MUW <br> are considered for discrepancy calculation. This is calculation of AWT's discrepancy in measuring the child", unsafe_allow_html=True)
                     projectDisc = pd.DataFrame(data['projectLevelInsights']['discrepancy'])
                     fig_treemap = px.treemap(
                         projectDisc, 
@@ -967,6 +968,7 @@ def pseudo_code_analysis():
                     container = st.container(border=True)
                     container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
                     container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>The following graph categorises the projects into red, yellow, and green zones, based on their percentile distribution vis-a-vis discrepancy rates. <br>Projects with the lowest discrepancy rates are likely to be in the green zone, those with the highest discrepancy rates are likely to be in the red zone,<br> and those in-between are likely to be in the yellow-zone", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:15px'>All the cases where the AWT has reported a child to be normal but the Supervisor has reported them to be SAM/MAM/SUW/MUW <br> are considered for discrepancy calculation. This is calculation of AWT's discrepancy in measuring the child", unsafe_allow_html=True)
                     sectorDisc = pd.DataFrame(data['sectorLevelInsights']['discrepancy'])
                     fig_treemap = px.treemap(
                         sectorDisc, 
@@ -1333,7 +1335,8 @@ def pseudo_code_analysis():
                 if 'discrepancy' in data['awcLevelInsights']:
                     container = st.container(border=True)
                     container.markdown("<h6 style='text-align:center;padding-bottom:0'>Discrepancy Zoning Based on Percentile", unsafe_allow_html=True)
-                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:5px'>The following graph categorises the projects into red, yellow, and green zones, based on their percentile distribution vis-a-vis discrepancy rates. <br>Projects with the lowest discrepancy rates are likely to be in the green zone, those with the highest discrepancy rates are likely to be in the red zone,<br> and those in-between are likely to be in the yellow-zone", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:0px'>The following graph categorises the projects into red, yellow, and green zones, based on their percentile distribution vis-a-vis discrepancy rates. <br>Projects with the lowest discrepancy rates are likely to be in the green zone, those with the highest discrepancy rates are likely to be in the red zone,<br> and those in-between are likely to be in the yellow-zone", unsafe_allow_html=True)
+                    container.markdown("<p style='text-align:center;color:grey;font-size:14px;margin-bottom:15px'>All the cases where the AWT has reported a child to be normal but the Supervisor has reported them to be SAM/MAM/SUW/MUW <br> are considered for discrepancy calculation. This is calculation of AWT's discrepancy in measuring the child", unsafe_allow_html=True)
                     awcDisc = pd.DataFrame(data['awcLevelInsights']['discrepancy'])
                     col1, col2, col3 = st.columns(3)
 
