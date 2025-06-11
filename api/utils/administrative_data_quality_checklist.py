@@ -438,6 +438,12 @@ def apply_numeric_conditions(series: pd.Series, conditions: List[Dict]) -> Dict[
             result[label] = series == val
         elif op == "!=":
             result[label] = series != val
+        elif op == "between":
+            if isinstance(val, (list, tuple)) and len(val) == 2:
+                lower, upper = val
+                result[label] = series.between(lower, upper, inclusive='both')
+            else:
+                raise ValueError(f"'between' operation expects a tuple/list with 2 values. Got: {val}")
         else:
             raise ValueError(f"Invalid operation: {op}")
         

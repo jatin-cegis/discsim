@@ -447,6 +447,32 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             project_analysis_uw_levels['Sup_Underweight_%'] = round((project_analysis_uw_levels['Sup_Underweight'] / project_analysis_uw_levels['Total_Remeasurements']) * 100, 0)
             project_analysis_uw_levels['Sup-AWT_Difference_%'] = round(((project_analysis_uw_levels['Sup_Underweight'] - project_analysis_uw_levels['AWT_Underweight']) / project_analysis_uw_levels['Total_Remeasurements']) * 100, 0)
 
+            project_stunting_level =  df.groupby('Proj_Name').agg(
+                Total_Remeasurements=('Proj_Name', 'count'),
+                AWT_SS=('Status_Stunting', lambda x: (x == 'SAM').sum()),
+                Sup_SS=('Sup_Status_Stunting', lambda x: (x == 'SAM').sum()),
+                AWT_Stunting=('AWT_Stunting', 'sum'),
+                Sup_Stunting=('Supervisor_Stunting', 'sum')
+            ).reset_index()
+            project_stunting_level['AWT_SS_%'] = round((project_stunting_level['AWT_SS'] / project_stunting_level['Total_Remeasurements']) * 100, 0)
+            project_stunting_level['Sup_SS_%'] = round((project_stunting_level['Sup_SS'] / project_stunting_level['Total_Remeasurements']) * 100, 0)
+            project_stunting_level['AWT_Stunting_%'] = round((project_stunting_level['AWT_Stunting'] / project_stunting_level['Total_Remeasurements']) * 100, 0)
+            project_stunting_level['Sup_Stunting_%'] = round((project_stunting_level['Sup_Stunting'] / project_stunting_level['Total_Remeasurements']) * 100, 0)
+
+            project_stunting_classification = df.groupby('Proj_Name').agg(
+                Total_Remeasurements=('Proj_Name', 'count'),
+                AWT_Normal_Sup_SS=('AWT_Normal_Sup_Stunt_SAM', 'sum'),
+                AWT_Normal_Sup_MS=('AWT_Normal_Sup_Stunt_MAM', 'sum'),
+                AWT_MS_Sup_SS=('AWT_MAM_Sup_Stunt_SAM', 'sum'),
+                Other_Misclassifications=('AWT_Sup_Other_Misclassifications_Stunting', 'sum'),
+                Same_Classifications=('AWT_Sup_Same_Stunting', 'sum'),
+            ).reset_index()
+            project_stunting_classification['AWT_Normal_Sup_SS_%'] = round((project_stunting_classification['AWT_Normal_Sup_SS'] / project_stunting_classification['Total_Remeasurements']) * 100, 0)
+            project_stunting_classification['AWT_Normal_Sup_MS_%'] = round((project_stunting_classification['AWT_Normal_Sup_MS'] / project_stunting_classification['Total_Remeasurements']) * 100, 0)
+            project_stunting_classification['AWT_MS_Sup_SS_%'] = round((project_stunting_classification['AWT_MS_Sup_SS'] / project_stunting_classification['Total_Remeasurements']) * 100, 0)
+            project_stunting_classification['Other_Misclassifications_%'] = round((project_stunting_classification['Other_Misclassifications'] / project_stunting_classification['Total_Remeasurements']) * 100, 0)
+            project_stunting_classification['Same_Classifications_%'] = round((project_stunting_classification['Same_Classifications'] / project_stunting_classification['Total_Remeasurements']) * 100, 0)
+
             # Project Level Discrepancy
             project_level_disc = df.groupby('Proj_Name').agg(
                 Total_Remeasurements=('Proj_Name', 'count'),
@@ -484,6 +510,7 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
         try:
             # Equal Same Height
             sector_analysis_eq_height = df.groupby('Sec_Name').agg(
+                Project_Name=('Proj_Name', 'first'),
                 Total_Remeasurements=('Height', 'count'),
                 Exact_Same_Height=('AWT_height_eq_Sup_height', 'sum')
             ).reset_index()
@@ -491,6 +518,7 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
 
             # Equal Same Weight
             sector_analysis_eq_weight = df.groupby('Sec_Name').agg(
+                Project_Name=('Proj_Name', 'first'),
                 Total_Remeasurements=('Weight', 'count'),
                 Exact_Same_Weight=('AWT_weight_eq_Sup_weight', 'sum')
             ).reset_index()
@@ -499,6 +527,7 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
 
             # Wasting Levels
             sector_analysis_wasting_levels = df.groupby('Sec_Name').agg(
+                Project_Name=('Proj_Name', 'first'),
                 Total_Remeasurements=('Sec_Name', 'count'),
                 AWT_SAM=('Status_Wasting', lambda x: (x == 'SAM').sum()),
                 AWT_Wasting=('AWT_Wasting', 'sum'),
@@ -513,6 +542,7 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
 
             # Wasting Classification
             sector_analysis_wasting_classification = df.groupby('Sec_Name').agg(
+                Project_Name=('Proj_Name', 'first'),
                 Total_Remeasurements=('Sec_Name', 'count'),
                 AWT_Normal_Sup_SAM=('AWT_Normal_Sup_SAM', 'sum'),
                 AWT_Normal_Sup_MAM=('AWT_Normal_Sup_MAM', 'sum'),
@@ -528,6 +558,7 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
 
             # Underweight Levels
             sector_analysis_uw_levels = df.groupby('Sec_Name').agg(
+                Project_Name=('Proj_Name', 'first'),
                 Total_Remeasurements=('Sec_Name', 'count'),
                 AWT_SUW=('Status_UW', lambda x: (x == 'SUW').sum()),
                 Sup_SUW=('Sup_Status_UW', lambda x: (x == 'SUW').sum()),
@@ -542,6 +573,7 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
 
             # Underweight Classification
             sector_analysis_underweight_classification = df.groupby('Sec_Name').agg(
+                Project_Name=('Proj_Name', 'first'),
                 Total_Remeasurements=('Sec_Name', 'count'),
                 AWT_Normal_Sup_SUW=('AWT_Normal_Sup_SUW', 'sum'),
                 AWT_Normal_Sup_MUW=('AWT_Normal_Sup_MUW', 'sum'),
@@ -552,6 +584,35 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             sector_analysis_underweight_classification['AWT_Normal_Sup_MUW_%'] = round((sector_analysis_underweight_classification['AWT_Normal_Sup_MUW'] / sector_analysis_underweight_classification['Total_Remeasurements']) * 100, 0)
             sector_analysis_underweight_classification['Other_Misclassifications_%'] = round((sector_analysis_underweight_classification['Other_Misclassifications'] / sector_analysis_underweight_classification['Total_Remeasurements']) * 100, 0)
             sector_analysis_underweight_classification['Same_Classifications_%'] = round((sector_analysis_underweight_classification['Same_Classifications'] / sector_analysis_underweight_classification['Total_Remeasurements']) * 100, 0)
+    
+            # Stunting Levels
+            sector_stunting_level =  df.groupby('Sec_Name').agg(
+                Project_Name=('Proj_Name', 'first'),
+                Total_Remeasurements=('Sec_Name', 'count'),
+                AWT_SS=('Status_Stunting', lambda x: (x == 'SAM').sum()),
+                Sup_SS=('Sup_Status_Stunting', lambda x: (x == 'SAM').sum()),
+                AWT_Stunting=('AWT_Stunting', 'sum'),
+                Sup_Stunting=('Supervisor_Stunting', 'sum')
+            ).reset_index()
+            sector_stunting_level['AWT_SS_%'] = round((sector_stunting_level['AWT_SS'] / sector_stunting_level['Total_Remeasurements']) * 100, 0)
+            sector_stunting_level['Sup_SS_%'] = round((sector_stunting_level['Sup_SS'] / sector_stunting_level['Total_Remeasurements']) * 100, 0)
+            sector_stunting_level['AWT_Stunting_%'] = round((sector_stunting_level['AWT_Stunting'] / sector_stunting_level['Total_Remeasurements']) * 100, 0)
+            sector_stunting_level['Sup_Stunting_%'] = round((sector_stunting_level['Sup_Stunting'] / sector_stunting_level['Total_Remeasurements']) * 100, 0)
+
+            sector_stunting_classification = df.groupby('Sec_Name').agg(
+                Project_Name=('Proj_Name', 'first'),
+                Total_Remeasurements=('Sec_Name', 'count'),
+                AWT_Normal_Sup_SS=('AWT_Normal_Sup_Stunt_SAM', 'sum'),
+                AWT_Normal_Sup_MS=('AWT_Normal_Sup_Stunt_MAM', 'sum'),
+                AWT_MS_Sup_SS=('AWT_MAM_Sup_Stunt_SAM', 'sum'),
+                Other_Misclassifications=('AWT_Sup_Other_Misclassifications_Stunting', 'sum'),
+                Same_Classifications=('AWT_Sup_Same_Stunting', 'sum'),
+            ).reset_index()
+            sector_stunting_classification['AWT_Normal_Sup_SS_%'] = round((sector_stunting_classification['AWT_Normal_Sup_SS'] / sector_stunting_classification['Total_Remeasurements']) * 100, 0)
+            sector_stunting_classification['AWT_Normal_Sup_MS_%'] = round((sector_stunting_classification['AWT_Normal_Sup_MS'] / sector_stunting_classification['Total_Remeasurements']) * 100, 0)
+            sector_stunting_classification['AWT_MS_Sup_SS_%'] = round((sector_stunting_classification['AWT_MS_Sup_SS'] / sector_stunting_classification['Total_Remeasurements']) * 100, 0)
+            sector_stunting_classification['Other_Misclassifications_%'] = round((sector_stunting_classification['Other_Misclassifications'] / sector_stunting_classification['Total_Remeasurements']) * 100, 0)
+            sector_stunting_classification['Same_Classifications_%'] = round((sector_stunting_classification['Same_Classifications'] / sector_stunting_classification['Total_Remeasurements']) * 100, 0)
 
             #Sector Level Discrepancy
             sector_level_disc = df.groupby('Sec_Name').agg(
@@ -670,6 +731,36 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
             # awc_analysis_underweight_classification['Other_Misclassifications_%'] = round((awc_analysis_underweight_classification['Other_Misclassifications'] / awc_analysis_underweight_classification['Total_Remeasurements']) * 100, 0)
             # awc_analysis_underweight_classification['Same_Classifications_%'] = round((awc_analysis_underweight_classification['Same_Classifications'] / awc_analysis_underweight_classification['Total_Remeasurements']) * 100, 0)
 
+            awc_stunting_level =  df.groupby('AWC_Name').agg(
+                Sector_Name=('Sec_Name', 'first'),
+                Project_Name=('Proj_Name', 'first'),
+                Total_Remeasurements=('AWC_Name', 'count'),
+                AWT_SS=('Status_Stunting', lambda x: (x == 'SAM').sum()),
+                Sup_SS=('Sup_Status_Stunting', lambda x: (x == 'SAM').sum()),
+                AWT_Stunting=('AWT_Stunting', 'sum'),
+                Sup_Stunting=('Supervisor_Stunting', 'sum')
+            ).reset_index()
+            awc_stunting_level['AWT_SS_%'] = round((awc_stunting_level['AWT_SS'] / awc_stunting_level['Total_Remeasurements']) * 100, 0)
+            awc_stunting_level['Sup_SS_%'] = round((awc_stunting_level['Sup_SS'] / awc_stunting_level['Total_Remeasurements']) * 100, 0)
+            awc_stunting_level['AWT_Stunting_%'] = round((awc_stunting_level['AWT_Stunting'] / awc_stunting_level['Total_Remeasurements']) * 100, 0)
+            awc_stunting_level['Sup_Stunting_%'] = round((awc_stunting_level['Sup_Stunting'] / awc_stunting_level['Total_Remeasurements']) * 100, 0)
+
+            awc_stunting_classification = df.groupby('AWC_Name').agg(
+                Sector_Name=('Sec_Name', 'first'),
+                Project_Name=('Proj_Name', 'first'),
+                Total_Remeasurements=('AWC_Name', 'count'),
+                AWT_Normal_Sup_SS=('AWT_Normal_Sup_Stunt_SAM', 'sum'),
+                AWT_Normal_Sup_MS=('AWT_Normal_Sup_Stunt_MAM', 'sum'),
+                AWT_MS_Sup_SS=('AWT_MAM_Sup_Stunt_SAM', 'sum'),
+                Other_Misclassifications=('AWT_Sup_Other_Misclassifications_Stunting', 'sum'),
+                Same_Classifications=('AWT_Sup_Same_Stunting', 'sum'),
+            ).reset_index()
+            awc_stunting_classification['AWT_Normal_Sup_SS_%'] = round((awc_stunting_classification['AWT_Normal_Sup_SS'] / awc_stunting_classification['Total_Remeasurements']) * 100, 0)
+            awc_stunting_classification['AWT_Normal_Sup_MS_%'] = round((awc_stunting_classification['AWT_Normal_Sup_MS'] / awc_stunting_classification['Total_Remeasurements']) * 100, 0)
+            awc_stunting_classification['AWT_MS_Sup_SS_%'] = round((awc_stunting_classification['AWT_MS_Sup_SS'] / awc_stunting_classification['Total_Remeasurements']) * 100, 0)
+            awc_stunting_classification['Other_Misclassifications_%'] = round((awc_stunting_classification['Other_Misclassifications'] / awc_stunting_classification['Total_Remeasurements']) * 100, 0)
+            awc_stunting_classification['Same_Classifications_%'] = round((awc_stunting_classification['Same_Classifications'] / awc_stunting_classification['Total_Remeasurements']) * 100, 0)
+
             #AWC Level Discrepancy
             awc_level_disc = df.groupby('AWC_Name').agg(
                 Sector_Name=('Sec_Name', 'first'),
@@ -737,6 +828,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                     "wastingClassification":project_analysis_wasting_classification.to_dict(orient="records"),
                     "underweightLevels":project_analysis_uw_levels.to_dict(orient="records"),
                     "underweightClassification":project_analysis_underweight_classification.to_dict(orient="records"),
+                    "stuntingLevels":project_stunting_level.to_dict(orient="records"),
+                    "stuntingClassification":project_stunting_classification.to_dict(orient="records"),
                     "discrepancy":project_level_disc.to_dict(orient="records"),
                 },
                 "sectorLevelInsights":{
@@ -746,6 +839,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                     "wastingClassification":sector_analysis_wasting_classification.to_dict(orient="records"),
                     "underweightLevels":sector_analysis_uw_levels.to_dict(orient="records"),
                     "underweightClassification":sector_analysis_underweight_classification.to_dict(orient="records"),
+                    "stuntingLevels":sector_stunting_level.to_dict(orient="records"),
+                    "stuntingClassification":sector_stunting_classification.to_dict(orient="records"),
                     "discrepancy":sector_level_disc.to_dict(orient="records"),
                 },
                 "awcLevelInsights":{
@@ -756,6 +851,8 @@ def anganwadi_center_data_anaylsis(file: pd.DataFrame):
                     # "wastingClassification":awc_analysis_wasting_classification.to_dict(orient="records"),
                     "underweightLevels":awc_analysis_uw_levels.to_dict(orient="records"),
                     # "underweightClassification":awc_analysis_underweight_classification.to_dict(orient="records"),
+                    "stuntingLevels":awc_stunting_level.to_dict(orient="records"),
+                    "stuntingClassification":awc_stunting_classification.to_dict(orient="records"),
                     "discrepancy":awc_level_disc.to_dict(orient="records"),
                 }
             }

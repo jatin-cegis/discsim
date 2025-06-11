@@ -135,7 +135,7 @@ def read_uploaded_file(uploaded_file):
         st.error(f"Failed to read uploaded file: {str(e)}")
         raise
 
-@st.cache_data(max_entries=10)
+@st.cache_data(max_entries=10,show_spinner=False)
 def callAPI(file_details: dict, filename: str, url: str):
     start_time = time.perf_counter()
     try:
@@ -153,7 +153,7 @@ def callAPI(file_details: dict, filename: str, url: str):
         st.error(f"Invalid input: {str(e)}")
         raise
 
-@st.cache_data(max_entries=10)
+@st.cache_data(max_entries=10,show_spinner=False)
 def callAPIWithParam(payload: dict, url: str):
     start_time = time.perf_counter()
     try:
@@ -172,7 +172,7 @@ def callAPIWithParam(payload: dict, url: str):
         st.error(f"Invalid input: {str(e)}")
         raise
 
-@st.cache_data(max_entries=10)
+@st.cache_data(max_entries=10,show_spinner=False)
 def callAPIWithFileParam(file_details: dict, payload: dict, url: str):
     start_time = time.perf_counter()
     try:
@@ -195,6 +195,6 @@ def callAPIWithFileParam(file_details: dict, payload: dict, url: str):
         st.error(f"Invalid input: {str(e)}")
         raise
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def fetch_dataframe(data_type: str, url: str):
     return pd.DataFrame(requests.get(f"{url}?data_type={data_type}").json())
