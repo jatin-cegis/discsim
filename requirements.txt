@@ -43,7 +43,7 @@ platformdirs==4.2.2
 playwright==1.52.0
 plotly==6.0.1
 pluggy==1.6.0
-protobuf==5.27.3
+protobuf==5.29.5
 psycopg2-binary==2.9.9
 pyarrow==17.0.0
 pycodestyle==2.12.1
@@ -60,7 +60,7 @@ python-dotenv==1.0.1
 python-multipart==0.0.18
 pytz==2024.1
 referencing==0.35.1
-requests==2.32.3
+requests==2.32.4
 rich==13.7.1
 rpds-py==0.20.0
 rptree==0.1.1
