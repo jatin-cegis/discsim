@@ -113,8 +113,8 @@ def test_check_admin_data_preview(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"✅ Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"✅ Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
@@ -149,8 +149,8 @@ def test_identify_unique_ids(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
@@ -196,8 +196,8 @@ def test_verify_unique_ids(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
@@ -246,8 +246,8 @@ def test_verify_unique_ids_create_unique_id(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
@@ -302,8 +302,8 @@ def test_inspect_duplicate_entries(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
@@ -353,8 +353,8 @@ def test_inspect_duplicate_rows(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
@@ -400,8 +400,8 @@ def test_analyse_missing_entries(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
@@ -505,8 +505,8 @@ def test_analyse_missing_entries_filtered(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
@@ -566,8 +566,8 @@ def test_analyse_zero_entries(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
@@ -616,8 +616,8 @@ def test_analyse_zero_entries_grouped(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
@@ -671,8 +671,8 @@ def test_analyse_zero_entries_filtered(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
@@ -997,8 +997,8 @@ def test_analyse_data_quality_string(browser):
 
     page.get_by_test_id("stNumberInputStepUp").click()
     page.wait_for_load_state()
-    page.locator("#text_input_8").click()
-    page.locator("#text_input_8").fill("a")
+    page.get_by_role("textbox", name="Enter value").click()
+    page.get_by_role("textbox", name="Enter value").fill("a")
 
     page.get_by_test_id("stNumberInputStepUp").click()
     page.wait_for_load_state()
@@ -1115,8 +1115,8 @@ def test_analyse_data_quality_string_filtered(browser):
         options = page.get_by_role("option").all()
         assert options, "❌ No options found in the dropdown"
         options[1].click()
-        first_option_text = options[1].inner_text()
-        print(f"Selected first option: {first_option_text}")
+        # first_option_text = options[1].inner_text()
+        # print(f"Selected first option: {first_option_text}")
     except Exception as e:
         print(f"❌ Error while interacting with the dropdown: {e}")
         assert False
